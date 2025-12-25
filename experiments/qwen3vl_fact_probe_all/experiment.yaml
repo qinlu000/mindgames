@@ -1,0 +1,84 @@
+schema_version: 1
+name: qwen3vl_fact_probe_all
+kind: generic
+description: Knowledge-only probe for TruthAndDeception facts (tests potential memorization / world-knowledge leakage).
+tags: ["eval", "probe", "truth_and_deception"]
+
+repro:
+  seed: 0
+  python: ">=3.10,<3.13"
+
+spec:
+  facts_path: "mindgames/envs/TruthAndDeception/facts.json"
+  # Run against a local OpenAI-compatible server (e.g. vLLM). Requires:
+  #   OPENAI_BASE_URL=http://127.0.0.1:8010/v1
+  #   OPENAI_API_KEY=dummy
+  agent: "qwen:Qwen/Qwen3-VL-4B-Thinking"
+  # If agent omits ":<model>", use this model name.
+  model: null
+  # Optional: override env vars (otherwise uses OPENAI_BASE_URL / OPENAI_API_KEY).
+  openai_base_url: null
+  openai_api_key: null
+  timeout_s: null
+  num_items: 200
+  prompt_style: "tag" # tag|number
+  system_prompt: "You are doing a strict multiple-choice knowledge check. Output ONLY the final choice in the required format."
+  resume: false
+  output_minimal: true
+  gen:
+    # Qwen3-VL Thinking (upstream suggested defaults)
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+    repetition_penalty: 1.0
+    presence_penalty: 0.0
+    gen_seed: 1234
+    max_tokens: 4096
+    # Only used by hf:<model>; harmless for OpenAI/vLLM agents.
+    max_new_tokens: 128
+    # OpenAI/vLLM-only: JSON/dict merged into OpenAI `extra_body`.
+    # Use this for backend-specific knobs without changing the script.
+    extra_body: null
+    # vLLM-only: forwarded as OpenAI `extra_body.chat_template_kwargs`.
+    # Example: {"enable_thinking": false}
+    chat_template_kwargs: null
+    disable_thinking: false
+
+
+commands:
+  - >-
+    python tools/probe_fact_leakage.py
+    --facts {spec.facts_path}
+    --agent {spec.agent}
+    {opt:--model spec.model}
+    {opt:--openai-base-url spec.openai_base_url}
+    {opt:--openai-api-key spec.openai_api_key}
+    {opt:--timeout spec.timeout_s}
+    --seed {repro.seed}
+    --num-items {spec.num_items}
+    --prompt-style {spec.prompt_style}
+    --system-prompt {sh:spec.system_prompt}
+    --temperature {spec.gen.temperature}
+    --top-p {spec.gen.top_p}
+    {opt:--top-k spec.gen.top_k}
+    {opt:--repetition-penalty spec.gen.repetition_penalty}
+    {opt:--presence-penalty spec.gen.presence_penalty}
+    {opt:--gen-seed spec.gen.gen_seed}
+    {optsh:--extra-body spec.gen.extra_body}
+    {optsh:--chat-template-kwargs spec.gen.chat_template_kwargs}
+    {flag:--disable-thinking spec.gen.disable_thinking}
+    --max-tokens {spec.gen.max_tokens}
+    --max-new-tokens {spec.gen.max_new_tokens}
+    {flag:--output-minimal spec.output_minimal}
+    {flag:--resume spec.resume}
+    --out-jsonl {run_dir}/probe.jsonl
+    --out-summary {run_dir}/summary.json
+
+outputs:
+  files:
+    - "{run_dir}/probe.jsonl"
+    - "{run_dir}/summary.json"
+
+wandb:
+  project: "mindgames"
+  job_type: "probe"

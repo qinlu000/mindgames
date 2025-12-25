@@ -1,0 +1,77 @@
+schema_version: 1
+name: PLACEHOLDER_NAME
+kind: rollout_eval
+description: Evaluate one or more agents in a MindGames env with a fixed protocol.
+tags: ["eval", "rollout"]
+
+repro:
+  seed: 0
+  python: ">=3.10,<3.13"
+
+spec:
+  env_id: "Hanabi-v0"
+  num_players: 2
+  episodes: 20
+  agents:
+    - "openrouter:moonshotai/kimi-k2:free"
+    - "openrouter:moonshotai/kimi-k2:free"
+  system_prompt: "You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format."
+  # Optional: only used for openai:<model> agents (e.g. local vLLM).
+  openai_base_url: null
+  openai_api_key: null
+  timeout_s: null
+  gen:
+    temperature: 0.2
+    top_p: 1.0
+    top_k: null
+    repetition_penalty: null
+    presence_penalty: null
+    frequency_penalty: null
+    gen_seed: null
+    max_tokens: 2048
+    max_new_tokens: 256
+    extra_body: null
+    chat_template_kwargs: null
+    disable_thinking: false
+
+# Commands are rendered by expctl with variables:
+# - {run_id} and {run_dir}
+# - {spec.*} from the spec section
+# - {agent_flags}: expanded from spec.agents into repeated `--agent ...` flags
+commands:
+  - >-
+    python tools/run_rollouts.py
+    --env-id {spec.env_id}
+    --num-players {spec.num_players}
+    --episodes {spec.episodes}
+    --seed {repro.seed}
+    {agent_flags}
+    --system-prompt {sh:spec.system_prompt}
+    {opt:--openai-base-url spec.openai_base_url}
+    {opt:--openai-api-key spec.openai_api_key}
+    {opt:--timeout spec.timeout_s}
+    --temperature {spec.gen.temperature}
+    --top-p {spec.gen.top_p}
+    {opt:--top-k spec.gen.top_k}
+    {opt:--repetition-penalty spec.gen.repetition_penalty}
+    {opt:--presence-penalty spec.gen.presence_penalty}
+    {opt:--frequency-penalty spec.gen.frequency_penalty}
+    {opt:--gen-seed spec.gen.gen_seed}
+    {optsh:--extra-body spec.gen.extra_body}
+    {optsh:--chat-template-kwargs spec.gen.chat_template_kwargs}
+    {flag:--disable-thinking spec.gen.disable_thinking}
+    --max-tokens {spec.gen.max_tokens}
+    --max-new-tokens {spec.gen.max_new_tokens}
+    --out {run_dir}/rollouts.jsonl
+  - >-
+    python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl
+    --json > {run_dir}/summary.json
+
+outputs:
+  files:
+    - "{run_dir}/rollouts.jsonl"
+    - "{run_dir}/summary.json"
+
+wandb:
+  project: "mindgames"
+  job_type: "eval"
