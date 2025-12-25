@@ -7,6 +7,11 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Secrets (dotenv)
+.env
+.env.*
+!.env.example
+
 # Build artifacts
 build/
 dist/

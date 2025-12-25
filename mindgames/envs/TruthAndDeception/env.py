@@ -8,9 +8,16 @@ from mindgames.state import TwoPlayerState
 from mindgames.envs.TruthAndDeception.renderer import create_board_str
 
 class TruthAndDeceptionEnv(Env):
-    def __init__(self, max_turns: Optional[int]=5, data_path: Optional[str]=None):
+    def __init__(
+        self,
+        max_turns: Optional[int] = 5,
+        data_path: Optional[str] = None,
+        *,
+        reveal_context_to_guesser: bool = True,
+    ):
         assert max_turns%2==0, f"Please use an even number of max turns. Current max_turns: {max_turns}"
         self.max_turns = max_turns
+        self.reveal_context_to_guesser = bool(reveal_context_to_guesser)
         self._load_facts(data_path=data_path)
         self.guess_fact1_pattern = re.compile(r"\[Fact 1\]", re.IGNORECASE)
         self.guess_fact2_pattern = re.compile(r"\[Fact 2\]", re.IGNORECASE)
@@ -40,6 +47,7 @@ class TruthAndDeceptionEnv(Env):
     def reset(self, num_players: int, seed: Optional[int]=None):
         self.state = TwoPlayerState(num_players=num_players, max_turns=self.max_turns, seed=seed)
         selected_facts = random.choice(self.facts_data) # Select a random set of facts
+        context = selected_facts.get("context") if isinstance(selected_facts, dict) else None
         facts = [ # Randomize the order in which the facts are presented
             (selected_facts["facts"]["fact1"], selected_facts["correct_fact"]=="fact1"),
             (selected_facts["facts"]["fact2"], selected_facts["correct_fact"]=="fact2"),
@@ -47,12 +55,20 @@ class TruthAndDeceptionEnv(Env):
         random.shuffle(facts)
         game_state={
                 "fact1": {"fact": facts[0][0], "is_correct": facts[0][1]}, "fact2": {"fact": facts[1][0], "is_correct": facts[1][1]},
-                "correct_fact": facts[0][0] if facts[0][1] else facts[1][0], "wrong_fact": facts[0][0] if facts[1][1] else facts[1][0]
+                "correct_fact": facts[0][0] if facts[0][1] else facts[1][0],
+                "wrong_fact": facts[0][0] if facts[1][1] else facts[1][0],
+                "context": context,
             }
         self.state.reset(game_state=game_state, player_prompt_function=self._prompt, role_mapping={0: "Deceiver", 1: "Guesser"})
 
     def _prompt(self, player_id: int, game_state: Dict[int, Any]) -> str:
         prompt = f"You are Player {player_id}, and you are the {self.state.role_mapping[player_id]} in the 'Truth and Deception' game.\n"
+        context = game_state.get("context")
+        if context and (
+            self.state.role_mapping[player_id] == "Deceiver"
+            or (self.state.role_mapping[player_id] == "Guesser" and self.reveal_context_to_guesser)
+        ):
+            prompt += f"\nScenario:\n{str(context).strip()}\n"
         if self.state.role_mapping[player_id] == "Deceiver":
             prompt += (
                 f"You know which of the following two facts is correct:\n"

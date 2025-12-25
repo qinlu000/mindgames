@@ -1,0 +1,2602 @@
+[
+  {
+    "id": "tom_0000",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the coin in the backpack. Alice leaves the room. Mia moves the coin to the drawer while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the coin is in the backpack.",
+      "fact2": "Alice thinks the coin is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0001",
+    "type": "first_order_false_belief_think",
+    "context": "Emma puts the cookie in the drawer. Emma leaves the room. Ethan moves the cookie to the basket while Emma is away. Emma returns.",
+    "facts": {
+      "fact1": "Emma thinks the cookie is in the drawer.",
+      "fact2": "Emma thinks the cookie is in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0002",
+    "type": "first_order_false_belief_think",
+    "context": "Zoe puts the book in the drawer. Zoe leaves the room. Emma moves the book to the blue box while Zoe is away. Zoe returns.",
+    "facts": {
+      "fact1": "Zoe thinks the book is in the drawer.",
+      "fact2": "Zoe thinks the book is in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0003",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the cookie in the table. Ivy leaves the room. Dave moves the cookie to the blue box while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the cookie in the table.",
+      "fact2": "Ivy will look for the cookie in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0004",
+    "type": "first_order_false_belief_look",
+    "context": "Ethan puts the toy in the backpack. Ethan leaves the room. Zoe moves the toy to the red box while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan will look for the toy in the backpack.",
+      "fact2": "Ethan will look for the toy in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0005",
+    "type": "first_order_false_belief_look",
+    "context": "Emma puts the marble in the red box. Emma leaves the room. Olivia moves the marble to the green box while Emma is away. Emma returns.",
+    "facts": {
+      "fact1": "Emma will look for the marble in the red box.",
+      "fact2": "Emma will look for the marble in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0006",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the book in the locker. Liam leaves the room. Olivia moves the book to the green box while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the book in the locker.",
+      "fact2": "Liam will look for the book in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0007",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the card in the table. Liam leaves the room. Ethan moves the card to the basket while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the card in the table.",
+      "fact2": "Liam will look for the card in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0008",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the book in the backpack. Mia leaves the room. Liam moves the book to the blue box while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the book in the backpack.",
+      "fact2": "Mia will look for the book in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0009",
+    "type": "first_order_false_belief_think",
+    "context": "Mia puts the marble in the blue box. Mia leaves the room. Bob moves the marble to the red box while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia thinks the marble is in the blue box.",
+      "fact2": "Mia thinks the marble is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0010",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the card in the drawer. Carol leaves the room. Ivy moves the card to the cupboard while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the card in the drawer.",
+      "fact2": "Carol will look for the card in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0011",
+    "type": "first_order_false_belief_think",
+    "context": "Bob puts the marble in the red box. Bob leaves the room. Ethan moves the marble to the blue box while Bob is away. Bob returns.",
+    "facts": {
+      "fact1": "Bob thinks the marble is in the red box.",
+      "fact2": "Bob thinks the marble is in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0012",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the cookie in the shelf. Carol leaves the room. Dave moves the cookie to the green box while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the cookie in the shelf.",
+      "fact2": "Carol will look for the cookie in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0013",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the key in the blue box. Nina leaves the room. Noah moves the key to the table while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the key is in the blue box.",
+      "fact2": "Nina thinks the key is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0014",
+    "type": "first_order_false_belief_think",
+    "context": "Sam puts the key in the red box. Sam leaves the room. Liam moves the key to the blue box while Sam is away. Sam returns.",
+    "facts": {
+      "fact1": "Sam thinks the key is in the red box.",
+      "fact2": "Sam thinks the key is in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0015",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the toy in the blue box. Liam leaves the room. Sam moves the toy to the cupboard while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the toy in the blue box.",
+      "fact2": "Liam will look for the toy in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0016",
+    "type": "first_order_false_belief_think",
+    "context": "Zoe puts the note in the shelf. Zoe leaves the room. Nina moves the note to the drawer while Zoe is away. Zoe returns.",
+    "facts": {
+      "fact1": "Zoe thinks the note is in the shelf.",
+      "fact2": "Zoe thinks the note is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0017",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the note in the green box. Nina leaves the room. Bob moves the note to the red box while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the note is in the green box.",
+      "fact2": "Nina thinks the note is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0018",
+    "type": "first_order_false_belief_look",
+    "context": "Noah puts the cookie in the drawer. Noah leaves the room. Dave moves the cookie to the basket while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah will look for the cookie in the drawer.",
+      "fact2": "Noah will look for the cookie in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0019",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the ball in the shelf. Liam leaves the room. Nina moves the ball to the locker while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the ball in the shelf.",
+      "fact2": "Liam will look for the ball in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0020",
+    "type": "first_order_false_belief_think",
+    "context": "Emma puts the toy in the cupboard. Emma leaves the room. Alice moves the toy to the basket while Emma is away. Emma returns.",
+    "facts": {
+      "fact1": "Emma thinks the toy is in the cupboard.",
+      "fact2": "Emma thinks the toy is in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0021",
+    "type": "first_order_false_belief_think",
+    "context": "Zoe puts the ring in the locker. Zoe leaves the room. Ethan moves the ring to the basket while Zoe is away. Zoe returns.",
+    "facts": {
+      "fact1": "Zoe thinks the ring is in the locker.",
+      "fact2": "Zoe thinks the ring is in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0022",
+    "type": "first_order_false_belief_think",
+    "context": "Emma puts the book in the blue box. Emma leaves the room. Mia moves the book to the table while Emma is away. Emma returns.",
+    "facts": {
+      "fact1": "Emma thinks the book is in the blue box.",
+      "fact2": "Emma thinks the book is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0023",
+    "type": "first_order_false_belief_think",
+    "context": "Olivia puts the ball in the basket. Olivia leaves the room. Bob moves the ball to the table while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia thinks the ball is in the basket.",
+      "fact2": "Olivia thinks the ball is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0024",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the card in the locker. Nina leaves the room. Alice moves the card to the table while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the card is in the locker.",
+      "fact2": "Nina thinks the card is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0025",
+    "type": "first_order_false_belief_think",
+    "context": "Bob puts the book in the cupboard. Bob leaves the room. Ethan moves the book to the drawer while Bob is away. Bob returns.",
+    "facts": {
+      "fact1": "Bob thinks the book is in the cupboard.",
+      "fact2": "Bob thinks the book is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0026",
+    "type": "first_order_false_belief_think",
+    "context": "Dave puts the card in the backpack. Dave leaves the room. Olivia moves the card to the drawer while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave thinks the card is in the backpack.",
+      "fact2": "Dave thinks the card is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0027",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the note in the shelf. Liam leaves the room. Ethan moves the note to the locker while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the note is in the shelf.",
+      "fact2": "Liam thinks the note is in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0028",
+    "type": "first_order_false_belief_look",
+    "context": "Bob puts the key in the green box. Bob leaves the room. Sam moves the key to the backpack while Bob is away. Bob returns.",
+    "facts": {
+      "fact1": "Bob will look for the key in the green box.",
+      "fact2": "Bob will look for the key in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0029",
+    "type": "first_order_false_belief_think",
+    "context": "Bob puts the coin in the cupboard. Bob leaves the room. Emma moves the coin to the locker while Bob is away. Bob returns.",
+    "facts": {
+      "fact1": "Bob thinks the coin is in the cupboard.",
+      "fact2": "Bob thinks the coin is in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0030",
+    "type": "first_order_false_belief_think",
+    "context": "Ivy puts the note in the shelf. Ivy leaves the room. Liam moves the note to the blue box while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy thinks the note is in the shelf.",
+      "fact2": "Ivy thinks the note is in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0031",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the note in the locker. Nina leaves the room. Noah moves the note to the red box while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the note is in the locker.",
+      "fact2": "Nina thinks the note is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0032",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the key in the cupboard. Nina leaves the room. Emma moves the key to the table while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the key in the cupboard.",
+      "fact2": "Nina will look for the key in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0033",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the note in the shelf. Nina leaves the room. Mia moves the note to the green box while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the note in the shelf.",
+      "fact2": "Nina will look for the note in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0034",
+    "type": "first_order_false_belief_think",
+    "context": "Sam puts the marble in the backpack. Sam leaves the room. Carol moves the marble to the green box while Sam is away. Sam returns.",
+    "facts": {
+      "fact1": "Sam thinks the marble is in the backpack.",
+      "fact2": "Sam thinks the marble is in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0035",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the ring in the backpack. Ivy leaves the room. Ethan moves the ring to the red box while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the ring in the backpack.",
+      "fact2": "Ivy will look for the ring in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0036",
+    "type": "first_order_false_belief_look",
+    "context": "Dave puts the cookie in the table. Dave leaves the room. Carol moves the cookie to the shelf while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave will look for the cookie in the table.",
+      "fact2": "Dave will look for the cookie in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0037",
+    "type": "first_order_false_belief_think",
+    "context": "Mia puts the toy in the table. Mia leaves the room. Ethan moves the toy to the drawer while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia thinks the toy is in the table.",
+      "fact2": "Mia thinks the toy is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0038",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the key in the blue box. Liam leaves the room. Sam moves the key to the shelf while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the key is in the blue box.",
+      "fact2": "Liam thinks the key is in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0039",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the note in the basket. Liam leaves the room. Mia moves the note to the red box while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the note is in the basket.",
+      "fact2": "Liam thinks the note is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0040",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the book in the shelf. Liam leaves the room. Ethan moves the book to the red box while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the book in the shelf.",
+      "fact2": "Liam will look for the book in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0041",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the note in the basket. Nina leaves the room. Olivia moves the note to the cupboard while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the note in the basket.",
+      "fact2": "Nina will look for the note in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0042",
+    "type": "first_order_false_belief_think",
+    "context": "Bob puts the card in the locker. Bob leaves the room. Ivy moves the card to the drawer while Bob is away. Bob returns.",
+    "facts": {
+      "fact1": "Bob thinks the card is in the locker.",
+      "fact2": "Bob thinks the card is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0043",
+    "type": "first_order_false_belief_think",
+    "context": "Ethan puts the book in the blue box. Ethan leaves the room. Dave moves the book to the green box while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan thinks the book is in the blue box.",
+      "fact2": "Ethan thinks the book is in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0044",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the ring in the table. Mia leaves the room. Olivia moves the ring to the backpack while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the ring in the table.",
+      "fact2": "Mia will look for the ring in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0045",
+    "type": "first_order_false_belief_think",
+    "context": "Ivy puts the marble in the basket. Ivy leaves the room. Dave moves the marble to the cupboard while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy thinks the marble is in the basket.",
+      "fact2": "Ivy thinks the marble is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0046",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the coin in the blue box. Ivy leaves the room. Nina moves the coin to the shelf while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the coin in the blue box.",
+      "fact2": "Ivy will look for the coin in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0047",
+    "type": "first_order_false_belief_think",
+    "context": "Dave puts the toy in the green box. Dave leaves the room. Alice moves the toy to the cupboard while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave thinks the toy is in the green box.",
+      "fact2": "Dave thinks the toy is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0048",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the toy in the drawer. Alice leaves the room. Liam moves the toy to the green box while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the toy is in the drawer.",
+      "fact2": "Alice thinks the toy is in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0049",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the ball in the green box. Mia leaves the room. Olivia moves the ball to the locker while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the ball in the green box.",
+      "fact2": "Mia will look for the ball in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0050",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the book in the table. Alice leaves the room. Carol moves the book to the cupboard while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the book is in the table.",
+      "fact2": "Alice thinks the book is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0051",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the ring in the red box. Nina leaves the room. Ethan moves the ring to the locker while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the ring in the red box.",
+      "fact2": "Nina will look for the ring in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0052",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the coin in the cupboard. Alice leaves the room. Nina moves the coin to the backpack while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the coin is in the cupboard.",
+      "fact2": "Alice thinks the coin is in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0053",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the ball in the shelf. Mia leaves the room. Bob moves the ball to the backpack while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the ball in the shelf.",
+      "fact2": "Mia will look for the ball in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0054",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the ring in the locker. Liam leaves the room. Bob moves the ring to the red box while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the ring is in the locker.",
+      "fact2": "Liam thinks the ring is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0055",
+    "type": "first_order_false_belief_think",
+    "context": "Emma puts the book in the locker. Emma leaves the room. Mia moves the book to the table while Emma is away. Emma returns.",
+    "facts": {
+      "fact1": "Emma thinks the book is in the locker.",
+      "fact2": "Emma thinks the book is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0056",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the marble in the shelf. Liam leaves the room. Sam moves the marble to the blue box while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the marble in the shelf.",
+      "fact2": "Liam will look for the marble in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0057",
+    "type": "first_order_false_belief_think",
+    "context": "Olivia puts the book in the locker. Olivia leaves the room. Carol moves the book to the red box while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia thinks the book is in the locker.",
+      "fact2": "Olivia thinks the book is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0058",
+    "type": "first_order_false_belief_think",
+    "context": "Dave puts the coin in the red box. Dave leaves the room. Nina moves the coin to the green box while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave thinks the coin is in the red box.",
+      "fact2": "Dave thinks the coin is in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0059",
+    "type": "first_order_false_belief_look",
+    "context": "Ethan puts the coin in the basket. Ethan leaves the room. Nina moves the coin to the blue box while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan will look for the coin in the basket.",
+      "fact2": "Ethan will look for the coin in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0060",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the cookie in the green box. Ivy leaves the room. Zoe moves the cookie to the blue box while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the cookie in the green box.",
+      "fact2": "Ivy will look for the cookie in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0061",
+    "type": "first_order_false_belief_look",
+    "context": "Noah puts the cookie in the table. Noah leaves the room. Mia moves the cookie to the blue box while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah will look for the cookie in the table.",
+      "fact2": "Noah will look for the cookie in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0062",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the ball in the blue box. Ivy leaves the room. Zoe moves the ball to the table while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the ball in the blue box.",
+      "fact2": "Ivy will look for the ball in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0063",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the cookie in the green box. Alice leaves the room. Liam moves the cookie to the cupboard while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the cookie is in the green box.",
+      "fact2": "Alice thinks the cookie is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0064",
+    "type": "first_order_false_belief_think",
+    "context": "Ethan puts the note in the basket. Ethan leaves the room. Bob moves the note to the locker while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan thinks the note is in the basket.",
+      "fact2": "Ethan thinks the note is in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0065",
+    "type": "first_order_false_belief_think",
+    "context": "Mia puts the marble in the drawer. Mia leaves the room. Ivy moves the marble to the shelf while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia thinks the marble is in the drawer.",
+      "fact2": "Mia thinks the marble is in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0066",
+    "type": "first_order_false_belief_think",
+    "context": "Dave puts the toy in the drawer. Dave leaves the room. Alice moves the toy to the locker while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave thinks the toy is in the drawer.",
+      "fact2": "Dave thinks the toy is in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0067",
+    "type": "first_order_false_belief_think",
+    "context": "Ivy puts the card in the locker. Ivy leaves the room. Ethan moves the card to the red box while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy thinks the card is in the locker.",
+      "fact2": "Ivy thinks the card is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0068",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the book in the drawer. Ivy leaves the room. Alice moves the book to the cupboard while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the book in the drawer.",
+      "fact2": "Ivy will look for the book in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0069",
+    "type": "first_order_false_belief_think",
+    "context": "Olivia puts the key in the red box. Olivia leaves the room. Liam moves the key to the cupboard while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia thinks the key is in the red box.",
+      "fact2": "Olivia thinks the key is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0070",
+    "type": "first_order_false_belief_look",
+    "context": "Ethan puts the ball in the table. Ethan leaves the room. Mia moves the ball to the locker while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan will look for the ball in the table.",
+      "fact2": "Ethan will look for the ball in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0071",
+    "type": "first_order_false_belief_think",
+    "context": "Ivy puts the toy in the locker. Ivy leaves the room. Carol moves the toy to the cupboard while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy thinks the toy is in the locker.",
+      "fact2": "Ivy thinks the toy is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0072",
+    "type": "first_order_false_belief_look",
+    "context": "Olivia puts the ring in the cupboard. Olivia leaves the room. Liam moves the ring to the locker while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia will look for the ring in the cupboard.",
+      "fact2": "Olivia will look for the ring in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0073",
+    "type": "first_order_false_belief_look",
+    "context": "Alice puts the ring in the basket. Alice leaves the room. Carol moves the ring to the drawer while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice will look for the ring in the basket.",
+      "fact2": "Alice will look for the ring in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0074",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the marble in the locker. Nina leaves the room. Bob moves the marble to the green box while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the marble in the locker.",
+      "fact2": "Nina will look for the marble in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0075",
+    "type": "first_order_false_belief_think",
+    "context": "Noah puts the book in the basket. Noah leaves the room. Sam moves the book to the shelf while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah thinks the book is in the basket.",
+      "fact2": "Noah thinks the book is in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0076",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the book in the table. Carol leaves the room. Mia moves the book to the shelf while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the book in the table.",
+      "fact2": "Carol will look for the book in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0077",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the toy in the locker. Carol leaves the room. Dave moves the toy to the blue box while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the toy in the locker.",
+      "fact2": "Carol will look for the toy in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0078",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the cookie in the table. Liam leaves the room. Olivia moves the cookie to the cupboard while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the cookie is in the table.",
+      "fact2": "Liam thinks the cookie is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0079",
+    "type": "first_order_false_belief_think",
+    "context": "Zoe puts the toy in the drawer. Zoe leaves the room. Carol moves the toy to the basket while Zoe is away. Zoe returns.",
+    "facts": {
+      "fact1": "Zoe thinks the toy is in the drawer.",
+      "fact2": "Zoe thinks the toy is in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0080",
+    "type": "first_order_false_belief_think",
+    "context": "Carol puts the cookie in the drawer. Carol leaves the room. Bob moves the cookie to the table while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol thinks the cookie is in the drawer.",
+      "fact2": "Carol thinks the cookie is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0081",
+    "type": "first_order_false_belief_look",
+    "context": "Noah puts the marble in the cupboard. Noah leaves the room. Emma moves the marble to the table while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah will look for the marble in the cupboard.",
+      "fact2": "Noah will look for the marble in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0082",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the toy in the blue box. Nina leaves the room. Ivy moves the toy to the cupboard while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the toy is in the blue box.",
+      "fact2": "Nina thinks the toy is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0083",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the marble in the basket. Nina leaves the room. Sam moves the marble to the blue box while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the marble is in the basket.",
+      "fact2": "Nina thinks the marble is in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0084",
+    "type": "first_order_false_belief_look",
+    "context": "Alice puts the key in the red box. Alice leaves the room. Zoe moves the key to the shelf while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice will look for the key in the red box.",
+      "fact2": "Alice will look for the key in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0085",
+    "type": "first_order_false_belief_think",
+    "context": "Sam puts the marble in the red box. Sam leaves the room. Mia moves the marble to the cupboard while Sam is away. Sam returns.",
+    "facts": {
+      "fact1": "Sam thinks the marble is in the red box.",
+      "fact2": "Sam thinks the marble is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0086",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the coin in the drawer. Nina leaves the room. Emma moves the coin to the basket while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the coin is in the drawer.",
+      "fact2": "Nina thinks the coin is in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0087",
+    "type": "first_order_false_belief_look",
+    "context": "Liam puts the ball in the blue box. Liam leaves the room. Bob moves the ball to the shelf while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam will look for the ball in the blue box.",
+      "fact2": "Liam will look for the ball in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0088",
+    "type": "first_order_false_belief_look",
+    "context": "Ethan puts the key in the drawer. Ethan leaves the room. Mia moves the key to the blue box while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan will look for the key in the drawer.",
+      "fact2": "Ethan will look for the key in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0089",
+    "type": "first_order_false_belief_think",
+    "context": "Noah puts the ring in the cupboard. Noah leaves the room. Sam moves the ring to the shelf while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah thinks the ring is in the cupboard.",
+      "fact2": "Noah thinks the ring is in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0090",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the ball in the basket. Alice leaves the room. Mia moves the ball to the locker while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the ball is in the basket.",
+      "fact2": "Alice thinks the ball is in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0091",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the cookie in the shelf. Liam leaves the room. Alice moves the cookie to the table while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the cookie is in the shelf.",
+      "fact2": "Liam thinks the cookie is in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0092",
+    "type": "first_order_false_belief_look",
+    "context": "Alice puts the ball in the green box. Alice leaves the room. Ivy moves the ball to the cupboard while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice will look for the ball in the green box.",
+      "fact2": "Alice will look for the ball in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0093",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the note in the drawer. Alice leaves the room. Carol moves the note to the basket while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the note is in the drawer.",
+      "fact2": "Alice thinks the note is in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0094",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the key in the table. Nina leaves the room. Zoe moves the key to the green box while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the key in the table.",
+      "fact2": "Nina will look for the key in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0095",
+    "type": "first_order_false_belief_look",
+    "context": "Nina puts the book in the table. Nina leaves the room. Zoe moves the book to the locker while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina will look for the book in the table.",
+      "fact2": "Nina will look for the book in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0096",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the ball in the locker. Mia leaves the room. Carol moves the ball to the red box while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the ball in the locker.",
+      "fact2": "Mia will look for the ball in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0097",
+    "type": "first_order_false_belief_look",
+    "context": "Ivy puts the note in the table. Ivy leaves the room. Dave moves the note to the backpack while Ivy is away. Ivy returns.",
+    "facts": {
+      "fact1": "Ivy will look for the note in the table.",
+      "fact2": "Ivy will look for the note in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0098",
+    "type": "first_order_false_belief_think",
+    "context": "Olivia puts the book in the backpack. Olivia leaves the room. Ethan moves the book to the drawer while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia thinks the book is in the backpack.",
+      "fact2": "Olivia thinks the book is in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0099",
+    "type": "first_order_false_belief_look",
+    "context": "Ethan puts the note in the red box. Ethan leaves the room. Alice moves the note to the green box while Ethan is away. Ethan returns.",
+    "facts": {
+      "fact1": "Ethan will look for the note in the red box.",
+      "fact2": "Ethan will look for the note in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0100",
+    "type": "first_order_false_belief_think",
+    "context": "Bob puts the ring in the basket. Bob leaves the room. Noah moves the ring to the shelf while Bob is away. Bob returns.",
+    "facts": {
+      "fact1": "Bob thinks the ring is in the basket.",
+      "fact2": "Bob thinks the ring is in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0101",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the card in the shelf. Carol leaves the room. Ethan moves the card to the green box while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the card in the shelf.",
+      "fact2": "Carol will look for the card in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0102",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the coin in the cupboard. Mia leaves the room. Nina moves the coin to the locker while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the coin in the cupboard.",
+      "fact2": "Mia will look for the coin in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0103",
+    "type": "first_order_false_belief_think",
+    "context": "Dave puts the ring in the basket. Dave leaves the room. Carol moves the ring to the cupboard while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave thinks the ring is in the basket.",
+      "fact2": "Dave thinks the ring is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0104",
+    "type": "first_order_false_belief_think",
+    "context": "Liam puts the book in the locker. Liam leaves the room. Nina moves the book to the green box while Liam is away. Liam returns.",
+    "facts": {
+      "fact1": "Liam thinks the book is in the locker.",
+      "fact2": "Liam thinks the book is in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0105",
+    "type": "first_order_false_belief_look",
+    "context": "Dave puts the cookie in the locker. Dave leaves the room. Nina moves the cookie to the red box while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave will look for the cookie in the locker.",
+      "fact2": "Dave will look for the cookie in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0106",
+    "type": "first_order_false_belief_look",
+    "context": "Olivia puts the note in the blue box. Olivia leaves the room. Nina moves the note to the red box while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia will look for the note in the blue box.",
+      "fact2": "Olivia will look for the note in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0107",
+    "type": "first_order_false_belief_think",
+    "context": "Nina puts the key in the basket. Nina leaves the room. Emma moves the key to the cupboard while Nina is away. Nina returns.",
+    "facts": {
+      "fact1": "Nina thinks the key is in the basket.",
+      "fact2": "Nina thinks the key is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0108",
+    "type": "first_order_false_belief_look",
+    "context": "Olivia puts the ball in the table. Olivia leaves the room. Nina moves the ball to the backpack while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia will look for the ball in the table.",
+      "fact2": "Olivia will look for the ball in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0109",
+    "type": "first_order_false_belief_look",
+    "context": "Dave puts the book in the backpack. Dave leaves the room. Liam moves the book to the cupboard while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave will look for the book in the backpack.",
+      "fact2": "Dave will look for the book in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0110",
+    "type": "first_order_false_belief_think",
+    "context": "Noah puts the coin in the red box. Noah leaves the room. Carol moves the coin to the blue box while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah thinks the coin is in the red box.",
+      "fact2": "Noah thinks the coin is in the blue box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0111",
+    "type": "first_order_false_belief_look",
+    "context": "Noah puts the coin in the table. Noah leaves the room. Ethan moves the coin to the cupboard while Noah is away. Noah returns.",
+    "facts": {
+      "fact1": "Noah will look for the coin in the table.",
+      "fact2": "Noah will look for the coin in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0112",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the marble in the drawer. Carol leaves the room. Mia moves the marble to the green box while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the marble in the drawer.",
+      "fact2": "Carol will look for the marble in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0113",
+    "type": "first_order_false_belief_think",
+    "context": "Alice puts the book in the shelf. Alice leaves the room. Ivy moves the book to the locker while Alice is away. Alice returns.",
+    "facts": {
+      "fact1": "Alice thinks the book is in the shelf.",
+      "fact2": "Alice thinks the book is in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0114",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the toy in the drawer. Carol leaves the room. Zoe moves the toy to the basket while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the toy in the drawer.",
+      "fact2": "Carol will look for the toy in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0115",
+    "type": "first_order_false_belief_look",
+    "context": "Carol puts the ring in the backpack. Carol leaves the room. Bob moves the ring to the green box while Carol is away. Carol returns.",
+    "facts": {
+      "fact1": "Carol will look for the ring in the backpack.",
+      "fact2": "Carol will look for the ring in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0116",
+    "type": "first_order_false_belief_look",
+    "context": "Olivia puts the ring in the drawer. Olivia leaves the room. Mia moves the ring to the cupboard while Olivia is away. Olivia returns.",
+    "facts": {
+      "fact1": "Olivia will look for the ring in the drawer.",
+      "fact2": "Olivia will look for the ring in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0117",
+    "type": "first_order_false_belief_look",
+    "context": "Mia puts the note in the backpack. Mia leaves the room. Olivia moves the note to the green box while Mia is away. Mia returns.",
+    "facts": {
+      "fact1": "Mia will look for the note in the backpack.",
+      "fact2": "Mia will look for the note in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0118",
+    "type": "first_order_false_belief_think",
+    "context": "Sam puts the marble in the table. Sam leaves the room. Noah moves the marble to the red box while Sam is away. Sam returns.",
+    "facts": {
+      "fact1": "Sam thinks the marble is in the table.",
+      "fact2": "Sam thinks the marble is in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0119",
+    "type": "first_order_false_belief_think",
+    "context": "Dave puts the coin in the backpack. Dave leaves the room. Ivy moves the coin to the cupboard while Dave is away. Dave returns.",
+    "facts": {
+      "fact1": "Dave thinks the coin is in the backpack.",
+      "fact2": "Dave thinks the coin is in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0120",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a card. Liam opens the envelope and sees the card, then closes it. Sam does not look inside the envelope and Liam does not tell Sam what is inside.",
+    "facts": {
+      "fact1": "Sam knows the envelope contains a card.",
+      "fact2": "Sam does not know the envelope contains a card."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0121",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a key. Noah opens the drawer and sees the key, then closes it. After that, Noah tells Zoe that the drawer contains a key.",
+    "facts": {
+      "fact1": "Zoe knows the drawer contains a key.",
+      "fact2": "Zoe does not know the drawer contains a key."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0122",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a card. Sam opens the drawer and sees the card. Carol does not see inside the drawer.",
+    "facts": {
+      "fact1": "Sam knows the drawer contains a card.",
+      "fact2": "Sam does not know the drawer contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0123",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a cookie. Bob opens the box and sees the cookie, then closes it. After that, Bob tells Noah that the box contains a cookie.",
+    "facts": {
+      "fact1": "Noah knows the box contains a cookie.",
+      "fact2": "Noah does not know the box contains a cookie."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0124",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a key. Mia opens the envelope and sees the key, then closes it. Liam does not look inside the envelope and Mia does not tell Liam what is inside.",
+    "facts": {
+      "fact1": "Liam knows the envelope contains a key.",
+      "fact2": "Liam does not know the envelope contains a key."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0125",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a book. Zoe opens the bag and sees the book, then closes it. After that, Zoe tells Olivia that the bag contains a book.",
+    "facts": {
+      "fact1": "Olivia knows the bag contains a book.",
+      "fact2": "Olivia does not know the bag contains a book."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0126",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a ball. Bob opens the envelope and sees the ball, then closes it. After that, Bob tells Emma that the envelope contains a ball.",
+    "facts": {
+      "fact1": "Emma knows the envelope contains a ball.",
+      "fact2": "Emma does not know the envelope contains a ball."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0127",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a note. Bob opens the box and sees the note, then closes it. After that, Bob tells Noah that the box contains a note.",
+    "facts": {
+      "fact1": "Noah knows the box contains a note.",
+      "fact2": "Noah does not know the box contains a note."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0128",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a marble. Liam opens the box and sees the marble. Ivy does not see inside the box.",
+    "facts": {
+      "fact1": "Liam knows the box contains a marble.",
+      "fact2": "Liam does not know the box contains a marble."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0129",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a card. Ivy opens the bag and sees the card. Carol does not see inside the bag.",
+    "facts": {
+      "fact1": "Ivy knows the bag contains a card.",
+      "fact2": "Ivy does not know the bag contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0130",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a toy. Ethan opens the drawer and sees the toy, then closes it. Carol does not look inside the drawer and Ethan does not tell Carol what is inside.",
+    "facts": {
+      "fact1": "Carol knows the drawer contains a toy.",
+      "fact2": "Carol does not know the drawer contains a toy."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0131",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a note. Nina opens the bag and sees the note, then closes it. Carol does not look inside the bag and Nina does not tell Carol what is inside.",
+    "facts": {
+      "fact1": "Carol knows the bag contains a note.",
+      "fact2": "Carol does not know the bag contains a note."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0132",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a note. Dave opens the box and sees the note, then closes it. After that, Dave tells Bob that the box contains a note.",
+    "facts": {
+      "fact1": "Bob knows the box contains a note.",
+      "fact2": "Bob does not know the box contains a note."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0133",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a cookie. Liam opens the bag and sees the cookie, then closes it. Olivia does not look inside the bag and Liam does not tell Olivia what is inside.",
+    "facts": {
+      "fact1": "Olivia knows the bag contains a cookie.",
+      "fact2": "Olivia does not know the bag contains a cookie."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0134",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a toy. Sam opens the bag and sees the toy, then closes it. After that, Sam tells Olivia that the bag contains a toy.",
+    "facts": {
+      "fact1": "Olivia knows the bag contains a toy.",
+      "fact2": "Olivia does not know the bag contains a toy."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0135",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a book. Alice opens the bag and sees the book, then closes it. After that, Alice tells Emma that the bag contains a book.",
+    "facts": {
+      "fact1": "Emma knows the bag contains a book.",
+      "fact2": "Emma does not know the bag contains a book."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0136",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a ring. Nina opens the box and sees the ring, then closes it. Zoe does not look inside the box and Nina does not tell Zoe what is inside.",
+    "facts": {
+      "fact1": "Zoe knows the box contains a ring.",
+      "fact2": "Zoe does not know the box contains a ring."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0137",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a note. Ivy opens the bag and sees the note, then closes it. Olivia does not look inside the bag and Ivy does not tell Olivia what is inside.",
+    "facts": {
+      "fact1": "Olivia knows the bag contains a note.",
+      "fact2": "Olivia does not know the bag contains a note."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0138",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a ring. Ethan opens the box and sees the ring, then closes it. After that, Ethan tells Mia that the box contains a ring.",
+    "facts": {
+      "fact1": "Mia knows the box contains a ring.",
+      "fact2": "Mia does not know the box contains a ring."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0139",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a ring. Ethan opens the envelope and sees the ring, then closes it. After that, Ethan tells Emma that the envelope contains a ring.",
+    "facts": {
+      "fact1": "Emma knows the envelope contains a ring.",
+      "fact2": "Emma does not know the envelope contains a ring."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0140",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a marble. Zoe opens the box and sees the marble, then closes it. Nina does not look inside the box and Zoe does not tell Nina what is inside.",
+    "facts": {
+      "fact1": "Nina knows the box contains a marble.",
+      "fact2": "Nina does not know the box contains a marble."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0141",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a toy. Bob opens the drawer and sees the toy, then closes it. Olivia does not look inside the drawer and Bob does not tell Olivia what is inside.",
+    "facts": {
+      "fact1": "Olivia knows the drawer contains a toy.",
+      "fact2": "Olivia does not know the drawer contains a toy."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0142",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a book. Emma opens the envelope and sees the book, then closes it. After that, Emma tells Mia that the envelope contains a book.",
+    "facts": {
+      "fact1": "Mia knows the envelope contains a book.",
+      "fact2": "Mia does not know the envelope contains a book."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0143",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a coin. Emma opens the bag and sees the coin, then closes it. After that, Emma tells Mia that the bag contains a coin.",
+    "facts": {
+      "fact1": "Mia knows the bag contains a coin.",
+      "fact2": "Mia does not know the bag contains a coin."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0144",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a note. Noah opens the box and sees the note, then closes it. Carol does not look inside the box and Noah does not tell Carol what is inside.",
+    "facts": {
+      "fact1": "Carol knows the box contains a note.",
+      "fact2": "Carol does not know the box contains a note."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0145",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a toy. Noah opens the drawer and sees the toy. Alice does not see inside the drawer.",
+    "facts": {
+      "fact1": "Noah knows the drawer contains a toy.",
+      "fact2": "Noah does not know the drawer contains a toy."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0146",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a cookie. Nina opens the box and sees the cookie, then closes it. Zoe does not look inside the box and Nina does not tell Zoe what is inside.",
+    "facts": {
+      "fact1": "Zoe knows the box contains a cookie.",
+      "fact2": "Zoe does not know the box contains a cookie."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0147",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a card. Noah opens the bag and sees the card, then closes it. Sam does not look inside the bag and Noah does not tell Sam what is inside.",
+    "facts": {
+      "fact1": "Sam knows the bag contains a card.",
+      "fact2": "Sam does not know the bag contains a card."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0148",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a ring. Dave opens the box and sees the ring, then closes it. Noah does not look inside the box and Dave does not tell Noah what is inside.",
+    "facts": {
+      "fact1": "Noah knows the box contains a ring.",
+      "fact2": "Noah does not know the box contains a ring."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0149",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a toy. Olivia opens the drawer and sees the toy, then closes it. Ethan does not look inside the drawer and Olivia does not tell Ethan what is inside.",
+    "facts": {
+      "fact1": "Ethan knows the drawer contains a toy.",
+      "fact2": "Ethan does not know the drawer contains a toy."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0150",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a cookie. Sam opens the box and sees the cookie. Mia does not see inside the box.",
+    "facts": {
+      "fact1": "Sam knows the box contains a cookie.",
+      "fact2": "Sam does not know the box contains a cookie."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0151",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a ring. Carol opens the box and sees the ring. Alice does not see inside the box.",
+    "facts": {
+      "fact1": "Carol knows the box contains a ring.",
+      "fact2": "Carol does not know the box contains a ring."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0152",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a coin. Bob opens the box and sees the coin, then closes it. Nina does not look inside the box and Bob does not tell Nina what is inside.",
+    "facts": {
+      "fact1": "Nina knows the box contains a coin.",
+      "fact2": "Nina does not know the box contains a coin."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0153",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a note. Olivia opens the drawer and sees the note, then closes it. Noah does not look inside the drawer and Olivia does not tell Noah what is inside.",
+    "facts": {
+      "fact1": "Noah knows the drawer contains a note.",
+      "fact2": "Noah does not know the drawer contains a note."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0154",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a note. Ethan opens the bag and sees the note, then closes it. After that, Ethan tells Dave that the bag contains a note.",
+    "facts": {
+      "fact1": "Dave knows the bag contains a note.",
+      "fact2": "Dave does not know the bag contains a note."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0155",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a book. Bob opens the drawer and sees the book, then closes it. After that, Bob tells Olivia that the drawer contains a book.",
+    "facts": {
+      "fact1": "Olivia knows the drawer contains a book.",
+      "fact2": "Olivia does not know the drawer contains a book."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0156",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a book. Olivia opens the drawer and sees the book, then closes it. Ethan does not look inside the drawer and Olivia does not tell Ethan what is inside.",
+    "facts": {
+      "fact1": "Ethan knows the drawer contains a book.",
+      "fact2": "Ethan does not know the drawer contains a book."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0157",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a toy. Ethan opens the box and sees the toy, then closes it. Olivia does not look inside the box and Ethan does not tell Olivia what is inside.",
+    "facts": {
+      "fact1": "Olivia knows the box contains a toy.",
+      "fact2": "Olivia does not know the box contains a toy."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0158",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a ring. Ivy opens the drawer and sees the ring, then closes it. Noah does not look inside the drawer and Ivy does not tell Noah what is inside.",
+    "facts": {
+      "fact1": "Noah knows the drawer contains a ring.",
+      "fact2": "Noah does not know the drawer contains a ring."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0159",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a book. Bob opens the drawer and sees the book, then closes it. Ethan does not look inside the drawer and Bob does not tell Ethan what is inside.",
+    "facts": {
+      "fact1": "Ethan knows the drawer contains a book.",
+      "fact2": "Ethan does not know the drawer contains a book."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0160",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a coin. Ivy opens the bag and sees the coin, then closes it. After that, Ivy tells Bob that the bag contains a coin.",
+    "facts": {
+      "fact1": "Bob knows the bag contains a coin.",
+      "fact2": "Bob does not know the bag contains a coin."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0161",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a cookie. Liam opens the bag and sees the cookie, then closes it. Zoe does not look inside the bag and Liam does not tell Zoe what is inside.",
+    "facts": {
+      "fact1": "Zoe knows the bag contains a cookie.",
+      "fact2": "Zoe does not know the bag contains a cookie."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0162",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a marble. Dave opens the drawer and sees the marble, then closes it. After that, Dave tells Bob that the drawer contains a marble.",
+    "facts": {
+      "fact1": "Bob knows the drawer contains a marble.",
+      "fact2": "Bob does not know the drawer contains a marble."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0163",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a ball. Alice opens the envelope and sees the ball, then closes it. Liam does not look inside the envelope and Alice does not tell Liam what is inside.",
+    "facts": {
+      "fact1": "Liam knows the envelope contains a ball.",
+      "fact2": "Liam does not know the envelope contains a ball."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0164",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a book. Zoe opens the bag and sees the book, then closes it. Ethan does not look inside the bag and Zoe does not tell Ethan what is inside.",
+    "facts": {
+      "fact1": "Ethan knows the bag contains a book.",
+      "fact2": "Ethan does not know the bag contains a book."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0165",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a card. Alice opens the drawer and sees the card. Emma does not see inside the drawer.",
+    "facts": {
+      "fact1": "Alice knows the drawer contains a card.",
+      "fact2": "Alice does not know the drawer contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0166",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a card. Ethan opens the drawer and sees the card, then closes it. After that, Ethan tells Emma that the drawer contains a card.",
+    "facts": {
+      "fact1": "Emma knows the drawer contains a card.",
+      "fact2": "Emma does not know the drawer contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0167",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a note. Mia opens the drawer and sees the note, then closes it. Dave does not look inside the drawer and Mia does not tell Dave what is inside.",
+    "facts": {
+      "fact1": "Dave knows the drawer contains a note.",
+      "fact2": "Dave does not know the drawer contains a note."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0168",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a card. Dave opens the drawer and sees the card, then closes it. After that, Dave tells Alice that the drawer contains a card.",
+    "facts": {
+      "fact1": "Alice knows the drawer contains a card.",
+      "fact2": "Alice does not know the drawer contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0169",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a toy. Emma opens the bag and sees the toy, then closes it. After that, Emma tells Dave that the bag contains a toy.",
+    "facts": {
+      "fact1": "Dave knows the bag contains a toy.",
+      "fact2": "Dave does not know the bag contains a toy."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0170",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a note. Ethan opens the bag and sees the note, then closes it. After that, Ethan tells Alice that the bag contains a note.",
+    "facts": {
+      "fact1": "Alice knows the bag contains a note.",
+      "fact2": "Alice does not know the bag contains a note."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0171",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a card. Sam opens the envelope and sees the card. Mia does not see inside the envelope.",
+    "facts": {
+      "fact1": "Sam knows the envelope contains a card.",
+      "fact2": "Sam does not know the envelope contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0172",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a book. Mia opens the envelope and sees the book, then closes it. Olivia does not look inside the envelope and Mia does not tell Olivia what is inside.",
+    "facts": {
+      "fact1": "Olivia knows the envelope contains a book.",
+      "fact2": "Olivia does not know the envelope contains a book."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0173",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a key. Liam opens the bag and sees the key, then closes it. After that, Liam tells Dave that the bag contains a key.",
+    "facts": {
+      "fact1": "Dave knows the bag contains a key.",
+      "fact2": "Dave does not know the bag contains a key."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0174",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a cookie. Ivy opens the bag and sees the cookie, then closes it. Sam does not look inside the bag and Ivy does not tell Sam what is inside.",
+    "facts": {
+      "fact1": "Sam knows the bag contains a cookie.",
+      "fact2": "Sam does not know the bag contains a cookie."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0175",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a ring. Mia opens the box and sees the ring, then closes it. Alice does not look inside the box and Mia does not tell Alice what is inside.",
+    "facts": {
+      "fact1": "Alice knows the box contains a ring.",
+      "fact2": "Alice does not know the box contains a ring."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0176",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a marble. Sam opens the bag and sees the marble, then closes it. Olivia does not look inside the bag and Sam does not tell Olivia what is inside.",
+    "facts": {
+      "fact1": "Olivia knows the bag contains a marble.",
+      "fact2": "Olivia does not know the bag contains a marble."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0177",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a book. Carol opens the box and sees the book, then closes it. Zoe does not look inside the box and Carol does not tell Zoe what is inside.",
+    "facts": {
+      "fact1": "Zoe knows the box contains a book.",
+      "fact2": "Zoe does not know the box contains a book."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0178",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a ball. Noah opens the bag and sees the ball. Zoe does not see inside the bag.",
+    "facts": {
+      "fact1": "Noah knows the bag contains a ball.",
+      "fact2": "Noah does not know the bag contains a ball."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0179",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a book. Emma opens the bag and sees the book, then closes it. After that, Emma tells Carol that the bag contains a book.",
+    "facts": {
+      "fact1": "Carol knows the bag contains a book.",
+      "fact2": "Carol does not know the bag contains a book."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0180",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a ball. Liam opens the bag and sees the ball, then closes it. Ethan does not look inside the bag and Liam does not tell Ethan what is inside.",
+    "facts": {
+      "fact1": "Ethan knows the bag contains a ball.",
+      "fact2": "Ethan does not know the bag contains a ball."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0181",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a card. Carol opens the envelope and sees the card. Mia does not see inside the envelope.",
+    "facts": {
+      "fact1": "Carol knows the envelope contains a card.",
+      "fact2": "Carol does not know the envelope contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0182",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a coin. Alice opens the bag and sees the coin, then closes it. Liam does not look inside the bag and Alice does not tell Liam what is inside.",
+    "facts": {
+      "fact1": "Liam knows the bag contains a coin.",
+      "fact2": "Liam does not know the bag contains a coin."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0183",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a coin. Alice opens the envelope and sees the coin, then closes it. After that, Alice tells Ivy that the envelope contains a coin.",
+    "facts": {
+      "fact1": "Ivy knows the envelope contains a coin.",
+      "fact2": "Ivy does not know the envelope contains a coin."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0184",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a cookie. Ethan opens the drawer and sees the cookie, then closes it. Zoe does not look inside the drawer and Ethan does not tell Zoe what is inside.",
+    "facts": {
+      "fact1": "Zoe knows the drawer contains a cookie.",
+      "fact2": "Zoe does not know the drawer contains a cookie."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0185",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a cookie. Alice opens the envelope and sees the cookie, then closes it. After that, Alice tells Sam that the envelope contains a cookie.",
+    "facts": {
+      "fact1": "Sam knows the envelope contains a cookie.",
+      "fact2": "Sam does not know the envelope contains a cookie."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0186",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a toy. Emma opens the envelope and sees the toy, then closes it. Sam does not look inside the envelope and Emma does not tell Sam what is inside.",
+    "facts": {
+      "fact1": "Sam knows the envelope contains a toy.",
+      "fact2": "Sam does not know the envelope contains a toy."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0187",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a toy. Alice opens the envelope and sees the toy, then closes it. Zoe does not look inside the envelope and Alice does not tell Zoe what is inside.",
+    "facts": {
+      "fact1": "Zoe knows the envelope contains a toy.",
+      "fact2": "Zoe does not know the envelope contains a toy."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0188",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a ring. Dave opens the bag and sees the ring. Olivia does not see inside the bag.",
+    "facts": {
+      "fact1": "Dave knows the bag contains a ring.",
+      "fact2": "Dave does not know the bag contains a ring."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0189",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a marble. Alice opens the envelope and sees the marble, then closes it. Nina does not look inside the envelope and Alice does not tell Nina what is inside.",
+    "facts": {
+      "fact1": "Nina knows the envelope contains a marble.",
+      "fact2": "Nina does not know the envelope contains a marble."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0190",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a card. Sam opens the drawer and sees the card, then closes it. After that, Sam tells Ivy that the drawer contains a card.",
+    "facts": {
+      "fact1": "Ivy knows the drawer contains a card.",
+      "fact2": "Ivy does not know the drawer contains a card."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0191",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a card. Olivia opens the envelope and sees the card, then closes it. Ivy does not look inside the envelope and Olivia does not tell Ivy what is inside.",
+    "facts": {
+      "fact1": "Ivy knows the envelope contains a card.",
+      "fact2": "Ivy does not know the envelope contains a card."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0192",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a ball. Mia opens the envelope and sees the ball, then closes it. Dave does not look inside the envelope and Mia does not tell Dave what is inside.",
+    "facts": {
+      "fact1": "Dave knows the envelope contains a ball.",
+      "fact2": "Dave does not know the envelope contains a ball."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0193",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a coin. Dave opens the drawer and sees the coin, then closes it. Sam does not look inside the drawer and Dave does not tell Sam what is inside.",
+    "facts": {
+      "fact1": "Sam knows the drawer contains a coin.",
+      "fact2": "Sam does not know the drawer contains a coin."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0194",
+    "type": "knowledge_access",
+    "context": "There is a closed bag. Inside is a key. Sam opens the bag and sees the key, then closes it. Noah does not look inside the bag and Sam does not tell Noah what is inside.",
+    "facts": {
+      "fact1": "Noah knows the bag contains a key.",
+      "fact2": "Noah does not know the bag contains a key."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0195",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a book. Alice opens the envelope and sees the book, then closes it. Emma does not look inside the envelope and Alice does not tell Emma what is inside.",
+    "facts": {
+      "fact1": "Emma knows the envelope contains a book.",
+      "fact2": "Emma does not know the envelope contains a book."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0196",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a ball. Sam opens the drawer and sees the ball, then closes it. After that, Sam tells Ethan that the drawer contains a ball.",
+    "facts": {
+      "fact1": "Ethan knows the drawer contains a ball.",
+      "fact2": "Ethan does not know the drawer contains a ball."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0197",
+    "type": "knowledge_access",
+    "context": "There is a closed drawer. Inside is a marble. Noah opens the drawer and sees the marble, then closes it. Liam does not look inside the drawer and Noah does not tell Liam what is inside.",
+    "facts": {
+      "fact1": "Liam knows the drawer contains a marble.",
+      "fact2": "Liam does not know the drawer contains a marble."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0198",
+    "type": "knowledge_access",
+    "context": "There is a closed envelope. Inside is a ring. Emma opens the envelope and sees the ring, then closes it. Carol does not look inside the envelope and Emma does not tell Carol what is inside.",
+    "facts": {
+      "fact1": "Carol knows the envelope contains a ring.",
+      "fact2": "Carol does not know the envelope contains a ring."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0199",
+    "type": "knowledge_access",
+    "context": "There is a closed box. Inside is a marble. Liam opens the box and sees the marble. Zoe does not see inside the box.",
+    "facts": {
+      "fact1": "Liam knows the box contains a marble.",
+      "fact2": "Liam does not know the box contains a marble."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0200",
+    "type": "second_order_belief",
+    "context": "Bob puts the book in the locker. Liam watches. Bob leaves the room. Ethan moves the book to the table. Liam does not see the move. Bob returns.",
+    "facts": {
+      "fact1": "Liam believes Bob will look for the book in the locker.",
+      "fact2": "Liam believes Bob will look for the book in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0201",
+    "type": "second_order_belief",
+    "context": "Ivy puts the key in the basket. Liam watches. Ivy leaves the room. Emma moves the key to the blue box. Liam sees the move. Ivy returns.",
+    "facts": {
+      "fact1": "Liam believes Ivy will look for the key in the basket.",
+      "fact2": "Liam believes Ivy will look for the key in the blue box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0202",
+    "type": "second_order_belief",
+    "context": "Ivy puts the note in the green box. Carol watches. Ivy leaves the room. Zoe moves the note to the backpack. Carol sees the move. Ivy returns.",
+    "facts": {
+      "fact1": "Carol believes Ivy will look for the note in the green box.",
+      "fact2": "Carol believes Ivy will look for the note in the backpack."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0203",
+    "type": "second_order_belief",
+    "context": "Liam puts the toy in the shelf. Dave watches. Liam leaves the room. Emma moves the toy to the green box. Dave does not see the move. Liam returns.",
+    "facts": {
+      "fact1": "Dave believes Liam will look for the toy in the shelf.",
+      "fact2": "Dave believes Liam will look for the toy in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0204",
+    "type": "second_order_belief",
+    "context": "Olivia puts the note in the drawer. Alice watches. Olivia leaves the room. Nina moves the note to the table. Alice does not see the move. Olivia returns.",
+    "facts": {
+      "fact1": "Alice believes Olivia will look for the note in the drawer.",
+      "fact2": "Alice believes Olivia will look for the note in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0205",
+    "type": "second_order_belief",
+    "context": "Carol puts the note in the shelf. Nina watches. Carol leaves the room. Ivy moves the note to the drawer. Nina does not see the move. Carol returns.",
+    "facts": {
+      "fact1": "Nina believes Carol will look for the note in the shelf.",
+      "fact2": "Nina believes Carol will look for the note in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0206",
+    "type": "second_order_belief",
+    "context": "Olivia puts the cookie in the shelf. Noah watches. Olivia leaves the room. Ethan moves the cookie to the red box. Noah sees the move. Olivia returns.",
+    "facts": {
+      "fact1": "Noah believes Olivia will look for the cookie in the shelf.",
+      "fact2": "Noah believes Olivia will look for the cookie in the red box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0207",
+    "type": "second_order_belief",
+    "context": "Nina puts the cookie in the table. Alice watches. Nina leaves the room. Ivy moves the cookie to the basket. Alice sees the move. Nina returns.",
+    "facts": {
+      "fact1": "Alice believes Nina will look for the cookie in the table.",
+      "fact2": "Alice believes Nina will look for the cookie in the basket."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0208",
+    "type": "second_order_belief",
+    "context": "Nina puts the ring in the basket. Dave watches. Nina leaves the room. Zoe moves the ring to the locker. Dave does not see the move. Nina returns.",
+    "facts": {
+      "fact1": "Dave believes Nina will look for the ring in the basket.",
+      "fact2": "Dave believes Nina will look for the ring in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0209",
+    "type": "second_order_belief",
+    "context": "Ivy puts the cookie in the locker. Liam watches. Ivy leaves the room. Sam moves the cookie to the cupboard. Liam does not see the move. Ivy returns.",
+    "facts": {
+      "fact1": "Liam believes Ivy will look for the cookie in the locker.",
+      "fact2": "Liam believes Ivy will look for the cookie in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0210",
+    "type": "second_order_belief",
+    "context": "Nina puts the cookie in the blue box. Alice watches. Nina leaves the room. Sam moves the cookie to the cupboard. Alice does not see the move. Nina returns.",
+    "facts": {
+      "fact1": "Alice believes Nina will look for the cookie in the blue box.",
+      "fact2": "Alice believes Nina will look for the cookie in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0211",
+    "type": "second_order_belief",
+    "context": "Liam puts the cookie in the cupboard. Carol watches. Liam leaves the room. Bob moves the cookie to the basket. Carol sees the move. Liam returns.",
+    "facts": {
+      "fact1": "Carol believes Liam will look for the cookie in the cupboard.",
+      "fact2": "Carol believes Liam will look for the cookie in the basket."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0212",
+    "type": "second_order_belief",
+    "context": "Noah puts the ball in the green box. Carol watches. Noah leaves the room. Dave moves the ball to the red box. Carol does not see the move. Noah returns.",
+    "facts": {
+      "fact1": "Carol believes Noah will look for the ball in the green box.",
+      "fact2": "Carol believes Noah will look for the ball in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0213",
+    "type": "second_order_belief",
+    "context": "Sam puts the marble in the cupboard. Olivia watches. Sam leaves the room. Ivy moves the marble to the drawer. Olivia sees the move. Sam returns.",
+    "facts": {
+      "fact1": "Olivia believes Sam will look for the marble in the cupboard.",
+      "fact2": "Olivia believes Sam will look for the marble in the drawer."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0214",
+    "type": "second_order_belief",
+    "context": "Liam puts the note in the cupboard. Emma watches. Liam leaves the room. Nina moves the note to the locker. Emma does not see the move. Liam returns.",
+    "facts": {
+      "fact1": "Emma believes Liam will look for the note in the cupboard.",
+      "fact2": "Emma believes Liam will look for the note in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0215",
+    "type": "second_order_belief",
+    "context": "Dave puts the note in the basket. Ivy watches. Dave leaves the room. Zoe moves the note to the red box. Ivy does not see the move. Dave returns.",
+    "facts": {
+      "fact1": "Ivy believes Dave will look for the note in the basket.",
+      "fact2": "Ivy believes Dave will look for the note in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0216",
+    "type": "second_order_belief",
+    "context": "Ivy puts the ball in the shelf. Emma watches. Ivy leaves the room. Zoe moves the ball to the basket. Emma sees the move. Ivy returns.",
+    "facts": {
+      "fact1": "Emma believes Ivy will look for the ball in the shelf.",
+      "fact2": "Emma believes Ivy will look for the ball in the basket."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0217",
+    "type": "second_order_belief",
+    "context": "Carol puts the coin in the drawer. Noah watches. Carol leaves the room. Bob moves the coin to the backpack. Noah does not see the move. Carol returns.",
+    "facts": {
+      "fact1": "Noah believes Carol will look for the coin in the drawer.",
+      "fact2": "Noah believes Carol will look for the coin in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0218",
+    "type": "second_order_belief",
+    "context": "Alice puts the marble in the blue box. Nina watches. Alice leaves the room. Dave moves the marble to the table. Nina does not see the move. Alice returns.",
+    "facts": {
+      "fact1": "Nina believes Alice will look for the marble in the blue box.",
+      "fact2": "Nina believes Alice will look for the marble in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0219",
+    "type": "second_order_belief",
+    "context": "Sam puts the marble in the green box. Ivy watches. Sam leaves the room. Carol moves the marble to the drawer. Ivy sees the move. Sam returns.",
+    "facts": {
+      "fact1": "Ivy believes Sam will look for the marble in the green box.",
+      "fact2": "Ivy believes Sam will look for the marble in the drawer."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0220",
+    "type": "second_order_belief",
+    "context": "Emma puts the toy in the shelf. Noah watches. Emma leaves the room. Dave moves the toy to the backpack. Noah does not see the move. Emma returns.",
+    "facts": {
+      "fact1": "Noah believes Emma will look for the toy in the shelf.",
+      "fact2": "Noah believes Emma will look for the toy in the backpack."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0221",
+    "type": "second_order_belief",
+    "context": "Bob puts the coin in the table. Mia watches. Bob leaves the room. Nina moves the coin to the locker. Mia sees the move. Bob returns.",
+    "facts": {
+      "fact1": "Mia believes Bob will look for the coin in the table.",
+      "fact2": "Mia believes Bob will look for the coin in the locker."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0222",
+    "type": "second_order_belief",
+    "context": "Sam puts the coin in the table. Liam watches. Sam leaves the room. Ivy moves the coin to the drawer. Liam sees the move. Sam returns.",
+    "facts": {
+      "fact1": "Liam believes Sam will look for the coin in the table.",
+      "fact2": "Liam believes Sam will look for the coin in the drawer."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0223",
+    "type": "second_order_belief",
+    "context": "Mia puts the card in the shelf. Zoe watches. Mia leaves the room. Liam moves the card to the red box. Zoe does not see the move. Mia returns.",
+    "facts": {
+      "fact1": "Zoe believes Mia will look for the card in the shelf.",
+      "fact2": "Zoe believes Mia will look for the card in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0224",
+    "type": "second_order_belief",
+    "context": "Ethan puts the key in the green box. Sam watches. Ethan leaves the room. Dave moves the key to the red box. Sam sees the move. Ethan returns.",
+    "facts": {
+      "fact1": "Sam believes Ethan will look for the key in the green box.",
+      "fact2": "Sam believes Ethan will look for the key in the red box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0225",
+    "type": "second_order_belief",
+    "context": "Ethan puts the ball in the shelf. Noah watches. Ethan leaves the room. Mia moves the ball to the backpack. Noah sees the move. Ethan returns.",
+    "facts": {
+      "fact1": "Noah believes Ethan will look for the ball in the shelf.",
+      "fact2": "Noah believes Ethan will look for the ball in the backpack."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0226",
+    "type": "second_order_belief",
+    "context": "Ivy puts the cookie in the blue box. Liam watches. Ivy leaves the room. Olivia moves the cookie to the green box. Liam does not see the move. Ivy returns.",
+    "facts": {
+      "fact1": "Liam believes Ivy will look for the cookie in the blue box.",
+      "fact2": "Liam believes Ivy will look for the cookie in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0227",
+    "type": "second_order_belief",
+    "context": "Nina puts the note in the backpack. Carol watches. Nina leaves the room. Mia moves the note to the shelf. Carol sees the move. Nina returns.",
+    "facts": {
+      "fact1": "Carol believes Nina will look for the note in the backpack.",
+      "fact2": "Carol believes Nina will look for the note in the shelf."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0228",
+    "type": "second_order_belief",
+    "context": "Carol puts the marble in the basket. Noah watches. Carol leaves the room. Ethan moves the marble to the locker. Noah sees the move. Carol returns.",
+    "facts": {
+      "fact1": "Noah believes Carol will look for the marble in the basket.",
+      "fact2": "Noah believes Carol will look for the marble in the locker."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0229",
+    "type": "second_order_belief",
+    "context": "Mia puts the key in the shelf. Bob watches. Mia leaves the room. Sam moves the key to the blue box. Bob sees the move. Mia returns.",
+    "facts": {
+      "fact1": "Bob believes Mia will look for the key in the shelf.",
+      "fact2": "Bob believes Mia will look for the key in the blue box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0230",
+    "type": "second_order_belief",
+    "context": "Zoe puts the coin in the drawer. Liam watches. Zoe leaves the room. Mia moves the coin to the backpack. Liam sees the move. Zoe returns.",
+    "facts": {
+      "fact1": "Liam believes Zoe will look for the coin in the drawer.",
+      "fact2": "Liam believes Zoe will look for the coin in the backpack."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0231",
+    "type": "second_order_belief",
+    "context": "Dave puts the ring in the blue box. Olivia watches. Dave leaves the room. Emma moves the ring to the shelf. Olivia does not see the move. Dave returns.",
+    "facts": {
+      "fact1": "Olivia believes Dave will look for the ring in the blue box.",
+      "fact2": "Olivia believes Dave will look for the ring in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0232",
+    "type": "second_order_belief",
+    "context": "Zoe puts the note in the basket. Carol watches. Zoe leaves the room. Bob moves the note to the green box. Carol sees the move. Zoe returns.",
+    "facts": {
+      "fact1": "Carol believes Zoe will look for the note in the basket.",
+      "fact2": "Carol believes Zoe will look for the note in the green box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0233",
+    "type": "second_order_belief",
+    "context": "Zoe puts the marble in the locker. Mia watches. Zoe leaves the room. Sam moves the marble to the backpack. Mia sees the move. Zoe returns.",
+    "facts": {
+      "fact1": "Mia believes Zoe will look for the marble in the locker.",
+      "fact2": "Mia believes Zoe will look for the marble in the backpack."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0234",
+    "type": "second_order_belief",
+    "context": "Sam puts the book in the green box. Nina watches. Sam leaves the room. Ethan moves the book to the red box. Nina does not see the move. Sam returns.",
+    "facts": {
+      "fact1": "Nina believes Sam will look for the book in the green box.",
+      "fact2": "Nina believes Sam will look for the book in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0235",
+    "type": "second_order_belief",
+    "context": "Nina puts the card in the backpack. Emma watches. Nina leaves the room. Mia moves the card to the cupboard. Emma does not see the move. Nina returns.",
+    "facts": {
+      "fact1": "Emma believes Nina will look for the card in the backpack.",
+      "fact2": "Emma believes Nina will look for the card in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0236",
+    "type": "second_order_belief",
+    "context": "Bob puts the ring in the table. Noah watches. Bob leaves the room. Nina moves the ring to the shelf. Noah does not see the move. Bob returns.",
+    "facts": {
+      "fact1": "Noah believes Bob will look for the ring in the table.",
+      "fact2": "Noah believes Bob will look for the ring in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0237",
+    "type": "second_order_belief",
+    "context": "Zoe puts the key in the backpack. Mia watches. Zoe leaves the room. Ethan moves the key to the red box. Mia does not see the move. Zoe returns.",
+    "facts": {
+      "fact1": "Mia believes Zoe will look for the key in the backpack.",
+      "fact2": "Mia believes Zoe will look for the key in the red box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0238",
+    "type": "second_order_belief",
+    "context": "Bob puts the cookie in the drawer. Carol watches. Bob leaves the room. Sam moves the cookie to the shelf. Carol does not see the move. Bob returns.",
+    "facts": {
+      "fact1": "Carol believes Bob will look for the cookie in the drawer.",
+      "fact2": "Carol believes Bob will look for the cookie in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0239",
+    "type": "second_order_belief",
+    "context": "Zoe puts the note in the locker. Emma watches. Zoe leaves the room. Olivia moves the note to the cupboard. Emma does not see the move. Zoe returns.",
+    "facts": {
+      "fact1": "Emma believes Zoe will look for the note in the locker.",
+      "fact2": "Emma believes Zoe will look for the note in the cupboard."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0240",
+    "type": "second_order_belief",
+    "context": "Sam puts the marble in the backpack. Olivia watches. Sam leaves the room. Ethan moves the marble to the cupboard. Olivia sees the move. Sam returns.",
+    "facts": {
+      "fact1": "Olivia believes Sam will look for the marble in the backpack.",
+      "fact2": "Olivia believes Sam will look for the marble in the cupboard."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0241",
+    "type": "second_order_belief",
+    "context": "Olivia puts the cookie in the red box. Nina watches. Olivia leaves the room. Carol moves the cookie to the locker. Nina sees the move. Olivia returns.",
+    "facts": {
+      "fact1": "Nina believes Olivia will look for the cookie in the red box.",
+      "fact2": "Nina believes Olivia will look for the cookie in the locker."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0242",
+    "type": "second_order_belief",
+    "context": "Liam puts the key in the table. Nina watches. Liam leaves the room. Olivia moves the key to the cupboard. Nina sees the move. Liam returns.",
+    "facts": {
+      "fact1": "Nina believes Liam will look for the key in the table.",
+      "fact2": "Nina believes Liam will look for the key in the cupboard."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0243",
+    "type": "second_order_belief",
+    "context": "Alice puts the marble in the locker. Liam watches. Alice leaves the room. Carol moves the marble to the drawer. Liam does not see the move. Alice returns.",
+    "facts": {
+      "fact1": "Liam believes Alice will look for the marble in the locker.",
+      "fact2": "Liam believes Alice will look for the marble in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0244",
+    "type": "second_order_belief",
+    "context": "Liam puts the ring in the table. Mia watches. Liam leaves the room. Bob moves the ring to the green box. Mia does not see the move. Liam returns.",
+    "facts": {
+      "fact1": "Mia believes Liam will look for the ring in the table.",
+      "fact2": "Mia believes Liam will look for the ring in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0245",
+    "type": "second_order_belief",
+    "context": "Ethan puts the cookie in the basket. Dave watches. Ethan leaves the room. Ivy moves the cookie to the shelf. Dave does not see the move. Ethan returns.",
+    "facts": {
+      "fact1": "Dave believes Ethan will look for the cookie in the basket.",
+      "fact2": "Dave believes Ethan will look for the cookie in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0246",
+    "type": "second_order_belief",
+    "context": "Liam puts the key in the locker. Mia watches. Liam leaves the room. Nina moves the key to the red box. Mia sees the move. Liam returns.",
+    "facts": {
+      "fact1": "Mia believes Liam will look for the key in the locker.",
+      "fact2": "Mia believes Liam will look for the key in the red box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0247",
+    "type": "second_order_belief",
+    "context": "Carol puts the coin in the red box. Ivy watches. Carol leaves the room. Zoe moves the coin to the drawer. Ivy does not see the move. Carol returns.",
+    "facts": {
+      "fact1": "Ivy believes Carol will look for the coin in the red box.",
+      "fact2": "Ivy believes Carol will look for the coin in the drawer."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0248",
+    "type": "second_order_belief",
+    "context": "Alice puts the ring in the green box. Bob watches. Alice leaves the room. Mia moves the ring to the table. Bob sees the move. Alice returns.",
+    "facts": {
+      "fact1": "Bob believes Alice will look for the ring in the green box.",
+      "fact2": "Bob believes Alice will look for the ring in the table."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0249",
+    "type": "second_order_belief",
+    "context": "Liam puts the card in the drawer. Bob watches. Liam leaves the room. Olivia moves the card to the shelf. Bob does not see the move. Liam returns.",
+    "facts": {
+      "fact1": "Bob believes Liam will look for the card in the drawer.",
+      "fact2": "Bob believes Liam will look for the card in the shelf."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0250",
+    "type": "second_order_belief",
+    "context": "Ethan puts the toy in the shelf. Nina watches. Ethan leaves the room. Noah moves the toy to the green box. Nina does not see the move. Ethan returns.",
+    "facts": {
+      "fact1": "Nina believes Ethan will look for the toy in the shelf.",
+      "fact2": "Nina believes Ethan will look for the toy in the green box."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0251",
+    "type": "second_order_belief",
+    "context": "Ethan puts the ball in the green box. Noah watches. Ethan leaves the room. Ivy moves the ball to the locker. Noah sees the move. Ethan returns.",
+    "facts": {
+      "fact1": "Noah believes Ethan will look for the ball in the green box.",
+      "fact2": "Noah believes Ethan will look for the ball in the locker."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0252",
+    "type": "second_order_belief",
+    "context": "Liam puts the note in the backpack. Bob watches. Liam leaves the room. Emma moves the note to the green box. Bob sees the move. Liam returns.",
+    "facts": {
+      "fact1": "Bob believes Liam will look for the note in the backpack.",
+      "fact2": "Bob believes Liam will look for the note in the green box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0253",
+    "type": "second_order_belief",
+    "context": "Liam puts the card in the cupboard. Noah watches. Liam leaves the room. Nina moves the card to the locker. Noah does not see the move. Liam returns.",
+    "facts": {
+      "fact1": "Noah believes Liam will look for the card in the cupboard.",
+      "fact2": "Noah believes Liam will look for the card in the locker."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0254",
+    "type": "second_order_belief",
+    "context": "Dave puts the ring in the locker. Carol watches. Dave leaves the room. Noah moves the ring to the basket. Carol does not see the move. Dave returns.",
+    "facts": {
+      "fact1": "Carol believes Dave will look for the ring in the locker.",
+      "fact2": "Carol believes Dave will look for the ring in the basket."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0255",
+    "type": "second_order_belief",
+    "context": "Olivia puts the cookie in the cupboard. Ivy watches. Olivia leaves the room. Emma moves the cookie to the shelf. Ivy sees the move. Olivia returns.",
+    "facts": {
+      "fact1": "Ivy believes Olivia will look for the cookie in the cupboard.",
+      "fact2": "Ivy believes Olivia will look for the cookie in the shelf."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0256",
+    "type": "second_order_belief",
+    "context": "Dave puts the book in the shelf. Ivy watches. Dave leaves the room. Sam moves the book to the table. Ivy does not see the move. Dave returns.",
+    "facts": {
+      "fact1": "Ivy believes Dave will look for the book in the shelf.",
+      "fact2": "Ivy believes Dave will look for the book in the table."
+    },
+    "correct_fact": "fact1"
+  },
+  {
+    "id": "tom_0257",
+    "type": "second_order_belief",
+    "context": "Noah puts the card in the locker. Mia watches. Noah leaves the room. Dave moves the card to the drawer. Mia sees the move. Noah returns.",
+    "facts": {
+      "fact1": "Mia believes Noah will look for the card in the locker.",
+      "fact2": "Mia believes Noah will look for the card in the drawer."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0258",
+    "type": "second_order_belief",
+    "context": "Bob puts the coin in the backpack. Mia watches. Bob leaves the room. Olivia moves the coin to the red box. Mia sees the move. Bob returns.",
+    "facts": {
+      "fact1": "Mia believes Bob will look for the coin in the backpack.",
+      "fact2": "Mia believes Bob will look for the coin in the red box."
+    },
+    "correct_fact": "fact2"
+  },
+  {
+    "id": "tom_0259",
+    "type": "second_order_belief",
+    "context": "Bob puts the ball in the blue box. Olivia watches. Bob leaves the room. Ivy moves the ball to the backpack. Olivia does not see the move. Bob returns.",
+    "facts": {
+      "fact1": "Olivia believes Bob will look for the ball in the blue box.",
+      "fact2": "Olivia believes Bob will look for the ball in the backpack."
+    },
+    "correct_fact": "fact1"
+  }
+]

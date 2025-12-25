@@ -1,7 +1,18 @@
-from mindgames.core import GAME_ID, ObservationWrapper, Env, Observations, Info, ObservationType
-from typing import Dict, Optional, Tuple, List
+import json
 
-__all__ = ["LLMObservationWrapper", "DiplomacyObservationWrapper", "FirstLastObservationWrapper", "FirstLastObservationWrapper"]
+from mindgames.core import GAME_ID, ObservationWrapper, Env, Observations, ObservationType
+from typing import Any, Dict, Optional, Tuple, List
+
+__all__ = [
+    "LLMObservationWrapper",
+    "DiplomacyObservationWrapper",
+    "FirstLastObservationWrapper",
+    "GameBoardObservationWrapper",
+    "GameMessagesObservationWrapper",
+    "GameMessagesAndCurrentBoardObservationWrapper",
+    "SingleTurnObservationWrapper",
+    "SettlersOfCatanObservationWrapper",
+]
 
 
 class LLMObservationWrapper(ObservationWrapper):
@@ -141,26 +152,42 @@ class GameMessagesObservationWrapper(ObservationWrapper):
 
 class GameMessagesAndCurrentBoardObservationWrapper(ObservationWrapper):
     """Show the initial prompt, game messages (excluding player actions), and current game board."""
+    MAX_GAME_MESSAGES = 40
+
     def __init__(self, env: Env):
         super().__init__(env)
         self.full_observations: Dict[int, List[Tuple[int, str, ObservationType]]] = {}
 
     def _convert_obs_to_str(self, player_id: int) -> Observations:
-        str_observation = ""
         prompt = None
         board_state = None
+        state_snapshot = None
+        messages: list[str] = []
         for _, message, obs_type in self.full_observations.get(player_id, []):
             if obs_type == ObservationType.PROMPT:
                 prompt = message
             elif obs_type == ObservationType.GAME_BOARD:
                 board_state = message
             elif obs_type not in [ObservationType.PLAYER_ACTION, ObservationType.GAME_ADMIN]:
-                str_observation += f"\n{message}"
+                # Some envs (e.g., Hanabi) emit large per-turn state snapshots. Keep only the latest one.
+                if message.startswith("You are player ") or message.startswith("You are Player "):
+                    state_snapshot = message
+                else:
+                    messages.append(message)
 
         if prompt is None or board_state is None:
             raise ValueError("Missing required observation types: PROMPT or GAME_BOARD")
 
-        return f"{prompt}\n\n{str_observation.strip()}\n\n{board_state}" #\n\nNext Action:"
+        if self.MAX_GAME_MESSAGES is not None and len(messages) > self.MAX_GAME_MESSAGES:
+            messages = messages[-self.MAX_GAME_MESSAGES :]
+
+        parts: list[str] = [prompt]
+        if state_snapshot:
+            parts.append(state_snapshot)
+        if messages:
+            parts.append("Recent events:\n" + "\n".join(messages))
+        parts.append(board_state)
+        return "\n\n".join(parts)  # \n\nNext Action:"
 
     def observation(self, player_id: int, observation: Optional[Observations]):
         if observation is None:
@@ -172,15 +199,6 @@ class GameMessagesAndCurrentBoardObservationWrapper(ObservationWrapper):
         self.full_observations[player_id].extend(observation)
         return self._convert_obs_to_str(player_id=player_id)
 
-    def observation(self, player_id: int, observation: Optional[Observations]):
-        if observation is None:
-            return self._convert_obs_to_str(player_id=player_id)
-
-        if player_id not in self.full_observations:
-            self.full_observations[player_id] = []
-
-        self.full_observations[player_id].extend(observation)
-        return self._convert_obs_to_str(player_id=player_id)
 
 class SingleTurnObservationWrapper(ObservationWrapper):
     def __init__(self, env: Env):
@@ -211,16 +229,6 @@ class SettlersOfCatanObservationWrapper(ObservationWrapper):
                 return_str += f"\n{message}"
         return return_str
 
-
-    def observation(self, player_id: int, observation: Optional[Observations]):
-        if observation is None:
-            return self._convert_obs_to_str(player_id=player_id)
-
-        if player_id not in self.full_observations:
-            self.full_observations[player_id] = []
-
-        self.full_observations[player_id].extend(observation)
-        return self._convert_obs_to_str(player_id=player_id)
 
     def observation(self, player_id: int, observation: Optional[Observations]):
         if observation is None:

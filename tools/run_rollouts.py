@@ -25,14 +25,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def _ensure_pkg_importable() -> None:
-    # Ensure `mindgames/` (project root) is on sys.path when running as a script.
-    project_root = Path(__file__).resolve().parents[1]
+    # Ensure both:
+    # - `mindgames/` (project root) is importable, and
+    # - sibling `textarena/` is importable when running from the mindgames folder.
+    project_root = Path(__file__).resolve().parents[1]  # .../mindgames
+    repo_root = project_root.parent  # .../ (contains mindgames/ and textarena/)
     sys.path.insert(0, str(project_root))
+    sys.path.insert(0, str(repo_root))
 
 
 _ensure_pkg_importable()
 
-import mindgames as ta  # noqa: E402
+import mindgames as mg  # noqa: E402
 
 
 @dataclass
@@ -61,7 +65,7 @@ def _build_agent(
     openai_api_key: Optional[str],
     openai_base_url: Optional[str],
     request_timeout_s: Optional[float],
-) -> ta.Agent:
+) -> mg.Agent:
     def _openai_like_kwargs() -> Dict[str, Any]:
         extra_body: Dict[str, Any] = dict(gen_kwargs.get("extra_body") or {})
         if gen_kwargs.get("chat_template_kwargs") is not None:
@@ -76,8 +80,9 @@ def _build_agent(
         kwargs: Dict[str, Any] = {
             "temperature": gen_kwargs.get("temperature", 0.2),
             "top_p": gen_kwargs.get("top_p", 1.0),
-            "max_tokens": gen_kwargs.get("max_tokens", 2048),
         }
+        if gen_kwargs.get("max_tokens") is not None:
+            kwargs["max_tokens"] = int(gen_kwargs["max_tokens"])
         if gen_kwargs.get("presence_penalty") is not None:
             kwargs["presence_penalty"] = float(gen_kwargs["presence_penalty"])
         if gen_kwargs.get("frequency_penalty") is not None:
@@ -89,18 +94,15 @@ def _build_agent(
         return kwargs
 
     if spec.kind == "human":
-        return ta.agents.HumanAgent()
+        return mg.agents.HumanAgent()
 
     if spec.kind == "hf":
-        agent = ta.agents.HFLocalAgent(
-            model_name=spec.model,  # type: ignore[arg-type]
-            max_new_tokens=int(gen_kwargs.get("max_new_tokens", 512)),
-        )
+        agent = mg.agents.HFLocalAgent(model_name=spec.model)  # type: ignore[arg-type]
         agent.system_prompt = system_prompt
         return agent
 
     if spec.kind == "openai":
-        agent = ta.agents.OpenAIAgent(
+        agent = mg.agents.OpenAIAgent(
             model_name=spec.model,  # type: ignore[arg-type]
             system_prompt=system_prompt,
             api_key=(openai_api_key or os.getenv("OPENAI_API_KEY")),
@@ -110,7 +112,7 @@ def _build_agent(
         return agent
 
     if spec.kind == "qwen":
-        agent = ta.agents.QwenAgent(
+        agent = mg.agents.QwenAgent(
             model_name=spec.model,  # type: ignore[arg-type]
             system_prompt=system_prompt,
             api_key=(openai_api_key or os.getenv("OPENAI_API_KEY")),
@@ -120,23 +122,27 @@ def _build_agent(
         return agent
 
     if spec.kind == "openrouter":
-        agent = ta.agents.OpenRouterAgent(
-            model_name=spec.model,  # type: ignore[arg-type]
-            system_prompt=system_prompt,
-            temperature=gen_kwargs.get("temperature", 0.2),
-            top_p=gen_kwargs.get("top_p", 1.0),
-            max_tokens=gen_kwargs.get("max_tokens", 2048),
-        )
+        kwargs: Dict[str, Any] = {
+            "model_name": spec.model,  # type: ignore[arg-type]
+            "system_prompt": system_prompt,
+            "temperature": gen_kwargs.get("temperature", 0.2),
+            "top_p": gen_kwargs.get("top_p", 1.0),
+        }
+        if gen_kwargs.get("max_tokens") is not None:
+            kwargs["max_tokens"] = int(gen_kwargs["max_tokens"])
+        agent = mg.agents.OpenRouterAgent(**kwargs)
         return agent
 
     if spec.kind == "ollama":
-        agent = ta.agents.OllamaAgent(
-            model_name=spec.model,  # type: ignore[arg-type]
-            system_prompt=system_prompt,
-            temperature=gen_kwargs.get("temperature", 0.2),
-            top_p=gen_kwargs.get("top_p", 1.0),
-            max_tokens=gen_kwargs.get("max_tokens", 2048),
-        )
+        kwargs = {
+            "model_name": spec.model,  # type: ignore[arg-type]
+            "system_prompt": system_prompt,
+            "temperature": gen_kwargs.get("temperature", 0.2),
+            "top_p": gen_kwargs.get("top_p", 1.0),
+        }
+        if gen_kwargs.get("max_tokens") is not None:
+            kwargs["max_tokens"] = int(gen_kwargs["max_tokens"])
+        agent = mg.agents.OllamaAgent(**kwargs)
         return agent
 
     raise ValueError(f"Unknown agent kind: {spec.kind} (supported: human, hf, openai, qwen, openrouter, ollama)")
@@ -146,15 +152,29 @@ def _jsonl_write(fp, obj: Dict[str, Any]) -> None:
     fp.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
+def _make_env(env_id: str):
+    if env_id in mg.ENV_REGISTRY:
+        return mg.make(env_id=env_id)
+    try:
+        import textarena as ta  # type: ignore
+    except Exception as e:
+        raise SystemExit(
+            f"env_id={env_id!r} is not registered in mindgames, and importing `textarena` failed: {e}\n"
+            "If you want to use TextArena envs, make sure the repo contains a sibling `textarena/` folder "
+            "or install `textarena` in the current environment."
+        ) from e
+    return ta.make(env_id=env_id)
+
+
 def _game_loop(
     env_id: str,
     num_players: int,
-    agents: Dict[int, ta.Agent],
+    agents: Dict[int, mg.Agent],
     seed: Optional[int],
     episode_id: int,
     out_fp,
 ) -> None:
-    env = ta.make(env_id=env_id)
+    env = _make_env(env_id=env_id)
     env.reset(num_players=num_players, seed=seed)
 
     done = False
@@ -244,8 +264,12 @@ def main() -> int:
         action="store_true",
         help="Convenience for Qwen thinking: sets chat_template_kwargs.enable_thinking=false (ignored if --chat-template-kwargs is set)",
     )
-    ap.add_argument("--max-new-tokens", type=int, default=512)
-    ap.add_argument("--max-tokens", type=int, default=2048, help="For chat APIs (OpenAI/OpenRouter/Ollama)")
+    ap.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="For chat APIs (OpenAI/OpenRouter/Ollama). If omitted, do not send max_tokens (let the backend decide).",
+    )
     args = ap.parse_args()
 
     if not args.agent:
@@ -290,10 +314,9 @@ def main() -> int:
         "extra_body": extra_body,
         "chat_template_kwargs": chat_template_kwargs,
         "max_tokens": args.max_tokens,
-        "max_new_tokens": args.max_new_tokens,
     }
 
-    agents: Dict[int, ta.Agent] = {
+    agents: Dict[int, mg.Agent] = {
         i: _build_agent(
             specs[i],
             args.system_prompt,
@@ -307,7 +330,7 @@ def main() -> int:
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("a", encoding="utf-8") as f:
+    with out_path.open("w", encoding="utf-8") as f:
         for ep in range(args.episodes):
             seed = args.seed + ep if args.seed is not None else None
             _game_loop(

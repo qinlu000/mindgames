@@ -257,6 +257,7 @@ class TeamMultiPlayerState(State):
         if not self.made_invalid_move:
             self.error_count = 0
             self.turn += 1
+            self.game_info[self.current_player_id]["turn_count"] += 1
 
         if self.done: 
             return (True, self.step_info)

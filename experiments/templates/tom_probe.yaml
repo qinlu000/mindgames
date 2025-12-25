@@ -1,15 +1,17 @@
 schema_version: 1
-name: qwen3vl_fact_probe_all
+name: PLACEHOLDER_NAME
 kind: generic
-description: Knowledge-only probe for TruthAndDeception facts (tests potential memorization / world-knowledge leakage).
-tags: ["eval", "probe", "truth_and_deception"]
+description: Context-only Theory-of-Mind probe (false-belief / knowledge access) using two-choice statements derived from an in-prompt scenario.
+tags: ["eval", "probe", "tom"]
 
 repro:
   seed: 0
   python: ">=3.10,<3.13"
 
 spec:
-  facts_path: "mindgames/envs/TruthAndDeception/facts.json"
+  # Items include a `context` field; the probe prompt includes the scenario so the task does
+  # not rely on external world knowledge.
+  facts_path: "mindgames/envs/TruthAndDeception/facts_tom.json"
   # Run against a local OpenAI-compatible server (e.g. vLLM). Requires:
   #   OPENAI_BASE_URL=http://127.0.0.1:8010/v1
   #   OPENAI_API_KEY=dummy
@@ -17,12 +19,12 @@ spec:
   # If agent omits ":<model>", use this model name.
   model: null
   # Optional: override env vars (otherwise uses OPENAI_BASE_URL / OPENAI_API_KEY).
-  openai_base_url: "http://127.0.0.1:8010/v1"
-  openai_api_key: "dummy"
+  openai_base_url: null
+  openai_api_key: null
   timeout_s: null
   num_items: 200
   prompt_style: "tag" # tag|number
-  system_prompt: "You are doing a strict multiple-choice knowledge check. Output ONLY the final choice in the required format."
+  system_prompt: "Use ONLY the provided scenario. Do not use outside world knowledge. Output ONLY the final choice in the required format."
   resume: false
   output_minimal: true
   gen:
@@ -37,13 +39,11 @@ spec:
     # Only used by hf:<model>; harmless for OpenAI/vLLM agents.
     max_new_tokens: 128
     # OpenAI/vLLM-only: JSON/dict merged into OpenAI `extra_body`.
-    # Use this for backend-specific knobs without changing the script.
     extra_body: null
     # vLLM-only: forwarded as OpenAI `extra_body.chat_template_kwargs`.
     # Example: {"enable_thinking": false}
     chat_template_kwargs: null
     disable_thinking: false
-
 
 commands:
   - >-

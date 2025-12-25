@@ -34,11 +34,12 @@ class Card:
 
 
 class HanabiEnv(Env):
-    def __init__(self, info_tokens: int = 8, fuse_tokens: int = 4,):
+    def __init__(self, info_tokens: int = 8, fuse_tokens: int = 4, max_steps: int = 300):
 
         self.deck_size = 50
         self.info_tokens = info_tokens
         self.fuse_tokens = fuse_tokens
+        self.max_steps = max_steps
 
     def reset(self, num_players: int, seed: Optional[int] = None):
         """
@@ -74,6 +75,7 @@ class HanabiEnv(Env):
             },
             "discard_pile": [],
             "last_round": -1,
+            "step_count": 0,
         }
         self.state.reset(game_state=game_state, player_prompt_function=self._initial_prompt)
 
@@ -92,60 +94,19 @@ class HanabiEnv(Env):
 
     def _initial_prompt(self, player_id: int, game_state: dict) -> str:
         return (
-        f"You are Player {player_id} in an {self.state.num_players}-player Hanabi game. "
-        f"Hanabi is a cooperative card game where players work together to create a series of fireworks by playing "
-        f"cards in ascending numerical order starting from 1. Each player holds their cards facing outward so that all "
-        f"players can see everyone else's cards but not their own.\n\n"
-        
-        f"Objective:\n"
-        f"The objective is to play cards in sequence (1 through 5) for each color without making mistakes. "
-        f"There are 5 different colors and each color has cards numbered 1 to 5.\n\n"
-
-        f"Key Rules:\n"
-        "On your turn, you have three types of possible actions:\n"
-
-        "1. Give a Hint (Reveal): Provide a hint to another player about their cards, specifying either a color or a"
-            " number present in their hand. Hints must be accurate and can only reveal positions of cards matching the "
-            "hint.\n"
-        "2. Discard a Card: Discard one of your own cards to potentially gain an Info token.\n"
-        "3. Play a Card: Attempt to play a card from your hand. If played correctly in sequence, it adds to the "
-            "fireworks; if not, it reduces one fuse token.\n\n"
-
-        "Tokens:\n"
-        "Fuse Tokens: Deducted when a wrong card is played.\n"
-        "Info Tokens: Used to give clues.\n\n"
-        
-        "Illegal Moves:\n"
-        "Playing a card that cannot be placed properly costs a fuse token. If fuse tokens reach zero, the game ends in "
-        "failure.\n\n"
-        
-        "Game End:\n" 
-        "The game ends when all fireworks are completed (perfect score of 25), or when the deck is exhausted "
-        "and each player has taken one final turn, or when the players run out of fuse tokens.\n\n"
-
-        "State Representation:\n"
-        "The game state is represented with the following details:\n"
-
-        "Fuse tokens: Number of remaining fuse tokens.\n"
-        "Info tokens: Number of available information tokens.\n"
-        "Fireworks: Current progress on each firework color.\n"
-        "Discards: Cards that have been discarded.\n\n"
-
-        "Your Role:\n"
-        "You are one of the players, cooperating with others to maximize the total score of the fireworks "
-        "(the number of cards correctly played in sequence).\n"
-        "Although you cannot see your own cards, you can see the cards in the hands of your teammates.\n"
-        "Use hints, discards, and plays strategically to guide the team towards successful sequences.\n"
-        
-        "When it's your turn, your output should be in one of the following formats between quotes:\n\n" 
-
-        "'[Reveal] player N card X color C', to give a hint about color C of card X to the player at index N.\n"
-        "'[Reveal] player N card X rank R', to give hint about rank R of card X to the player at index N.\n"
-        "'[Play] X', to play the card in position X from your hand.\n"
-        "'[Discard] X', to discard the card in position X from your hand.\n\n"
-
-        "Remember, communication is limited to hints about colors or numbers only, and sharing illegal or extraneous "
-        "information is not allowed. Work together, follow the rules, and aim for the highest cooperative score possible!\n\n"
+            f"You are Player {player_id} in a {self.state.num_players}-player Hanabi game.\n"
+            "You can see other players' cards but NOT your own. Work as a team to build fireworks.\n\n"
+            "Goal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\n"
+            "You have 3 action types (output EXACTLY ONE action, nothing else):\n"
+            "- [Play] X\n"
+            "- [Discard] X\n"
+            "- [Reveal] player N card X color C\n"
+            "- [Reveal] player N card X rank R\n\n"
+            "Reveal rules in this env:\n"
+            "- You must reveal about another player (not yourself).\n"
+            "- The hint must be truthful about that specific card index.\n\n"
+            "Discard rule: if info tokens < 8, discarding gains +1 info token.\n"
+            "Game ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends."
         )
 
     def _state_description(self, for_player_id: Optional[int] = None):
@@ -194,6 +155,19 @@ class HanabiEnv(Env):
         Returns:
             Tuple[bool, Info]: information regarding the current game step.
         """
+        self.state.game_state["step_count"] = int(self.state.game_state.get("step_count", 0)) + 1
+        if self.max_steps is not None and self.state.game_state["step_count"] > self.max_steps:
+            self.state.add_observation(
+                from_id=GAME_ID,
+                to_id=-1,
+                message=f"Step limit reached ({self.max_steps}). Ending episode as draw.",
+                observation_type=ObservationType.GAME_MESSAGE,
+            )
+            self.state.set_draw(reason="Step limit reached.")
+            score = self._calculate_scores()
+            self.state.rewards = {pid: float(score) for pid in range(self.num_players)}
+            return self.state.step(rotate_player=False)
+
         self.state.add_observation(
             from_id=self.state.current_player_id,
             to_id=self.state.current_player_id,

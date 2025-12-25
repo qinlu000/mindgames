@@ -1,5 +1,9 @@
 """Minimal TextArena-like API for a small set of mindgames."""
 
+from mindgames._dotenv import load_dotenv as _load_dotenv
+
+_load_dotenv()
+
 from mindgames.__about__ import __version__
 
 from mindgames.core import (

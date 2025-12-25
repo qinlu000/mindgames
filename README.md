@@ -12,6 +12,17 @@ This folder mirrors the **project layout style** of `spiral-rl/spiral`, but vend
 python mindgames/tools/run_rollouts.py --help
 ```
 
+## API keys without `export` (dotenv)
+If `mindgames/.env` exists, importing `mindgames` will automatically load it (without overriding already-set env vars).
+
+Example: `mindgames/.env`:
+```bash
+OPENAI_API_KEY="..."
+OPENAI_BASE_URL="https://api.uniapi.io/v1"
+```
+
+Disable auto-loading by setting `MINDGAMES_LOAD_DOTENV=0`.
+
 ## Python env (uv)
 This subproject is intended to be used with a local `.venv` managed by `uv`:
 ```bash

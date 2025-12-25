@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-Probe whether a model can solve TruthAndDeception fact items from *prior knowledge alone*.
+Probe whether a model can solve two-choice TruthAndDeception items.
 
-This is a "knowledge-only baseline": show the two candidate facts and force the model to pick
-which one is true without any gameplay conversation.
+If the items contain no `context`, this is a "prior-knowledge baseline": show two candidate
+statements and force the model to pick which one is true without any gameplay conversation.
+
+If the items contain a `context` field, the probe becomes a contextual reasoning task (e.g.,
+Theory-of-Mind / false-belief scenarios) that should not require external world knowledge.
 
 Outputs:
   - JSONL with per-item results (prompt, raw output, parsed choice, correctness)
@@ -167,7 +170,7 @@ def _build_agent(
             max_tokens=gen_kwargs.get("max_tokens", 2048),
         )
 
-    raise ValueError(f"Unknown agent kind: {spec.kind} (supported: human, hf, openai, openrouter, ollama)")
+    raise ValueError(f"Unknown agent kind: {spec.kind} (supported: human, hf, openai, qwen, openrouter, ollama)")
 
 
 def _load_fact_items(path: Path) -> List[Dict[str, Any]]:
@@ -243,17 +246,22 @@ def _load_existing_stats(
     return stats
 
 
-def _build_prompt(f1: str, f2: str, prompt_style: str) -> str:
+def _build_prompt(context: Optional[str], f1: str, f2: str, prompt_style: str) -> str:
+    prefix = ""
+    if context:
+        prefix = f"Scenario:\n{context.strip()}\n\n"
     if prompt_style == "tag":
         return (
-            "Two statements are shown below. Exactly one is true.\n"
+            prefix
+            + "Two statements are shown below. Exactly one is true given the scenario.\n"
             "Choose the true statement and respond with ONLY '[Fact 1]' or '[Fact 2]'.\n\n"
             f"Fact 1: {f1}\n"
             f"Fact 2: {f2}\n"
         )
     if prompt_style == "number":
         return (
-            "Two statements are shown below. Exactly one is true.\n"
+            prefix
+            + "Two statements are shown below. Exactly one is true given the scenario.\n"
             "Choose the true statement and respond with ONLY '1' or '2'.\n\n"
             f"1) {f1}\n"
             f"2) {f2}\n"
@@ -454,7 +462,8 @@ def main() -> int:
             shown_f2 = options[1][1]
             correct_choice = 1 if options[0][0] == correct_key else 2
 
-            prompt = _build_prompt(shown_f1, shown_f2, args.prompt_style)
+            context = item.get("context") if isinstance(item, dict) else None
+            prompt = _build_prompt(str(context) if context is not None else None, shown_f1, shown_f2, args.prompt_style)
             t0 = time.time()
             raw = agent(prompt)
             infer_ms = int((time.time() - t0) * 1000)

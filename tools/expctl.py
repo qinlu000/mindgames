@@ -74,7 +74,10 @@ def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
             if len(parts) != 2:
                 raise KeyError(f"Invalid optsh expression: {expr}")
             flag, dotted = parts[0], parts[1].strip()
-            val = _deep_get(ctx, dotted)
+            try:
+                val = _deep_get(ctx, dotted)
+            except KeyError:
+                return ""
             if val is None or val == "" or val == [] or val == {}:
                 return ""
             if isinstance(val, bool):
@@ -88,7 +91,10 @@ def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
             if len(parts) != 2:
                 raise KeyError(f"Invalid opt expression: {expr}")
             flag, dotted = parts[0], parts[1].strip()
-            val = _deep_get(ctx, dotted)
+            try:
+                val = _deep_get(ctx, dotted)
+            except KeyError:
+                return ""
             if val is None or val == "" or val == [] or val == {}:
                 return ""
             if isinstance(val, bool):
@@ -102,7 +108,10 @@ def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
             if len(parts) != 2:
                 raise KeyError(f"Invalid flag expression: {expr}")
             flag, dotted = parts[0], parts[1].strip()
-            val = _deep_get(ctx, dotted)
+            try:
+                val = _deep_get(ctx, dotted)
+            except KeyError:
+                return ""
             return flag if bool(val) else ""
         if expr.startswith("sh:"):
             val = _deep_get(ctx, expr[len("sh:") :].strip())
@@ -288,6 +297,125 @@ def _collect_env_fingerprint() -> Dict[str, Any]:
     return fp
 
 
+def _redact_secrets(obj: Any) -> Any:
+    # Best-effort redaction to avoid accidentally logging API keys to W&B.
+    redacted_keys = {
+        "openai_api_key",
+        "openrouter_api_key",
+        "api_key",
+        "token",
+        "access_token",
+        "secret",
+        "password",
+    }
+    if isinstance(obj, dict):
+        out: Dict[str, Any] = {}
+        for k, v in obj.items():
+            k_norm = str(k).lower()
+            if k_norm in redacted_keys or k_norm.endswith("_api_key"):
+                out[k] = "<redacted>"
+            else:
+                out[k] = _redact_secrets(v)
+        return out
+    if isinstance(obj, list):
+        return [_redact_secrets(v) for v in obj]
+    return obj
+
+
+def _maybe_log_wandb(exp: Dict[str, Any], run_dir: Path, meta: Dict[str, Any]) -> None:
+    wandb_cfg = exp.get("wandb")
+    if not isinstance(wandb_cfg, dict):
+        return
+    if not wandb_cfg.get("project"):
+        return
+    if os.getenv("WANDB_MODE", "").lower() == "disabled":
+        return
+
+    try:
+        import wandb
+    except Exception:
+        print("WARN: wandb not installed; skipping W&B logging.", file=sys.stderr)
+        return
+
+    resolved_path = run_dir / "resolved.yaml"
+    resolved = _load_yaml(resolved_path) if resolved_path.exists() else {}
+    run_id = str(resolved.get("run_id") or run_dir.name)
+
+    project = str(wandb_cfg.get("project"))
+    entity = wandb_cfg.get("entity") or os.getenv("WANDB_ENTITY")
+    job_type = wandb_cfg.get("job_type") or exp.get("kind") or "run"
+    group = wandb_cfg.get("group") or str(exp.get("name") or "")
+    tags = wandb_cfg.get("tags") or exp.get("tags") or []
+    if isinstance(tags, str):
+        tags = [tags]
+    if not isinstance(tags, list):
+        tags = []
+
+    run_name = wandb_cfg.get("name") or run_id
+    config = _redact_secrets(
+        {
+            "experiment": {
+                "name": exp.get("name"),
+                "kind": exp.get("kind"),
+                "description": exp.get("description"),
+                "tags": exp.get("tags"),
+                "path": str(meta.get("experiment_path") or ""),
+                "run_id": run_id,
+            },
+            "repro": resolved.get("repro") or exp.get("repro"),
+            "spec": resolved.get("spec") or exp.get("spec"),
+        }
+    )
+
+    settings = wandb.Settings(save_code=False, disable_git=True)
+    with wandb.init(
+        project=project,
+        entity=entity,
+        job_type=job_type,
+        group=(group or None),
+        name=str(run_name),
+        tags=tags,
+        config=config,
+        dir=str(run_dir),
+        settings=settings,
+    ) as run:
+        run.summary.update(
+            {
+                "run_id": run_id,
+                "exit_code": meta.get("exit_code"),
+                "elapsed_s": meta.get("elapsed_s"),
+            }
+        )
+
+        summary_path = run_dir / "summary.json"
+        if summary_path.exists():
+            try:
+                summary = json.loads(summary_path.read_text(encoding="utf-8"))
+                if isinstance(summary, dict):
+                    metrics = summary.get("metrics")
+                    if isinstance(metrics, dict):
+                        run.summary.update(metrics)
+                    run.summary.update({k: v for k, v in summary.items() if k != "metrics"})
+            except Exception:
+                pass
+
+        artifact = wandb.Artifact(name=f"{exp.get('name','experiment')}-{run_id}", type="eval_results")
+        for p in ["resolved.yaml", "cmd.sh", "run.log", "run_meta.json", "env_fingerprint.json", "summary.json"]:
+            fp = run_dir / p
+            if fp.exists():
+                artifact.add_file(str(fp), name=p)
+
+        outputs = (exp.get("outputs") or {}).get("files") if isinstance(exp.get("outputs"), dict) else None
+        if isinstance(outputs, list):
+            for pat in outputs:
+                resolved_p = _render_template(str(pat), {"run_dir": str(run_dir), "run_id": run_id})
+                fp = Path(resolved_p)
+                if fp.exists() and fp.is_file():
+                    artifact.add_file(str(fp), name=fp.name)
+
+        run.log_artifact(artifact, aliases=["latest", run_id])
+
+
 def _prepare_run(exp_path: Path, overwrite: bool) -> Path:
     exp = _load_yaml(exp_path)
     _validate(exp)
@@ -395,6 +523,7 @@ def cmd_print(args: argparse.Namespace) -> int:
 
 def cmd_run(args: argparse.Namespace) -> int:
     exp_path = Path(args.path)
+    exp = _load_yaml(exp_path)
     run_dir = _prepare_run(exp_path, overwrite=bool(args.overwrite))
 
     (run_dir / "env_fingerprint.json").write_text(
@@ -440,6 +569,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+    if not getattr(args, "no_wandb", False):
+        _maybe_log_wandb(exp, run_dir, meta)
+
     print(str(run_dir))
     return int(proc.returncode)
 
@@ -471,6 +603,7 @@ def main() -> int:
     ap_run = sp.add_parser("run", help="Prepare + execute cmd.sh, capturing run.log + env_fingerprint.json")
     ap_run.add_argument("path", help="Path to experiment.yaml")
     ap_run.add_argument("--overwrite", action="store_true", help="Overwrite existing run files")
+    ap_run.add_argument("--no-wandb", action="store_true", help="Disable W&B logging (even if experiment has wandb config)")
     ap_run.set_defaults(func=cmd_run)
 
     args = ap.parse_args()
