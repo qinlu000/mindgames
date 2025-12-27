@@ -1,0 +1,45 @@
+schema_version: 1
+name: liarsdice_qwen3_8b_vs_gemini25_flash
+kind: rollout_eval
+description: 2-player Liar's Dice baseline (Qwen3-8B vs Gemini-2.5-Flash) via UniAPI (OpenAI-compatible endpoint).
+tags: ["eval", "rollout", "liarsdice", "2p", "uniapi", "baseline"]
+
+repro:
+  seed: 0
+  python: ">=3.10,<3.13"
+
+spec:
+  env_id: "LiarsDice-v0-train"
+  num_players: 2
+  episodes: 30
+  agents:
+    - "openai:qwen3-8b"
+    - "openai:gemini-2.5-flash"
+  system_prompt: "You are an expert Liar's Dice player. Output exactly ONE valid action in the required bracket format (either [Bid: Q, F] or [Call]) and nothing else."
+  # Use mindgames/.env (OPENAI_BASE_URL / OPENAI_API_KEY) by default.
+  openai_base_url: null
+  openai_api_key: null
+  timeout_s: 120
+
+
+commands:
+  - >-
+    python tools/run_rollouts.py
+    --env-id {spec.env_id}
+    --num-players {spec.num_players}
+    --episodes {spec.episodes}
+    --seed {repro.seed}
+    {agent_flags}
+    --system-prompt {sh:spec.system_prompt}
+    {opt:--openai-base-url spec.openai_base_url}
+    {opt:--openai-api-key spec.openai_api_key}
+    {opt:--timeout spec.timeout_s}
+    --out {run_dir}/rollouts.jsonl
+  - >-
+    python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl
+    --json > {run_dir}/summary.json
+
+outputs:
+  files:
+    - "{run_dir}/rollouts.jsonl"
+    - "{run_dir}/summary.json"

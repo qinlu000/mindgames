@@ -219,6 +219,27 @@ class Agent(ABC):
         """
         pass
 
+    def get_last_content_reasoning(self) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Best-effort accessor for the last model output.
+
+        Returns:
+            (content, reasoning): Strings when available, otherwise None.
+
+        Notes:
+            Many agent backends expose different response/message shapes. This helper keeps
+            downstream tooling from having to special-case each provider.
+        """
+        last_message = getattr(self, "last_message", None)
+        if isinstance(last_message, dict):
+            content = last_message.get("content")
+            reasoning = last_message.get("reasoning") or last_message.get("reasoning_content")
+            return (
+                content if isinstance(content, str) else None,
+                reasoning if isinstance(reasoning, str) else None,
+            )
+        return (None, None)
+
 
 class AgentWrapper(Agent):
     """ TODO """
@@ -233,7 +254,6 @@ class AgentWrapper(Agent):
 
     def __call__(self, observation: str) -> str:
         return self.agent(observation=observation)
-
 
 
 

@@ -2,7 +2,6 @@ from mindgames.agents.basic_agents import (
     HumanAgent,
     OpenRouterAgent,
     GeminiAgent,
-    OpenAIAgent,
     HFLocalAgent,
     CerebrasAgent,
     AWSBedrockAgent,
@@ -11,6 +10,7 @@ from mindgames.agents.basic_agents import (
     OllamaAgent,
     LlamaCppAgent,
 )
+from mindgames.agents.openai_agent import OpenAIAgent
 from mindgames.agents.qwen_agent import QwenAgent
 from mindgames.agents.wrappers import AnswerTokenAgentWrapper, ThoughtAgentWrapper
 

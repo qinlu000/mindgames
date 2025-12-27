@@ -10,13 +10,17 @@ repro:
 
 spec:
   env_id: "Hanabi-v0"
+  # Optional: JSON dict passed to the env constructor (mindgames envs only).
+  env_kwargs: null
+  # Optional: run instance tag. If set, it will change the run_id hash (useful for repeated runs).
+  run_tag: null
   num_players: 2
   episodes: 20
   agents:
     - "openrouter:moonshotai/kimi-k2:free"
     - "openrouter:moonshotai/kimi-k2:free"
   system_prompt: "You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format."
-  # Optional: only used for openai:<model> agents (e.g. local vLLM).
+  # Optional: only used for OpenAI-compatible agents (e.g. openai:/qwen: with local vLLM).
   openai_base_url: null
   openai_api_key: null
   timeout_s: null
@@ -41,6 +45,7 @@ commands:
   - >-
     python tools/run_rollouts.py
     --env-id {spec.env_id}
+    {optsh:--env-kwargs spec.env_kwargs}
     --num-players {spec.num_players}
     --episodes {spec.episodes}
     --seed {repro.seed}
@@ -49,8 +54,8 @@ commands:
     {opt:--openai-base-url spec.openai_base_url}
     {opt:--openai-api-key spec.openai_api_key}
     {opt:--timeout spec.timeout_s}
-    --temperature {spec.gen.temperature}
-    --top-p {spec.gen.top_p}
+    {opt:--temperature spec.gen.temperature}
+    {opt:--top-p spec.gen.top_p}
     {opt:--top-k spec.gen.top_k}
     {opt:--repetition-penalty spec.gen.repetition_penalty}
     {opt:--presence-penalty spec.gen.presence_penalty}
@@ -60,6 +65,7 @@ commands:
     {optsh:--chat-template-kwargs spec.gen.chat_template_kwargs}
     {flag:--disable-thinking spec.gen.disable_thinking}
     {opt:--max-tokens spec.gen.max_tokens}
+    --episode-json-dir {run_dir}/episodes
     --out {run_dir}/rollouts.jsonl
   - >-
     python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl

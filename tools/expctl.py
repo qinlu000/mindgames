@@ -21,11 +21,10 @@ import json
 import os
 import re
 import shlex
-import shutil
 import subprocess
 import sys
 import time
-from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping
 
@@ -39,9 +38,7 @@ SCHEMA_PATH = EXPERIMENTS_DIR / "_schema" / "experiment.schema.json"
 TEMPLATES_DIR = EXPERIMENTS_DIR / "templates"
 
 
-class _StrictFormatMap(dict):
-    def __missing__(self, key: str) -> Any:
-        raise KeyError(key)
+_TEMPLATE_TOKEN_RE = re.compile(r"{([^{}]+)}")
 
 
 def _deep_get(d: Mapping[str, Any], dotted: str) -> Any:
@@ -56,15 +53,18 @@ def _deep_get(d: Mapping[str, Any], dotted: str) -> Any:
 def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
     # Support {a.b.c} dotted access by rewriting fields into a flat map.
     # We keep this simple: find "{...}" tokens, resolve each token via dotted lookup.
+    def _stringify(v: Any) -> str:
+        if isinstance(v, (dict, list)):
+            return json.dumps(v, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return str(v)
+
+    def _is_empty(v: Any) -> bool:
+        return v is None or v == "" or v == [] or v == {}
+
     def repl(m: re.Match[str]) -> str:
         expr = m.group(1).strip()
         if not expr:
             return m.group(0)
-
-        def _stringify(v: Any) -> str:
-            if isinstance(v, (dict, list)):
-                return json.dumps(v, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-            return str(v)
 
         if expr.startswith("optsh:"):
             # Syntax: {optsh:<flag> <dotted_path>}
@@ -78,7 +78,7 @@ def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
                 val = _deep_get(ctx, dotted)
             except KeyError:
                 return ""
-            if val is None or val == "" or val == [] or val == {}:
+            if _is_empty(val):
                 return ""
             if isinstance(val, bool):
                 return f"{flag} {shlex.quote('true' if val else 'false')}"
@@ -95,7 +95,7 @@ def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
                 val = _deep_get(ctx, dotted)
             except KeyError:
                 return ""
-            if val is None or val == "" or val == [] or val == {}:
+            if _is_empty(val):
                 return ""
             if isinstance(val, bool):
                 return f"{flag} {'true' if val else 'false'}"
@@ -119,7 +119,7 @@ def _render_template(s: str, ctx: Mapping[str, Any]) -> str:
         val = _deep_get(ctx, expr)
         return _stringify(val)
 
-    return re.sub(r"{([^{}]+)}", repl, s)
+    return _TEMPLATE_TOKEN_RE.sub(repl, s)
 
 
 def _load_yaml(path: Path) -> Dict[str, Any]:
@@ -129,6 +129,7 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
     return data
 
 
+@lru_cache(maxsize=1)
 def _load_schema() -> Draft202012Validator:
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     return Draft202012Validator(schema)
@@ -200,8 +201,12 @@ def _render_commands(exp: Dict[str, Any], run_id: str, run_dir: Path) -> list[st
         "agent_flags": _agent_flags(exp.get("spec") or {}),
     }
     rendered: list[str] = []
-    for c in exp.get("commands", []):
-        rendered.append(_render_template(str(c), ctx))
+    for idx, c in enumerate(exp.get("commands", []), start=1):
+        try:
+            rendered.append(_render_template(str(c), ctx))
+        except KeyError as e:
+            key = str(e).strip("'")
+            raise SystemExit(f"Template render failed in commands[{idx}]: missing key {key!r}") from e
     return rendered
 
 
@@ -211,6 +216,28 @@ def _write_cmd_sh(path: Path, commands: Iterable[str]) -> None:
     lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
     os.chmod(path, 0o755)
+
+
+def _inject_resume_flag(cmd: str) -> str:
+    if "run_rollouts.py" not in cmd or "--resume" in cmd:
+        return cmd
+    return cmd + " --resume"
+
+
+def _load_cmds_from_run_dir(run_dir: Path) -> list[str]:
+    resolved_path = run_dir / "resolved.yaml"
+    if resolved_path.exists():
+        resolved = _load_yaml(resolved_path)
+        cmds = resolved.get("_resolved_commands")
+        if isinstance(cmds, list) and all(isinstance(c, str) for c in cmds):
+            return list(cmds)
+
+    cmd_sh = run_dir / "cmd.sh"
+    if not cmd_sh.exists():
+        raise SystemExit(f"Missing cmd.sh in {run_dir}")
+    lines = cmd_sh.read_text(encoding="utf-8").splitlines()
+    # Drop shebang + set -euo + blank lines
+    return [ln for ln in lines if ln.strip() and not ln.startswith("#!") and not ln.startswith("set -")]
 
 
 def _sha256_file(path: Path) -> str:
@@ -416,8 +443,7 @@ def _maybe_log_wandb(exp: Dict[str, Any], run_dir: Path, meta: Dict[str, Any]) -
         run.log_artifact(artifact, aliases=["latest", run_id])
 
 
-def _prepare_run(exp_path: Path, overwrite: bool) -> Path:
-    exp = _load_yaml(exp_path)
+def _prepare_run(exp: Dict[str, Any], exp_path: Path, overwrite: bool) -> Path:
     _validate(exp)
 
     exp_dir = exp_path.parent
@@ -505,7 +531,18 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_prepare(args: argparse.Namespace) -> int:
-    run_dir = _prepare_run(Path(args.path), overwrite=bool(args.overwrite))
+    exp_path = Path(args.path)
+    exp = _load_yaml(exp_path)
+    if getattr(args, "run_tag", None):
+        spec = exp.get("spec")
+        if not isinstance(spec, dict):
+            spec = {}
+            exp["spec"] = spec
+        run_tag = str(args.run_tag)
+        if run_tag in {"auto", "now"}:
+            run_tag = time.strftime("%Y%m%d_%H%M%S")
+        spec["run_tag"] = run_tag
+    run_dir = _prepare_run(exp, exp_path, overwrite=bool(args.overwrite))
     print(str(run_dir))
     return 0
 
@@ -513,6 +550,15 @@ def cmd_prepare(args: argparse.Namespace) -> int:
 def cmd_print(args: argparse.Namespace) -> int:
     exp_path = Path(args.path)
     exp = _load_yaml(exp_path)
+    if getattr(args, "run_tag", None):
+        spec = exp.get("spec")
+        if not isinstance(spec, dict):
+            spec = {}
+            exp["spec"] = spec
+        run_tag = str(args.run_tag)
+        if run_tag in {"auto", "now"}:
+            run_tag = time.strftime("%Y%m%d_%H%M%S")
+        spec["run_tag"] = run_tag
     _validate(exp)
     run_id = args.run_id or "DRYRUN"
     run_dir = Path(args.run_dir) if args.run_dir else (exp_path.parent / "runs" / run_id)
@@ -524,7 +570,26 @@ def cmd_print(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     exp_path = Path(args.path)
     exp = _load_yaml(exp_path)
-    run_dir = _prepare_run(exp_path, overwrite=bool(args.overwrite))
+    if getattr(args, "run_tag", None):
+        spec = exp.get("spec")
+        if not isinstance(spec, dict):
+            spec = {}
+            exp["spec"] = spec
+        run_tag = str(args.run_tag)
+        if run_tag in {"auto", "now"}:
+            run_tag = time.strftime("%Y%m%d_%H%M%S")
+        spec["run_tag"] = run_tag
+    if args.resume:
+        if args.run_dir:
+            run_dir = Path(args.run_dir)
+        elif args.run_id:
+            run_dir = exp_path.parent / "runs" / args.run_id
+        else:
+            raise SystemExit("--resume requires --run-id or --run-dir")
+        if not run_dir.exists():
+            raise SystemExit(f"Run directory does not exist: {run_dir}")
+    else:
+        run_dir = _prepare_run(exp, exp_path, overwrite=bool(args.overwrite))
 
     (run_dir / "env_fingerprint.json").write_text(
         json.dumps(_collect_env_fingerprint(), ensure_ascii=False, indent=2) + "\n",
@@ -532,6 +597,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
 
     cmd_sh = run_dir / "cmd.sh"
+    if args.resume:
+        resume_cmds = [_inject_resume_flag(c) for c in _load_cmds_from_run_dir(run_dir)]
+        cmd_sh = run_dir / "cmd_resume.sh"
+        _write_cmd_sh(cmd_sh, resume_cmds)
     log_path = run_dir / "run.log"
     meta_path = run_dir / "run_meta.json"
 
@@ -543,11 +612,17 @@ def cmd_run(args: argparse.Namespace) -> int:
         "argv": sys.argv,
         "started_at_s": start,
     }
+    if args.resume:
+        meta["resumed"] = True
 
-    with log_path.open("w", encoding="utf-8") as logf:
+    log_mode = "a" if args.resume and log_path.exists() else "w"
+    with log_path.open(log_mode, encoding="utf-8") as logf:
         logf.write(f"# expctl run: {time.strftime('%Y-%m-%dT%H:%M:%S%z')}\n")
         logf.write(f"# experiment: {exp_path}\n")
-        logf.write(f"# run_dir: {run_dir}\n\n")
+        logf.write(f"# run_dir: {run_dir}\n")
+        if args.resume:
+            logf.write("# resume: true\n")
+        logf.write("\n")
         logf.flush()
 
         proc = subprocess.run(
@@ -592,18 +667,36 @@ def main() -> int:
     ap_prep = sp.add_parser("prepare", help="Create runs/<run_id>/ with cmd.sh + resolved.yaml + W&B export JSON")
     ap_prep.add_argument("path", help="Path to experiment.yaml")
     ap_prep.add_argument("--overwrite", action="store_true", help="Overwrite existing run files")
+    ap_prep.add_argument(
+        "--run-tag",
+        default=None,
+        help="Optional. If set, inject spec.run_tag to force a new run_id (use 'auto'/'now' for a timestamp).",
+    )
     ap_prep.set_defaults(func=cmd_prepare)
 
     ap_print = sp.add_parser("print-cmd", help="Print rendered commands without creating a run directory")
     ap_print.add_argument("path", help="Path to experiment.yaml")
     ap_print.add_argument("--run-id", default=None)
     ap_print.add_argument("--run-dir", default=None)
+    ap_print.add_argument(
+        "--run-tag",
+        default=None,
+        help="Optional. Inject spec.run_tag while rendering (use 'auto'/'now' for a timestamp).",
+    )
     ap_print.set_defaults(func=cmd_print)
 
     ap_run = sp.add_parser("run", help="Prepare + execute cmd.sh, capturing run.log + env_fingerprint.json")
     ap_run.add_argument("path", help="Path to experiment.yaml")
     ap_run.add_argument("--overwrite", action="store_true", help="Overwrite existing run files")
     ap_run.add_argument("--no-wandb", action="store_true", help="Disable W&B logging (even if experiment has wandb config)")
+    ap_run.add_argument(
+        "--run-tag",
+        default=None,
+        help="Optional. If set, inject spec.run_tag to force a new run_id (use 'auto'/'now' for a timestamp).",
+    )
+    ap_run.add_argument("--resume", action="store_true", help="Resume an existing run_dir (append to rollouts.jsonl).")
+    ap_run.add_argument("--run-id", default=None, help="Run id to resume (uses experiments/<name>/runs/<run_id>).")
+    ap_run.add_argument("--run-dir", default=None, help="Explicit run directory to resume.")
     ap_run.set_defaults(func=cmd_run)
 
     args = ap.parse_args()

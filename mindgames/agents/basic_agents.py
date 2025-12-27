@@ -1,9 +1,11 @@
 import asyncio
-from abc import ABC, abstractmethod
 import os, time
+import random
 from typing import Optional, Tuple
 
 from mindgames.core import Agent
+
+from mindgames.agents.openai_agent import OpenAIAgent
 
 __all__ = ["HumanAgent", "OpenRouterAgent", "GeminiAgent", "OpenAIAgent", "HFLocalAgent", "CerebrasAgent", "AWSBedrockAgent", "AnthropicAgent", "GroqAgent", "OllamaAgent", "LlamaCppAgent"]
 STANDARD_GAME_PROMPT = "You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format."
@@ -42,6 +44,10 @@ class OpenRouterAgent(Agent):
         self.model_name = model_name 
         self.verbose = verbose 
         self.system_prompt = system_prompt
+        self.max_retries = int(kwargs.pop("max_retries", 8))
+        self.retry_initial_delay_s = float(kwargs.pop("retry_initial_delay_s", 2.0))
+        self.retry_max_delay_s = float(kwargs.pop("retry_max_delay_s", 30.0))
+        self.retry_jitter_s = float(kwargs.pop("retry_jitter_s", 0.25))
         self.kwargs = kwargs
 
         try:
@@ -70,7 +76,7 @@ class OpenRouterAgent(Agent):
             self.last_usage = None
         return msg.content.strip()
 
-    def _retry_request(self, observation: str, retries: int = 3, delay: int = 5) -> str:
+    def _retry_request(self, observation: str) -> str:
         """
         Attempt to make an API request with retries.
 
@@ -83,7 +89,7 @@ class OpenRouterAgent(Agent):
             Exception: The last exception caught if all retries fail.
         """
         last_exception = None
-        for attempt in range(1, retries + 1):
+        for attempt in range(1, self.max_retries + 1):
             try:
                 response = self._make_request(observation)
                 if self.verbose:
@@ -93,7 +99,11 @@ class OpenRouterAgent(Agent):
             except Exception as e:
                 last_exception = e
                 print(f"Attempt {attempt} failed with error: {e}")
-                if attempt < retries:
+                if attempt < self.max_retries:
+                    delay = self.retry_initial_delay_s * (2 ** (attempt - 1))
+                    if self.retry_max_delay_s:
+                        delay = min(delay, self.retry_max_delay_s)
+                    delay += random.random() * (self.retry_jitter_s * delay)
                     time.sleep(delay)
         raise last_exception
 
@@ -193,103 +203,6 @@ class GeminiAgent(Agent):
             str: The generated response.
         """
         if not isinstance(observation, str): 
-            raise ValueError(f"Observation must be a string. Received type: {type(observation)}")
-        return self._retry_request(observation)
-
-
-class OpenAIAgent(Agent):
-    """Agent class using the OpenAI API to generate responses."""
-
-    def __init__(self, model_name: str, system_prompt: Optional[str]=STANDARD_GAME_PROMPT, verbose: bool=False, api_key: str|None=None, base_url: str|None=None,**kwargs):
-        """
-        Initialize the OpenAI agent.
-        
-        Args:
-            model_name (str): The name of the model.
-            system_prompt (Optional[str]): The system prompt to use (default: STANDARD_GAME_PROMPT).
-            verbose (bool): If True, additional debug info will be printed.
-            api_key (str | None): The API key for the OpenAI API.
-            base_url (str | None): The base URL for the OpenAI API.
-            **kwargs: Additional keyword arguments to pass to the OpenAI API call.
-        """
-        super().__init__()
-        self.model_name = model_name
-        self.system_prompt = system_prompt
-        self.verbose = verbose
-        self.kwargs = kwargs
-        self.last_message = None
-        self.last_usage = None
-
-        try: from openai import OpenAI
-        except ImportError: raise ImportError("OpenAI package is required for OpenAIAgent. Install it with: pip install openai")
-
-        if api_key is None:
-            api_key = os.getenv("OPENAI_API_KEY")
-            if not api_key: raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
-        self.client = OpenAI(api_key=api_key, base_url=base_url)
-    
-    def _make_request(self, observation: str) -> str:
-        """
-        Make a single API request to OpenAI and return the generated message.
-        
-        Args:
-            observation (str): The input string to process.
-        
-        Returns:
-            str: The generated response text.
-        """
-        messages = [{"role": "system", "content": self.system_prompt}, {"role": "user", "content": observation}]
-        
-        # Make the API call using the provided model and messages.
-        completion = self.client.chat.completions.create(model=self.model_name, messages=messages, n=1, stop=None, **self.kwargs)
-        msg = completion.choices[0].message
-        try:
-            self.last_message = msg.model_dump()
-        except Exception:
-            self.last_message = {"role": getattr(msg, "role", "assistant"), "content": getattr(msg, "content", None)}
-        try:
-            self.last_usage = completion.usage.model_dump() if completion.usage is not None else None
-        except Exception:
-            self.last_usage = None
-        return msg.content.strip()
-    
-    def _retry_request(self, observation: str, retries: int=3, delay: int=5) -> str:
-        """
-        Attempt to make an API request with retries.
-        
-        Args:
-            observation (str): The input to process.
-            retries (int): The number of attempts to try.
-            delay (int): Seconds to wait between attempts.
-        
-        Raises:
-            Exception: The last exception caught if all retries fail.
-        """
-        last_exception = None
-        for attempt in range(1, retries + 1):
-            try:
-                response = self._make_request(observation)
-                if self.verbose:
-                    print(f"\nObservation: {observation}\nResponse: {response}")
-                return response
-            except Exception as e:
-                last_exception = e
-                print(f"Attempt {attempt} failed with error: {e}")
-                if attempt < retries:
-                    time.sleep(delay)
-        raise last_exception
-    
-    def __call__(self, observation: str) -> str:
-        """
-        Process the observation using the OpenAI API and return the generated response.
-        
-        Args:
-            observation (str): The input string to process.
-        
-        Returns:
-            str: The generated response.
-        """
-        if not isinstance(observation, str):
             raise ValueError(f"Observation must be a string. Received type: {type(observation)}")
         return self._retry_request(observation)
 
@@ -553,6 +466,10 @@ class OllamaAgent(Agent):
         self.model_name = model_name
         self.system_prompt = system_prompt
         self.verbose = verbose
+        self.max_retries = int(kwargs.pop("max_retries", 8))
+        self.retry_initial_delay_s = float(kwargs.pop("retry_initial_delay_s", 2.0))
+        self.retry_max_delay_s = float(kwargs.pop("retry_max_delay_s", 30.0))
+        self.retry_jitter_s = float(kwargs.pop("retry_jitter_s", 0.25))
         self.kwargs = kwargs
         try:
             from ollama import Client
@@ -570,13 +487,29 @@ class OllamaAgent(Agent):
         # Response schema: {'message': {'role': 'assistant', 'content': '...'}, ...}
         return resp["message"]["content"].strip()
 
+    def _retry_request(self, observation: str) -> str:
+        last_exception = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                out = self._make_request(observation)
+                if self.verbose: print(f"\nObservation: {observation}\nResponse: {out}")
+                return out
+            except Exception as e:
+                last_exception = e
+                print(f"Attempt {attempt} failed with error: {e}")
+                if attempt < self.max_retries:
+                    delay = self.retry_initial_delay_s * (2 ** (attempt - 1))
+                    if self.retry_max_delay_s:
+                        delay = min(delay, self.retry_max_delay_s)
+                    delay += random.random() * (self.retry_jitter_s * delay)
+                    time.sleep(delay)
+        raise last_exception
+
     def __call__(self, observation: str) -> str:
         if not isinstance(observation, str):
             raise ValueError(f"Observation must be a string. Received {type(observation)}")
         try:
-            out = self._make_request(observation)
-            if self.verbose: print(f"\nObservation: {observation}\nResponse: {out}")
-            return out
+            return self._retry_request(observation)
         except Exception as e:
             return f"ERROR (Ollama): {e}"
 

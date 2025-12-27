@@ -41,6 +41,7 @@ class LiarsDiceEnv(Env):
             "- On your turn, you may either:\n"
             "  1) Make a new bid with a higher quantity or higher face (or both) than the current bid; i.e. '[Bid: 3, 4]',\n"
             "  2) Call the last bid by typing '[Call]'.\n\n"
+            "Bid validity: if a current bid exists, your new bid must satisfy new_Q >= current_Q AND new_F >= current_F, and not both equal.\n"
             "If you call:\n"
             "  - If the actual count of that face value among all dice is less than the bid, the last bidder loses one die.\n"
             "  - Otherwise, the caller loses one die.\n"
@@ -95,7 +96,7 @@ class LiarsDiceEnv(Env):
             "Round actions so far:\n"
             f"{actions_block}\n"
             f"Your dice: {dice_line}\n"
-            "Bid rule reminder: a new bid must strictly increase quantity OR face value (or both), and face must be 1..6.\n"
+            "Bid rule reminder: if a bid exists, you may not decrease quantity or face value; at least one must increase. Face must be 1..6.\n"
             f"{legal_line}"
         )
         self.state.add_observation(to_id=pid, message=message, observation_type=ObservationType.GAME_BOARD)

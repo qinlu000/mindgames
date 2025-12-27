@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Tuple
 
-from mindgames.agents.basic_agents import OpenAIAgent
+from mindgames.agents.openai_agent import OpenAIAgent
 
 
 class QwenAgent(OpenAIAgent):

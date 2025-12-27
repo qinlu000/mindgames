@@ -467,18 +467,7 @@ def main() -> int:
             t0 = time.time()
             raw = agent(prompt)
             infer_ms = int((time.time() - t0) * 1000)
-            raw_content = None
-            raw_reasoning = None
-            get_last = getattr(agent, "get_last_content_reasoning", None)
-            if callable(get_last):
-                c, r = get_last()
-                raw_content = c
-                raw_reasoning = r
-            if raw_content is None:
-                last_message = getattr(agent, "last_message", None)
-                if isinstance(last_message, dict):
-                    raw_content = last_message.get("content")
-                    raw_reasoning = last_message.get("reasoning") or last_message.get("reasoning_content")
+            raw_content, raw_reasoning = agent.get_last_content_reasoning()
 
             # Prefer parsing from assistant content (excludes reasoning when a reasoning parser is enabled).
             choice = _parse_choice(str(raw_content) if raw_content is not None else raw, args.prompt_style)

@@ -12,6 +12,19 @@ This folder mirrors the **project layout style** of `spiral-rl/spiral`, but vend
 python mindgames/tools/run_rollouts.py --help
 ```
 
+## Read JSONL logs (human-friendly)
+`tools/run_rollouts.py` writes JSONL (one record per step). For a readable terminal view:
+```bash
+cd mindgames
+python tools/view_jsonl.py data/rollouts.jsonl | less -R
+```
+
+To convert JSONL into a single JSON array file:
+```bash
+cd mindgames
+python tools/jsonl_to_json.py data/rollouts.jsonl --out data/rollouts.json
+```
+
 ## API keys without `export` (dotenv)
 If `mindgames/.env` exists, importing `mindgames` will automatically load it (without overriding already-set env vars).
 

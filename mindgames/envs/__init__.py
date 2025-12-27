@@ -83,3 +83,13 @@ register_with_versions(
     min_guess=0.0,
     max_guess=100.0,
 )
+
+# Iterated Two-Thirds Average (3-player)
+register_with_versions(
+    id="IteratedTwoThirdsAverage3P-v0",
+    entry_point="mindgames.envs.IteratedTwoThirdsAverage.env_3p:IteratedTwoThirdsAverage3PEnv",
+    wrappers={"default": DEFAULT_WRAPPERS, "-train": [GameMessagesObservationWrapper, ActionFormattingWrapper]},
+    num_rounds=10,
+    min_guess=0.0,
+    max_guess=100.0,
+)

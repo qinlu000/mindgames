@@ -1,0 +1,49 @@
+schema_version: 1
+name: ita3p_uniapi_eval
+kind: rollout_eval
+description: 3-player IteratedTwoThirdsAverage using UniAPI (all agents via OpenAI-compatible endpoint).
+tags: ["eval", "rollout", "IteratedTwoThirdsAverage", "3p", "uniapi"]
+
+repro:
+  seed: 0
+  python: ">=3.10,<3.13"
+
+spec:
+  env_id: "IteratedTwoThirdsAverage3P-v0"
+  num_players: 3
+  episodes: 1
+  agents:
+    - "openai:qwen3-8b"
+    - "openai:gemini-2.5-flash"
+    - "openai:gemini-3-pro-preview"
+  system_prompt: >-
+    You are playing a numeric guessing game.
+    Output ONLY your guess as a single bracketed number like [42.0].
+    No extra words, no explanation.
+  # Use mindgames/.env (OPENAI_BASE_URL / OPENAI_API_KEY) by default.
+  openai_base_url: null
+  openai_api_key: null
+  timeout_s: null
+
+commands:
+  - >-
+    python tools/run_rollouts.py
+    --env-id {spec.env_id}
+    --num-players {spec.num_players}
+    --episodes {spec.episodes}
+    --seed {repro.seed}
+    {agent_flags}
+    --system-prompt {sh:spec.system_prompt}
+    {opt:--openai-base-url spec.openai_base_url}
+    {opt:--openai-api-key spec.openai_api_key}
+    {opt:--timeout spec.timeout_s}
+    --episode-json-dir {run_dir}/episodes
+    --out {run_dir}/rollouts.jsonl
+  - >-
+    python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl
+    --json > {run_dir}/summary.json
+
+outputs:
+  files:
+    - "{run_dir}/rollouts.jsonl"
+    - "{run_dir}/summary.json"

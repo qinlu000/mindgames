@@ -54,6 +54,7 @@ commands:
     {optsh:--chat-template-kwargs spec.gen.chat_template_kwargs}
     {flag:--disable-thinking spec.gen.disable_thinking}
     {opt:--max-tokens spec.gen.max_tokens}
+    --episode-json-dir {run_dir}/episodes
     --out {run_dir}/rollouts.jsonl
   - >-
     python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl
