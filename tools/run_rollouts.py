@@ -23,6 +23,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from rollout_utils import _compact_step_rec
+
 
 def _ensure_pkg_importable() -> None:
     # Ensure both:
@@ -198,103 +200,18 @@ def _jsonl_write(fp, obj: Dict[str, Any]) -> None:
     fp.flush()
 
 
-def _maybe_parse_hanabi_state(observation: str) -> Optional[Dict[str, Any]]:
-    # Best-effort parser for the built-in Hanabi text observation format.
-    # For non-Hanabi envs this returns None.
-    if "Hanabi" not in observation and "Fireworks" not in observation:
-        return None
-
-    def _grab_int(prefix: str) -> Optional[int]:
-        # e.g. "Fuse tokens: there are 4 fuse tokens remaining."
-        needle = prefix + " there are "
-        i = observation.find(needle)
-        if i < 0:
-            return None
-        j = i + len(needle)
-        k = j
-        while k < len(observation) and observation[k].isdigit():
-            k += 1
-        if k == j:
-            return None
-        try:
-            return int(observation[j:k])
-        except Exception:
-            return None
-
-    info_tokens = _grab_int("Info tokens:")
-    fuse_tokens = _grab_int("Fuse tokens:")
-
-    # Deck size appears in a UI block line: "│   Deck size: 40   │ ..."
-    deck_size: Optional[int] = None
-    deck_needle = "Deck size:"
-    i = observation.find(deck_needle)
-    if i >= 0:
-        j = i + len(deck_needle)
-        while j < len(observation) and observation[j] == " ":
-            j += 1
-        k = j
-        while k < len(observation) and observation[k].isdigit():
-            k += 1
-        if k > j:
-            try:
-                deck_size = int(observation[j:k])
-            except Exception:
-                deck_size = None
-
-    fireworks: Dict[str, int] = {}
-    for color in ("white", "yellow", "green", "blue", "red"):
-        # Matches both:
-        # - "\twhite: 0."
-        # - "│ white     : 0  │"
-        needle = f"{color}:"
-        idx = observation.find(needle)
-        if idx < 0:
-            needle = f"{color}     :"
-            idx = observation.find(needle)
-        if idx < 0:
-            continue
-        j = idx + len(needle)
-        while j < len(observation) and observation[j] == " ":
-            j += 1
-        if j < len(observation) and observation[j].isdigit():
-            fireworks[color] = int(observation[j])
-
-    state: Dict[str, Any] = {"fireworks": fireworks}
-    if deck_size is not None:
-        state["deck_size"] = deck_size
-    if info_tokens is not None:
-        state["info_tokens"] = info_tokens
-    if fuse_tokens is not None:
-        state["fuse_tokens"] = fuse_tokens
-    return state
-
-
-def _compact_step_rec(step_rec: Dict[str, Any], *, max_obs_chars: Optional[int]) -> Dict[str, Any]:
-    obs = step_rec.get("observation") or ""
-
-    out: Dict[str, Any] = {
-        "step": step_rec.get("step"),
-        "player_id": step_rec.get("player_id"),
-        "role": step_rec.get("role"),
-        "action": step_rec.get("action"),
-        "infer_ms": step_rec.get("infer_ms"),
-        "done": step_rec.get("done"),
-    }
-
-    if isinstance(obs, str) and max_obs_chars is not None and max_obs_chars > 0 and len(obs) > max_obs_chars:
-        out["observation"] = obs[: max(0, max_obs_chars - 3)] + "..."
-    else:
-        out["observation"] = obs
-
-    state = _maybe_parse_hanabi_state(obs) if isinstance(obs, str) else None
-    if state:
-        out["state"] = state
-
-    step_info = step_rec.get("step_info")
-    if step_info:
-        out["step_info"] = step_info
-
-    return out
+def _merge_gen_kwargs(base: Dict[str, Any], override: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if not override:
+        return dict(base)
+    merged = dict(base)
+    for k, v in override.items():
+        if k in {"extra_body", "chat_template_kwargs"} and isinstance(v, dict) and isinstance(merged.get(k), dict):
+            vv = dict(merged.get(k) or {})
+            vv.update(v)
+            merged[k] = vv
+        else:
+            merged[k] = v
+    return merged
 
 
 def _coerce_episode_id(val: Any) -> Optional[int]:
@@ -303,6 +220,16 @@ def _coerce_episode_id(val: Any) -> Optional[int]:
     if isinstance(val, str) and val.isdigit():
         return int(val)
     return None
+
+
+def _normalize_action(env: mg.Env, action: str) -> str:
+    normalized = action
+    current = env
+    while isinstance(current, mg.Wrapper):
+        if isinstance(current, mg.ActionWrapper):
+            normalized = current.action(normalized)
+        current = current.env
+    return normalized
 
 
 def _load_rollout_progress(path: Path) -> Tuple[set[int], set[int]]:
@@ -371,6 +298,7 @@ def _game_loop(
         t0 = time.time()
         action = agents[player_id](observation)
         infer_ms = int((time.time() - t0) * 1000)
+        normalized_action = _normalize_action(env, action)
 
         done, step_info = env.step(action=action)
 
@@ -384,6 +312,8 @@ def _game_loop(
             "role": getattr(env.state, "role_mapping", {}).get(player_id, f"Player {player_id}"),
             "observation": observation,
             "action": action,
+            "raw_action": action,
+            "normalized_action": normalized_action,
             "infer_ms": infer_ms,
             "done": done,
             "step_info": step_info,
@@ -461,6 +391,12 @@ def main() -> int:
         help="Repeatable. Spec: human | scripted:<name> | hf:<hf_model> | openai:<model> | qwen:<model> | gemini:<model> | openrouter:<model> | ollama:<model>",
     )
     ap.add_argument(
+        "--agent-gen",
+        action="append",
+        default=[],
+        help="Optional per-agent JSON dict (repeatable, aligned with --agent order). Keys can include temperature/top_p/max_tokens/extra_body/chat_template_kwargs/etc.",
+    )
+    ap.add_argument(
         "--system-prompt",
         default="You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format.",
     )
@@ -524,6 +460,23 @@ def main() -> int:
     if len(specs) != args.num_players:
         raise SystemExit(f"Need exactly {args.num_players} agents; got {len(specs)} via --agent")
 
+    agent_gen_raw: List[Optional[Dict[str, Any]]] = []
+    if args.agent_gen:
+        for idx, s in enumerate(args.agent_gen):
+            try:
+                obj = json.loads(s)
+            except Exception as e:
+                raise SystemExit(f"Invalid --agent-gen JSON at index {idx}: {e}") from e
+            if not isinstance(obj, dict):
+                raise SystemExit(f"--agent-gen entries must be JSON objects (dict); got {type(obj)} at index {idx}")
+            agent_gen_raw.append(obj)
+        if len(agent_gen_raw) == 1 and args.num_players > 1:
+            agent_gen_raw = agent_gen_raw * args.num_players
+        if len(agent_gen_raw) != args.num_players:
+            raise SystemExit(f"Need 0, 1, or {args.num_players} --agent-gen entries; got {len(agent_gen_raw)}")
+    else:
+        agent_gen_raw = [None] * args.num_players
+
     if args.chat_template_kwargs is not None:
         try:
             chat_template_kwargs = json.loads(args.chat_template_kwargs)
@@ -566,18 +519,18 @@ def main() -> int:
         "retry_max_delay_s": float(args.retry_max_delay),
     }
 
-    agents: Dict[int, mg.Agent] = {
-        i: _build_agent(
+    agents: Dict[int, mg.Agent] = {}
+    for i in range(args.num_players):
+        merged_gen = _merge_gen_kwargs(gen_kwargs, agent_gen_raw[i])
+        agents[i] = _build_agent(
             specs[i],
             args.system_prompt,
-            gen_kwargs,
+            merged_gen,
             openai_api_key=args.openai_api_key,
             openai_base_url=args.openai_base_url,
             request_timeout_s=request_timeout_s,
             retry_kwargs=retry_kwargs,
         )
-        for i in range(args.num_players)
-    }
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

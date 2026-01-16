@@ -165,13 +165,26 @@ def _agent_flags(spec: Mapping[str, Any]) -> str:
     agents = spec.get("agents") or []
     if not isinstance(agents, list):
         return ""
+    agent_gen = spec.get("agent_gen") or []
+    if agent_gen and not isinstance(agent_gen, list):
+        raise SystemExit("spec.agent_gen must be a list when provided")
     parts: list[str] = []
-    for a in agents:
+    for i, a in enumerate(agents):
         a = str(a).strip()
         if not a:
             continue
         parts.append("--agent")
-        parts.append(a)
+        parts.append(shlex.quote(a))
+        if agent_gen:
+            if i >= len(agent_gen):
+                raise SystemExit(f"spec.agent_gen has {len(agent_gen)} entries but spec.agents has {len(agents)}")
+            g = agent_gen[i]
+            if g is None:
+                continue
+            if not isinstance(g, dict):
+                raise SystemExit(f"spec.agent_gen[{i}] must be a mapping (dict) or null")
+            parts.append("--agent-gen")
+            parts.append(shlex.quote(json.dumps(g, ensure_ascii=False, sort_keys=True, separators=(',', ':'))))
     return " ".join(parts)
 
 
