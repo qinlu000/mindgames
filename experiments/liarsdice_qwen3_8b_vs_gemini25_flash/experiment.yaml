@@ -13,13 +13,19 @@ spec:
   num_players: 2
   episodes: 30
   agents:
-    - "openai:qwen3-8b"
-    - "openai:gemini-2.5-flash"
+    - "openai:qwen/qwen3-8b"
+    - "openai:google/gemini-2.5-flash"
   system_prompt: "You are an expert Liar's Dice player. Output exactly ONE valid action in the required bracket format (either [Bid: Q, F] or [Call]) and nothing else."
   # Use mindgames/.env (OPENAI_BASE_URL / OPENAI_API_KEY) by default.
   openai_base_url: null
   openai_api_key: null
   timeout_s: 120
+  gen:
+    # Use the intersection of supported params across both models on OpenRouter.
+    # (Gemini doesn't support top_k / repetition_penalty / presence_penalty / frequency_penalty.)
+    temperature: 0.2
+    top_p: 1.0
+    max_tokens: null
 
 
 commands:
@@ -34,6 +40,9 @@ commands:
     {opt:--openai-base-url spec.openai_base_url}
     {opt:--openai-api-key spec.openai_api_key}
     {opt:--timeout spec.timeout_s}
+    --temperature {spec.gen.temperature}
+    --top-p {spec.gen.top_p}
+    {opt:--max-tokens spec.gen.max_tokens}
     --out {run_dir}/rollouts.jsonl
   - >-
     python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl

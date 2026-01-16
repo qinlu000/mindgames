@@ -37,6 +37,7 @@ class HanabiEnv(Env):
     def __init__(self, info_tokens: int = 8, fuse_tokens: int = 4, max_steps: int = 300):
 
         self.deck_size = 50
+        self.max_info_tokens = 8
         self.info_tokens = info_tokens
         self.fuse_tokens = fuse_tokens
         self.max_steps = max_steps
@@ -97,15 +98,23 @@ class HanabiEnv(Env):
             f"You are Player {player_id} in a {self.state.num_players}-player Hanabi game.\n"
             "You can see other players' cards but NOT your own. Work as a team to build fireworks.\n\n"
             "Goal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\n"
-            "You have 3 action types (output EXACTLY ONE action, nothing else):\n"
+            "You have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\n"
+            "Valid formats (case-insensitive):\n"
             "- [Play] X\n"
             "- [Discard] X\n"
             "- [Reveal] player N card X color C\n"
             "- [Reveal] player N card X rank R\n\n"
-            "Reveal rules in this env:\n"
+            "Index rules:\n"
+            "- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n"
+            "- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\n"
+            "Reveal rules in this env (NOTE: not standard Hanabi):\n"
             "- You must reveal about another player (not yourself).\n"
-            "- The hint must be truthful about that specific card index.\n\n"
+            "- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n"
+            "- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n"
+            "- The hint must be truthful about that specific target card.\n"
+            "- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\n"
             "Discard rule: if info tokens < 8, discarding gains +1 info token.\n"
+            "Play rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\n"
             "Game ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends."
         )
 
@@ -118,6 +127,7 @@ class HanabiEnv(Env):
         """
         if for_player_id is None:
             for_player_id = self.state.current_player_id
+        your_hand_size = len(self.state.game_state["player_hands"][for_player_id])
         discard_pile = "".join(str(card) + "\n" for card in self.state.game_state['discard_pile'])
         visible_cards = ""
 
@@ -134,6 +144,7 @@ class HanabiEnv(Env):
             f"Current game state:\n"
             f"Fuse tokens: there are {self.state.game_state['fuse_tokens']} fuse tokens remaining.\n"
             f"Info tokens: there are {self.state.game_state['info_tokens']} info tokens remaining.\n\n"
+            f"Your hand size: {your_hand_size}. Valid indices for [Play]/[Discard]: 0..{your_hand_size - 1}.\n\n"
             f"Fireworks: The current progress on each firework color is:\n"
             f"\t{Suit.WHITE.value}: {self.state.game_state['fireworks'][Suit.WHITE]}.\n"
             f"\t{Suit.YELLOW.value}: {self.state.game_state['fireworks'][Suit.YELLOW]}.\n"
@@ -155,6 +166,7 @@ class HanabiEnv(Env):
         Returns:
             Tuple[bool, Info]: information regarding the current game step.
         """
+        acting_player_id = self.state.current_player_id
         self.state.game_state["step_count"] = int(self.state.game_state.get("step_count", 0)) + 1
         if self.max_steps is not None and self.state.game_state["step_count"] > self.max_steps:
             self.state.add_observation(
@@ -169,8 +181,8 @@ class HanabiEnv(Env):
             return self.state.step(rotate_player=False)
 
         self.state.add_observation(
-            from_id=self.state.current_player_id,
-            to_id=self.state.current_player_id,
+            from_id=acting_player_id,
+            to_id=acting_player_id,
             message=action,
             observation_type=ObservationType.PLAYER_ACTION,
         )
@@ -194,31 +206,33 @@ class HanabiEnv(Env):
             return self.state.step(rotate_player=False)
 
         # If the player exceeded the invalid-move allowance, skip their turn.
-        if self.state.game_info[self.state.current_player_id]["invalid_move"]:
-            message = (f"Player {self.state.current_player_id} made {self.state.error_allowance + 1} "
+        if self.state.game_info[acting_player_id]["invalid_move"]:
+            message = (f"Player {acting_player_id} made {self.state.error_allowance + 1} "
                        f"invalid moves in a row, skipping a turn. ")
             self.state.add_observation(
-                from_id=self.state.current_player_id,
+                from_id=acting_player_id,
                 to_id=-1,
                 message=message,
                 observation_type=ObservationType.GAME_MESSAGE,
             )
             # Include the player for the next round
-            self.state.game_info[self.state.current_player_id]["invalid_move"] = False
+            self.state.game_info[acting_player_id]["invalid_move"] = False
             self.state.made_invalid_move = False
             self.state.error_count = 0
 
-            # Skip turn by rotating to the next player.
+            # Consume the (skipped) turn for the acting player, then rotate.
+            done, info = self.state.step(rotate_player=False)
             self._rotate_players()
-            return self.state.step(rotate_player=False)
+            return done, info
 
         # If the move was invalid but within the allowance, do not rotate; allow resubmission.
         if self.state.made_invalid_move:
             return self.state.step(rotate_player=False)
 
-        # Normal case: rotate to next player.
+        # Normal case: consume the acting player's turn, then rotate to next player.
+        done, info = self.state.step(rotate_player=False)
         self._rotate_players()
-        return self.state.step(rotate_player=False)
+        return done, info
 
     def _handle_discard(self, action: str) -> None:
         """
@@ -252,7 +266,7 @@ class HanabiEnv(Env):
             self.state.game_state['discard_pile'].append(card)
 
             # Replenish an info token
-            if self.state.game_state['info_tokens'] < 8:
+            if self.state.game_state['info_tokens'] < self.max_info_tokens:
                 self.state.game_state['info_tokens'] += 1
                 action += " This replenishes an info token."
 
@@ -309,7 +323,16 @@ class HanabiEnv(Env):
 
             # Check validity
             if self._play(card):
+                if card.rank == 5:
+                    if self.state.game_state["info_tokens"] < self.max_info_tokens:
+                        self.state.game_state["info_tokens"] += 1
+                        token_note = " Playing a 5 replenishes an info token."
+                    else:
+                        token_note = " Playing a 5 would replenish an info token, but the token cap is reached."
+                else:
+                    token_note = ""
                 message = action + " " + "The card was played successfully."
+                message += token_note
                 self.state.add_observation(from_id=self.state.current_player_id, to_id=-1, message=message,
                                            observation_type=ObservationType.GAME_MESSAGE)
 
@@ -563,9 +586,11 @@ class HanabiEnv(Env):
         if len(self.state.game_state['deck']) == 0:  # The deck has run out
             if self.state.game_state['last_round'] == -1:  # Start the last round
                 self.state.add_observation(from_id=-1, to_id=-1, message="There are no cards left in the deck. "
-                                                                         "This is the final round.",
+                                                                         "After each remaining player takes one more turn, the game ends.",
                                            observation_type=ObservationType.GAME_MESSAGE)
-                self.state.game_state['last_round'] = self.state.current_player_id
+                # By Hanabi rules, the player who drew the last card does NOT get an extra turn.
+                # The last player to act is the one immediately before the current player.
+                self.state.game_state['last_round'] = (self.state.current_player_id - 1) % self.num_players
 
             elif self.state.game_state['last_round'] == self.state.current_player_id:  # End the last round
                 self.state.set_draw(reason="The deck has run out.")
@@ -607,8 +632,8 @@ class HanabiEnv(Env):
     @staticmethod
     def _generate_deck() -> List[Card]:
         """
-        Generate a deck of 40 cards. The deck contains 5 suits, white, yellow, blue, green and red; and 5 ranks. Of each
-        suit, there are three 1s, two of each 2s, 3s and 4s, and one 5.
+        Generate a deck of 50 cards. The deck contains 5 suits (white, yellow, blue, green and red) and 5 ranks.
+        For each suit, there are three 1s, two of each 2/3/4, and one 5.
 
         Returns:
             List[Card]: a deck of Hanabi cards. The  total deck contains 50 cards.

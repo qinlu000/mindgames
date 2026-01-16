@@ -63,8 +63,11 @@ class OpenRouterAgent(Agent):
 
     def _make_request(self, observation: str) -> str:
         """ Make a single API request to OpenRouter and return the generated message. """
-        messages = [{"role": "system", "content": self.system_prompt}, {"role": "user", "content": observation}]
-        response = self.client.chat.completions.create(model=self.model_name, messages=messages, n=1, stop=None, **self.kwargs)
+        messages = [{"role": "user", "content": observation}]
+        if self.system_prompt:
+            messages.insert(0, {"role": "system", "content": self.system_prompt})
+
+        response = self.client.chat.completions.create(model=self.model_name, messages=messages, n=1, **self.kwargs)
         msg = response.choices[0].message
         try:
             self.last_message = msg.model_dump()
@@ -74,7 +77,7 @@ class OpenRouterAgent(Agent):
             self.last_usage = response.usage.model_dump() if response.usage is not None else None
         except Exception:
             self.last_usage = None
-        return msg.content.strip()
+        return (msg.content or "").strip()
 
     def _retry_request(self, observation: str) -> str:
         """
@@ -92,6 +95,8 @@ class OpenRouterAgent(Agent):
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = self._make_request(observation)
+                if not response.strip():
+                    raise RuntimeError("Empty model response (no assistant content).")
                 if self.verbose:
                     print(f"\nObservation: {observation}\nResponse: {response}")
                 return response

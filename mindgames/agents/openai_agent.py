@@ -85,6 +85,8 @@ class OpenAIAgent(Agent):
             return status_code in {408, 409, 429, 500, 502, 503, 504} if status_code is not None else True
         # Fallback: network-ish exceptions without OpenAI typed wrappers.
         msg = str(e).lower()
+        if "empty model response" in msg:
+            return True
         if "timed out" in msg or "timeout" in msg:
             return True
         if "connection refused" in msg or "connection error" in msg:
@@ -92,16 +94,14 @@ class OpenAIAgent(Agent):
         return False
 
     def _make_request(self, observation: str) -> str:
-        messages = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": observation},
-        ]
+        messages = [{"role": "user", "content": observation}]
+        if self.system_prompt:
+            messages.insert(0, {"role": "system", "content": self.system_prompt})
 
         completion = self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
             n=1,
-            stop=None,
             **self.kwargs,
         )
 
@@ -122,6 +122,8 @@ class OpenAIAgent(Agent):
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = self._make_request(observation)
+                if not response.strip():
+                    raise RuntimeError("Empty model response (no assistant content).")
                 if self.verbose:
                     print(f"\nObservation: {observation}\nResponse: {response}")
                 return response

@@ -2,6 +2,8 @@ from mindgames.core import ActionWrapper, Env
 
 __all__ = ["ActionFormattingWrapper"]
 
+import re
+
 
 class ActionFormattingWrapper(ActionWrapper):
     """
@@ -42,7 +44,26 @@ class ActionFormattingWrapper(ActionWrapper):
         Returns:
             str: The formatted action, with brackets added if necessary.
         """
-        if "[" not in action and "]" not in action:
-            return f"[{action}]"
+        if not isinstance(action, str):
+            action = str(action)
+
+        # Keep only the first non-empty line (LLMs sometimes append explanations).
+        for line in action.splitlines():
+            if line.strip():
+                action = line.strip()
+                break
         else:
+            action = ""
+
+        if "[" in action and "]" in action:
             return action
+
+        # Hanabi-style formats: "[Play] X", "[Discard] X", "[Reveal] ...".
+        # If the model outputs "Play 0" / "Discard: 0" / "Reveal player ...", normalize it.
+        m = re.match(r"^\s*(play|discard|reveal)\s*[:\-]?\s+(.+?)\s*$", action, flags=re.IGNORECASE)
+        if m:
+            verb = m.group(1).capitalize()
+            rest = m.group(2).strip()
+            return f"[{verb}] {rest}"
+
+        return f"[{action}]"

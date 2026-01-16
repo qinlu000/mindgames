@@ -1,8 +1,8 @@
 schema_version: 1
-name: hanabi_eval
+name: hanabi_qwen3_8b_vs_gemini25_flash
 kind: rollout_eval
-description: Baseline evaluation for Hanabi using a fixed protocol (repeatable across model/prompt changes).
-tags: ["eval", "rollout", "hanabi"]
+description: 2-episode Hanabi eval (Qwen3-8B vs Gemini-2.5-Flash) via OpenRouter (OpenAI-compatible endpoint).
+tags: ["eval", "rollout", "hanabi", "2p", "openrouter"]
 
 repro:
   seed: 0
@@ -11,30 +11,22 @@ repro:
 spec:
   env_id: "Hanabi-v0-train"
   num_players: 2
-  episodes: 20
+  episodes: 2
   agents:
-    - "qwen:Qwen/Qwen3-VL-4B-Instruct"
-    - "qwen:Qwen/Qwen3-VL-4B-Instruct"
+    - "openai:qwen/qwen3-8b"
+    - "openai:google/gemini-2.5-flash"
   system_prompt: "You are an expert Hanabi teammate. Output exactly ONE valid action and nothing else. Valid formats: [Discard] X | [Play] X | [Reveal] player N card X color C | [Reveal] player N card X rank R. If you [Reveal], it must be truthful for that specific card index (color in {white,yellow,green,blue,red} or rank in {1,2,3,4,5})."
-  # Optional: only used for openai:/qwen: agents. If null, uses OPENAI_BASE_URL / OPENAI_API_KEY (e.g. OpenRouter).
+  # Use mindgames/.env (OPENAI_BASE_URL / OPENAI_API_KEY) by default.
   openai_base_url: null
   openai_api_key: null
-  timeout_s: 120
+  timeout_s: 600
   gen:
-    # Eval-oriented defaults for "single action only" games:
-    # - low randomness to reduce invalid format
-    # - cap output length to prevent explanations
+    # Keep to cross-model supported params (OpenRouter):
+    # - Gemini doesn't support top_k / repetition_penalty / presence_penalty / frequency_penalty.
     temperature: 0.2
     top_p: 1.0
-    top_k: null
-    repetition_penalty: null
-    presence_penalty: 0.0
-    frequency_penalty: 0.0
-    gen_seed: null
-    extra_body: null
-    chat_template_kwargs: null
-    disable_thinking: false
     max_tokens: null
+    extra_body: null
 
 commands:
   - >-
@@ -50,15 +42,8 @@ commands:
     {opt:--timeout spec.timeout_s}
     --temperature {spec.gen.temperature}
     --top-p {spec.gen.top_p}
-    {opt:--top-k spec.gen.top_k}
-    {opt:--repetition-penalty spec.gen.repetition_penalty}
-    {opt:--presence-penalty spec.gen.presence_penalty}
-    {opt:--frequency-penalty spec.gen.frequency_penalty}
-    {opt:--gen-seed spec.gen.gen_seed}
-    {optsh:--extra-body spec.gen.extra_body}
-    {optsh:--chat-template-kwargs spec.gen.chat_template_kwargs}
-    {flag:--disable-thinking spec.gen.disable_thinking}
     {opt:--max-tokens spec.gen.max_tokens}
+    {optsh:--extra-body spec.gen.extra_body}
     --episode-json-dir {run_dir}/episodes
     --out {run_dir}/rollouts.jsonl
   - >-

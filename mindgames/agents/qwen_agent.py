@@ -48,16 +48,14 @@ class QwenAgent(OpenAIAgent):
         self.last_reasoning = None
 
     def _make_request(self, observation: str) -> str:
-        messages = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": observation},
-        ]
+        messages = [{"role": "user", "content": observation}]
+        if self.system_prompt:
+            messages.insert(0, {"role": "system", "content": self.system_prompt})
 
         completion = self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
             n=1,
-            stop=None,
             **self.kwargs,
         )
 

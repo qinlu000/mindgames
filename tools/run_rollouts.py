@@ -67,6 +67,14 @@ def _build_agent(
     request_timeout_s: Optional[float],
     retry_kwargs: Dict[str, Any],
 ) -> mg.Agent:
+    class _ScriptedAgent(mg.Agent):
+        def __init__(self, action: str):
+            super().__init__()
+            self._action = action
+
+        def __call__(self, observation: str) -> str:  # noqa: ARG002
+            return self._action
+
     def _openai_like_kwargs() -> Dict[str, Any]:
         extra_body: Dict[str, Any] = dict(gen_kwargs.get("extra_body") or {})
         if gen_kwargs.get("chat_template_kwargs") is not None:
@@ -97,6 +105,19 @@ def _build_agent(
 
     if spec.kind == "human":
         return mg.agents.HumanAgent()
+
+    if spec.kind == "scripted":
+        if not spec.model:
+            raise ValueError("scripted agent requires a spec like 'scripted:<name>'")
+        name = spec.model.strip().lower()
+        if name in {"hanabi_discard0", "hanabi_discard", "discard0", "discard"}:
+            return _ScriptedAgent("[Discard] 0")
+        if name.startswith("const="):
+            return _ScriptedAgent(spec.model[len("const=") :])
+        raise ValueError(
+            f"Unknown scripted agent: {spec.model!r}. Supported: "
+            "hanabi_discard0 | const=<action>"
+        )
 
     if spec.kind == "hf":
         agent = mg.agents.HFLocalAgent(model_name=spec.model)  # type: ignore[arg-type]
@@ -173,6 +194,107 @@ def _build_agent(
 
 def _jsonl_write(fp, obj: Dict[str, Any]) -> None:
     fp.write(json.dumps(obj, ensure_ascii=False) + "\n")
+    # Make progress observable when tailing the file during long-running runs.
+    fp.flush()
+
+
+def _maybe_parse_hanabi_state(observation: str) -> Optional[Dict[str, Any]]:
+    # Best-effort parser for the built-in Hanabi text observation format.
+    # For non-Hanabi envs this returns None.
+    if "Hanabi" not in observation and "Fireworks" not in observation:
+        return None
+
+    def _grab_int(prefix: str) -> Optional[int]:
+        # e.g. "Fuse tokens: there are 4 fuse tokens remaining."
+        needle = prefix + " there are "
+        i = observation.find(needle)
+        if i < 0:
+            return None
+        j = i + len(needle)
+        k = j
+        while k < len(observation) and observation[k].isdigit():
+            k += 1
+        if k == j:
+            return None
+        try:
+            return int(observation[j:k])
+        except Exception:
+            return None
+
+    info_tokens = _grab_int("Info tokens:")
+    fuse_tokens = _grab_int("Fuse tokens:")
+
+    # Deck size appears in a UI block line: "│   Deck size: 40   │ ..."
+    deck_size: Optional[int] = None
+    deck_needle = "Deck size:"
+    i = observation.find(deck_needle)
+    if i >= 0:
+        j = i + len(deck_needle)
+        while j < len(observation) and observation[j] == " ":
+            j += 1
+        k = j
+        while k < len(observation) and observation[k].isdigit():
+            k += 1
+        if k > j:
+            try:
+                deck_size = int(observation[j:k])
+            except Exception:
+                deck_size = None
+
+    fireworks: Dict[str, int] = {}
+    for color in ("white", "yellow", "green", "blue", "red"):
+        # Matches both:
+        # - "\twhite: 0."
+        # - "│ white     : 0  │"
+        needle = f"{color}:"
+        idx = observation.find(needle)
+        if idx < 0:
+            needle = f"{color}     :"
+            idx = observation.find(needle)
+        if idx < 0:
+            continue
+        j = idx + len(needle)
+        while j < len(observation) and observation[j] == " ":
+            j += 1
+        if j < len(observation) and observation[j].isdigit():
+            fireworks[color] = int(observation[j])
+
+    state: Dict[str, Any] = {"fireworks": fireworks}
+    if deck_size is not None:
+        state["deck_size"] = deck_size
+    if info_tokens is not None:
+        state["info_tokens"] = info_tokens
+    if fuse_tokens is not None:
+        state["fuse_tokens"] = fuse_tokens
+    return state
+
+
+def _compact_step_rec(step_rec: Dict[str, Any], *, max_obs_chars: Optional[int]) -> Dict[str, Any]:
+    obs = step_rec.get("observation") or ""
+
+    out: Dict[str, Any] = {
+        "step": step_rec.get("step"),
+        "player_id": step_rec.get("player_id"),
+        "role": step_rec.get("role"),
+        "action": step_rec.get("action"),
+        "infer_ms": step_rec.get("infer_ms"),
+        "done": step_rec.get("done"),
+    }
+
+    if isinstance(obs, str) and max_obs_chars is not None and max_obs_chars > 0 and len(obs) > max_obs_chars:
+        out["observation"] = obs[: max(0, max_obs_chars - 3)] + "..."
+    else:
+        out["observation"] = obs
+
+    state = _maybe_parse_hanabi_state(obs) if isinstance(obs, str) else None
+    if state:
+        out["state"] = state
+
+    step_info = step_rec.get("step_info")
+    if step_info:
+        out["step_info"] = step_info
+
+    return out
 
 
 def _coerce_episode_id(val: Any) -> Optional[int]:
@@ -234,6 +356,7 @@ def _game_loop(
     episode_id: int,
     out_fp,
     episode_json_dir: Optional[Path],
+    episode_json_max_obs_chars: Optional[int],
     env_kwargs: Optional[Dict[str, Any]],
 ) -> None:
     env = _make_env(env_id=env_id, env_kwargs=env_kwargs)
@@ -267,7 +390,7 @@ def _game_loop(
         }
         _jsonl_write(out_fp, step_rec)
         if episode_json_dir is not None:
-            episode_steps.append(step_rec)
+            episode_steps.append(_compact_step_rec(step_rec, max_obs_chars=episode_json_max_obs_chars))
 
         step_idx += 1
 
@@ -323,13 +446,19 @@ def main() -> int:
     ap.add_argument(
         "--episode-json-dir",
         default=None,
-        help="Optional: also write one JSON file per episode into this directory (e.g. runs/<id>/episodes).",
+        help="Optional: also write one JSON file per episode into this directory (compact format).",
+    )
+    ap.add_argument(
+        "--episode-json-max-obs-chars",
+        type=int,
+        default=0,
+        help="When --episode-json-dir is set: truncate observation to this many chars (0 = no truncation).",
     )
     ap.add_argument(
         "--agent",
         action="append",
         default=[],
-        help="Repeatable. Spec: human | hf:<hf_model> | openai:<model> | qwen:<model> | gemini:<model> | openrouter:<model> | ollama:<model>",
+        help="Repeatable. Spec: human | scripted:<name> | hf:<hf_model> | openai:<model> | qwen:<model> | gemini:<model> | openrouter:<model> | ollama:<model>",
     )
     ap.add_argument(
         "--system-prompt",
@@ -470,7 +599,8 @@ def main() -> int:
             return 0
 
     file_mode = "a" if args.resume and out_path.exists() else "w"
-    with out_path.open(file_mode, encoding="utf-8") as f:
+    # Use line-buffered output so rollouts are visible in near-real time.
+    with out_path.open(file_mode, encoding="utf-8", buffering=1) as f:
         for ep in range(args.episodes):
             if ep in completed_ids:
                 continue
@@ -483,6 +613,7 @@ def main() -> int:
                 episode_id=ep,
                 out_fp=f,
                 episode_json_dir=episode_json_dir,
+                episode_json_max_obs_chars=(None if int(args.episode_json_max_obs_chars) == 0 else int(args.episode_json_max_obs_chars)),
                 env_kwargs=env_kwargs,
             )
 
