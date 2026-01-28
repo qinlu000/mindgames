@@ -1,0 +1,17 @@
+{
+  "run_id": "6330ac8b165b",
+  "outputs": [
+    "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/rollouts.jsonl",
+    "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/summary.json"
+    }
+  ]
+}

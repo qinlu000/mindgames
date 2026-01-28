@@ -1,0 +1,17 @@
+{
+  "experiment_path": "experiments/hanabi_eval/experiment.yaml",
+  "run_dir": "experiments/hanabi_eval/runs/727f7ac7d794",
+  "cmd_sh": "experiments/hanabi_eval/runs/727f7ac7d794/cmd.sh",
+  "argv": [
+    "tools/expctl.py",
+    "run",
+    "experiments/hanabi_eval/experiment.yaml",
+    "--no-wandb",
+    "--overwrite"
+  ],
+  "started_at_s": 1766585826.9971848,
+  "ended_at_s": 1766587015.6852,
+  "elapsed_s": 1188.6880152225494,
+  "exit_code": 0,
+  "log_path": "experiments/hanabi_eval/runs/727f7ac7d794/run.log"
+}

@@ -1,0 +1,31 @@
+{
+  "envs": {
+    "Hanabi-v0-train": {
+      "episodes": 20,
+      "avg_score_if_coop": 0.0,
+      "perfect_score_rate_if_coop": 0.0,
+      "by_player": {
+        "0": {
+          "avg_reward": 0.0,
+          "avg_turn_count": 79.95,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 1.0
+        },
+        "1": {
+          "avg_reward": 0.0,
+          "avg_turn_count": 80.9,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 1.0
+        }
+      },
+      "end_reasons": {
+        "Step limit reached.": 17,
+        "The deck has run out.": 3
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "run_id": "e4cf32ad2a8a",
+  "outputs": [
+    "experiments/liarsdice_eval/runs/e4cf32ad2a8a/rollouts.jsonl",
+    "experiments/liarsdice_eval/runs/e4cf32ad2a8a/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/liarsdice_eval/runs/e4cf32ad2a8a/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/liarsdice_eval/runs/e4cf32ad2a8a/summary.json"
+    }
+  ]
+}

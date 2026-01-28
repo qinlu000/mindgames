@@ -1,0 +1,51 @@
+{
+  "run_id": "727f7ac7d794",
+  "experiment_path": "experiments/hanabi_eval/experiment.yaml",
+  "config": {
+    "schema_version": 1,
+    "name": "hanabi_eval",
+    "kind": "rollout_eval",
+    "description": "Baseline evaluation for Hanabi using a fixed protocol (repeatable across model/prompt changes).",
+    "tags": [
+      "eval",
+      "rollout",
+      "hanabi"
+    ],
+    "repro": {
+      "seed": 0,
+      "python": ">=3.10,<3.13"
+    },
+    "spec": {
+      "env_id": "Hanabi-v0-train",
+      "num_players": 2,
+      "episodes": 20,
+      "agents": [
+        "qwen:Qwen/Qwen3-VL-4B-Instruct",
+        "qwen:Qwen/Qwen3-VL-4B-Instruct"
+      ],
+      "system_prompt": "You are an expert Hanabi teammate. Output exactly ONE valid action and nothing else. Valid formats: [Discard] X | [Play] X | [Reveal] player N card X color C | [Reveal] player N card X rank R",
+      "openai_base_url": "http://127.0.0.1:8010/v1",
+      "openai_api_key": "dummy",
+      "timeout_s": 120,
+      "gen": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "repetition_penalty": 1.0,
+        "presence_penalty": 1.5,
+        "gen_seed": null,
+        "extra_body": null,
+        "chat_template_kwargs": null,
+        "disable_thinking": false
+      }
+    },
+    "outputs": {
+      "files": [
+        "{run_dir}/rollouts.jsonl",
+        "{run_dir}/summary.json"
+      ]
+    },
+    "run_id": "727f7ac7d794",
+    "run_dir": "experiments/hanabi_eval/runs/727f7ac7d794"
+  }
+}

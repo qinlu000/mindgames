@@ -1,0 +1,238 @@
+{
+  "env_id": "Hanabi-v0-train",
+  "episode_end": {
+    "env_id": "Hanabi-v0-train",
+    "episode_id": 3,
+    "game_info": {
+      "0": {
+        "invalid_move": false,
+        "reason": "The team ran out of fuse tokens.",
+        "role": "Player 0",
+        "turn_count": 5
+      },
+      "1": {
+        "invalid_move": false,
+        "reason": "The team ran out of fuse tokens.",
+        "role": "Player 1",
+        "turn_count": 4
+      }
+    },
+    "rewards": {
+      "0": 0.0,
+      "1": 0.0
+    },
+    "seed": 3,
+    "type": "episode_end"
+  },
+  "episode_id": 3,
+  "seed": 3,
+  "steps": [
+    {
+      "action": "[Reveal] player 1 card 0 rank 2",
+      "done": false,
+      "infer_ms": 3458,
+      "normalized_action": "[Reveal] player 1 card 0 rank 2",
+      "observation": "You are Player 0 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 0. \n\nCurrent game state:\nFuse tokens: there are 4 fuse tokens remaining.\nInfo tokens: there are 8 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 1 has cards:\n\tcard 0: a red card with rank 2\n\tcard 1: a blue card with rank 2\n\tcard 2: a red card with rank 4\n\tcard 3: a red card with rank 2\n\tcard 4: a white card with rank 2\n\nDiscards: The following cards have been discarded:\n\n\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 40   │   Info tokens: 8   │  Fuse tokens: 4   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 0,
+      "raw_action": "[Reveal] player 1 card 0 rank 2",
+      "role": "Player 0",
+      "state": {
+        "deck_size": 40,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 4,
+        "info_tokens": 8
+      },
+      "step": 0
+    },
+    {
+      "action": "[Reveal] player 0 card 0 color yellow",
+      "done": false,
+      "infer_ms": 2131,
+      "normalized_action": "[Reveal] player 0 card 0 color yellow",
+      "observation": "You are Player 1 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 1. \n\nCurrent game state:\nFuse tokens: there are 4 fuse tokens remaining.\nInfo tokens: there are 7 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 0 has cards:\n\tcard 0: a yellow card with rank 3\n\tcard 1: a blue card with rank 4\n\tcard 2: a blue card with rank 3\n\tcard 3: a white card with rank 4\n\tcard 4: a green card with rank 3\n\nDiscards: The following cards have been discarded:\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 40   │   Info tokens: 7   │  Fuse tokens: 4   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 1,
+      "raw_action": "[Reveal] player 0 card 0 color yellow",
+      "role": "Player 1",
+      "state": {
+        "deck_size": 40,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 4,
+        "info_tokens": 7
+      },
+      "step": 1
+    },
+    {
+      "action": "[Play] 0",
+      "done": false,
+      "infer_ms": 2770,
+      "normalized_action": "[Play] 0",
+      "observation": "You are Player 0 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 0. \n\nCurrent game state:\nFuse tokens: there are 4 fuse tokens remaining.\nInfo tokens: there are 6 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 1 has cards:\n\tcard 0: a red card with rank 2\n\tcard 1: a blue card with rank 2\n\tcard 2: a red card with rank 4\n\tcard 3: a red card with rank 2\n\tcard 4: a white card with rank 2\n\nDiscards: The following cards have been discarded:\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 40   │   Info tokens: 6   │  Fuse tokens: 4   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 0,
+      "raw_action": "[Play] 0",
+      "role": "Player 0",
+      "state": {
+        "deck_size": 40,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 4,
+        "info_tokens": 6
+      },
+      "step": 2
+    },
+    {
+      "action": "[Reveal] player 0 card 4 rank 4",
+      "done": false,
+      "infer_ms": 1757,
+      "normalized_action": "[Reveal] player 0 card 4 rank 4",
+      "observation": "You are Player 1 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 1. \n\nCurrent game state:\nFuse tokens: there are 3 fuse tokens remaining.\nInfo tokens: there are 6 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 0 has cards:\n\tcard 0: a blue card with rank 4\n\tcard 1: a blue card with rank 3\n\tcard 2: a white card with rank 4\n\tcard 3: a green card with rank 3\n\tcard 4: a red card with rank 4\n\nDiscards: The following cards have been discarded:\na yellow card with rank 3\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\nPlayer 0 attempts to play a yellow card with rank 3. The card did not match the current state of the fireworks. This costs one fuse token. There are 3 fuse tokens remaining.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 39   │   Info tokens: 6   │  Fuse tokens: 3   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n│ a yellow card with rank 3                                  │\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 1,
+      "raw_action": "[Reveal] player 0 card 4 rank 4",
+      "role": "Player 1",
+      "state": {
+        "deck_size": 39,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 3,
+        "info_tokens": 6
+      },
+      "step": 3
+    },
+    {
+      "action": "[Reveal] player 1 card 4 rank 2",
+      "done": false,
+      "infer_ms": 2449,
+      "normalized_action": "[Reveal] player 1 card 4 rank 2",
+      "observation": "You are Player 0 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 0. \n\nCurrent game state:\nFuse tokens: there are 3 fuse tokens remaining.\nInfo tokens: there are 5 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 1 has cards:\n\tcard 0: a red card with rank 2\n\tcard 1: a blue card with rank 2\n\tcard 2: a red card with rank 4\n\tcard 3: a red card with rank 2\n\tcard 4: a white card with rank 2\n\nDiscards: The following cards have been discarded:\na yellow card with rank 3\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\nPlayer 0 attempts to play a yellow card with rank 3. The card did not match the current state of the fireworks. This costs one fuse token. There are 3 fuse tokens remaining.\nCard 4 from player 0 has rank 4.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 39   │   Info tokens: 5   │  Fuse tokens: 3   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n│ a yellow card with rank 3                                  │\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 0,
+      "raw_action": "[Reveal] player 1 card 4 rank 2",
+      "role": "Player 0",
+      "state": {
+        "deck_size": 39,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 3,
+        "info_tokens": 5
+      },
+      "step": 4
+    },
+    {
+      "action": "[Play] 0",
+      "done": false,
+      "infer_ms": 4389,
+      "normalized_action": "[Play] 0",
+      "observation": "You are Player 1 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 1. \n\nCurrent game state:\nFuse tokens: there are 3 fuse tokens remaining.\nInfo tokens: there are 4 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 0 has cards:\n\tcard 0: a blue card with rank 4\n\tcard 1: a blue card with rank 3\n\tcard 2: a white card with rank 4\n\tcard 3: a green card with rank 3\n\tcard 4: a red card with rank 4\n\nDiscards: The following cards have been discarded:\na yellow card with rank 3\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\nPlayer 0 attempts to play a yellow card with rank 3. The card did not match the current state of the fireworks. This costs one fuse token. There are 3 fuse tokens remaining.\nCard 4 from player 0 has rank 4.\nCard 4 from player 1 has rank 2.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 39   │   Info tokens: 4   │  Fuse tokens: 3   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n│ a yellow card with rank 3                                  │\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 1,
+      "raw_action": "[Play] 0",
+      "role": "Player 1",
+      "state": {
+        "deck_size": 39,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 3,
+        "info_tokens": 4
+      },
+      "step": 5
+    },
+    {
+      "action": "[Play] 0",
+      "done": false,
+      "infer_ms": 1332,
+      "normalized_action": "[Play] 0",
+      "observation": "You are Player 0 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 0. \n\nCurrent game state:\nFuse tokens: there are 2 fuse tokens remaining.\nInfo tokens: there are 4 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 1 has cards:\n\tcard 0: a blue card with rank 2\n\tcard 1: a red card with rank 4\n\tcard 2: a red card with rank 2\n\tcard 3: a white card with rank 2\n\tcard 4: a white card with rank 1\n\nDiscards: The following cards have been discarded:\na yellow card with rank 3\na red card with rank 2\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\nPlayer 0 attempts to play a yellow card with rank 3. The card did not match the current state of the fireworks. This costs one fuse token. There are 3 fuse tokens remaining.\nCard 4 from player 0 has rank 4.\nCard 4 from player 1 has rank 2.\nPlayer 1 attempts to play a red card with rank 2. The card did not match the current state of the fireworks. This costs one fuse token. There are 2 fuse tokens remaining.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 38   │   Info tokens: 4   │  Fuse tokens: 2   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n│ a yellow card with rank 3                                  │\n│ a red card with rank 2                                     │\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 0,
+      "raw_action": "[Play] 0",
+      "role": "Player 0",
+      "state": {
+        "deck_size": 38,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 2,
+        "info_tokens": 4
+      },
+      "step": 6
+    },
+    {
+      "action": "[Reveal] player 0 card 0 rank 3",
+      "done": false,
+      "infer_ms": 1726,
+      "normalized_action": "[Reveal] player 0 card 0 rank 3",
+      "observation": "You are Player 1 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 1. \n\nCurrent game state:\nFuse tokens: there are 1 fuse tokens remaining.\nInfo tokens: there are 4 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 0 has cards:\n\tcard 0: a blue card with rank 3\n\tcard 1: a white card with rank 4\n\tcard 2: a green card with rank 3\n\tcard 3: a red card with rank 4\n\tcard 4: a blue card with rank 4\n\nDiscards: The following cards have been discarded:\na yellow card with rank 3\na red card with rank 2\na blue card with rank 4\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\nPlayer 0 attempts to play a yellow card with rank 3. The card did not match the current state of the fireworks. This costs one fuse token. There are 3 fuse tokens remaining.\nCard 4 from player 0 has rank 4.\nCard 4 from player 1 has rank 2.\nPlayer 1 attempts to play a red card with rank 2. The card did not match the current state of the fireworks. This costs one fuse token. There are 2 fuse tokens remaining.\nPlayer 0 attempts to play a blue card with rank 4. The card did not match the current state of the fireworks. This costs one fuse token. There are 1 fuse tokens remaining.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 37   │   Info tokens: 4   │  Fuse tokens: 1   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n│ a yellow card with rank 3                                  │\n│ a red card with rank 2                                     │\n│ a blue card with rank 4                                    │\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 1,
+      "raw_action": "[Reveal] player 0 card 0 rank 3",
+      "role": "Player 1",
+      "state": {
+        "deck_size": 37,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 1,
+        "info_tokens": 4
+      },
+      "step": 7
+    },
+    {
+      "action": "[Play] 0",
+      "done": true,
+      "infer_ms": 4701,
+      "normalized_action": "[Play] 0",
+      "observation": "You are Player 0 in a 2-player Hanabi game.\nYou can see other players' cards but NOT your own. Work as a team to build fireworks.\n\nGoal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\nYou have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\nValid formats (case-insensitive):\n- [Play] X\n- [Discard] X\n- [Reveal] player N card X color C\n- [Reveal] player N card X rank R\n\nIndex rules:\n- X is a 0-based card index from YOUR hand for [Play]/[Discard].\n- In this env, a [Reveal] targets exactly ONE specific card index in another player's hand.\n\nReveal rules in this env (NOTE: not standard Hanabi):\n- You must reveal about another player (not yourself).\n- Reveal costs 1 info token; if you have 0 info tokens, [Reveal] is invalid.\n- Provide exactly one hint type: either 'color C' OR 'rank R' (not both).\n- The hint must be truthful about that specific target card.\n- Colors: white, yellow, green, blue, red. Ranks: 1-5.\n\nDiscard rule: if info tokens < 8, discarding gains +1 info token.\nPlay rule: if you successfully play a rank-5 card and info tokens < 8, gain +1 info token.\nGame ends if fuse tokens reach 0, all fireworks reach 5, or the deck is exhausted and the final round ends.\n\nYou are player 0. \n\nCurrent game state:\nFuse tokens: there are 1 fuse tokens remaining.\nInfo tokens: there are 3 info tokens remaining.\n\nYour hand size: 5. Valid indices for [Play]/[Discard]: 0..4.\n\nFireworks: The current progress on each firework color is:\n\twhite: 0.\n\tyellow: 0.\n\tgreen: 0.\n\tblue: 0.\n\tred: 0.\n\nYour teammates have the following cards in their hand:\n- Player 1 has cards:\n\tcard 0: a blue card with rank 2\n\tcard 1: a red card with rank 4\n\tcard 2: a red card with rank 2\n\tcard 3: a white card with rank 2\n\tcard 4: a white card with rank 1\n\nDiscards: The following cards have been discarded:\na yellow card with rank 3\na red card with rank 2\na blue card with rank 4\n\n\n\nRecent events:\nCard 0 from player 1 has rank 2.\nCard 0 from player 0 is yellow.\nPlayer 0 attempts to play a yellow card with rank 3. The card did not match the current state of the fireworks. This costs one fuse token. There are 3 fuse tokens remaining.\nCard 4 from player 0 has rank 4.\nCard 4 from player 1 has rank 2.\nPlayer 1 attempts to play a red card with rank 2. The card did not match the current state of the fireworks. This costs one fuse token. There are 2 fuse tokens remaining.\nPlayer 0 attempts to play a blue card with rank 4. The card did not match the current state of the fireworks. This costs one fuse token. There are 1 fuse tokens remaining.\nCard 0 from player 0 has rank 3.\n\n╭── Hanabi ──────────────────────────────────────────────────╮\n│   Deck size: 37   │   Info tokens: 3   │  Fuse tokens: 1   │\n╰────────────────────────────────────────────────────────────╯\n┌─ 🎆 Fireworks ─────────────────────────────────────────────┐\n│ white     : 0  │ D>                                        │\n│ yellow    : 0  │ D>                                        │\n│ green     : 0  │ D>                                        │\n│ blue      : 0  │ D>                                        │\n│ red       : 0  │ D>                                        │\n└────────────────────────────────────────────────────────────┘\n┌─ 🚮 Discard pile ──────────────────────────────────────────┐\n│ a yellow card with rank 3                                  │\n│ a red card with rank 2                                     │\n│ a blue card with rank 4                                    │\n└────────────────────────────────────────────────────────────┘",
+      "player_id": 0,
+      "raw_action": "[Play] 0",
+      "role": "Player 0",
+      "state": {
+        "deck_size": 37,
+        "fireworks": {
+          "blue": 0,
+          "green": 0,
+          "red": 0,
+          "white": 0,
+          "yellow": 0
+        },
+        "fuse_tokens": 1,
+        "info_tokens": 3
+      },
+      "step": 8
+    }
+  ]
+}

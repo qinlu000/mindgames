@@ -1,0 +1,17 @@
+{
+  "run_id": "7e1d0f92361b",
+  "outputs": [
+    "experiments/liarsdice_eval/runs/7e1d0f92361b/rollouts.jsonl",
+    "experiments/liarsdice_eval/runs/7e1d0f92361b/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/liarsdice_eval/runs/7e1d0f92361b/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/liarsdice_eval/runs/7e1d0f92361b/summary.json"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# expctl run: 2025-12-23T22:28:10+0800
+# experiment: experiments/qwen3vl_fact_probe_all/experiment.yaml
+# run_dir: experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/probe_fact_leakage.py", line 556, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/probe_fact_leakage.py", line 411, in main
+    agent = _build_agent(
+            ^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/probe_fact_leakage.py", line 141, in _build_agent
+    return mg.agents.QwenAgent(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/qwen_agent.py", line 37, in __init__
+    super().__init__(
+  File "/home/cql/projects/games/mindgames/mindgames/agents/basic_agents.py", line 228, in __init__
+    if not api_key: raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.

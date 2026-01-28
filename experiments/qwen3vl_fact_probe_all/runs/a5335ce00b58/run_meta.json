@@ -1,0 +1,15 @@
+{
+  "experiment_path": "experiments/qwen3vl_fact_probe_all/experiment.yaml",
+  "run_dir": "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58",
+  "cmd_sh": "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58/cmd.sh",
+  "argv": [
+    "tools/expctl.py",
+    "run",
+    "experiments/qwen3vl_fact_probe_all/experiment.yaml"
+  ],
+  "started_at_s": 1766500090.902503,
+  "ended_at_s": 1766500091.5374088,
+  "elapsed_s": 0.6349058151245117,
+  "exit_code": 1,
+  "log_path": "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58/run.log"
+}

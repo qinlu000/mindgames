@@ -47,19 +47,38 @@ class ActionFormattingWrapper(ActionWrapper):
         if not isinstance(action, str):
             action = str(action)
 
-        # Keep only the first non-empty line (LLMs sometimes append explanations).
-        for line in action.splitlines():
-            if line.strip():
-                action = line.strip()
-                break
+        # Extract a single action line from potentially multi-line model output.
+        # Prefer the *last* action-looking line (many models place reasoning first, then the final action).
+        lines = [ln.strip() for ln in action.splitlines() if ln.strip()]
+        if not lines:
+            return ""
+
+        # Prefer bracketed actions; if the action isn't at the start of the line (e.g. "Final Answer: [Play] 0"),
+        # slice from the first "[" to reduce leading chatter.
+        bracket_lines: list[str] = []
+        for ln in lines:
+            if "[" in ln and "]" in ln:
+                bracket_lines.append(ln)
+        if bracket_lines:
+            ln = bracket_lines[-1]
+            if "[" in ln:
+                action = ln[ln.index("[") :].strip()
+            else:
+                action = ln
         else:
-            action = ""
+            # Hanabi-style formats: "[Play] X", "[Discard] X", "[Reveal] ...".
+            # If the model outputs "Play 0" / "Discard: 0" / "Reveal player ...", normalize it.
+            # Otherwise, fall back to the last non-empty line.
+            verb_lines: list[str] = []
+            verb_re = re.compile(r"^\s*(play|discard|reveal)\s*[:\-]?\s+(.+?)\s*$", flags=re.IGNORECASE)
+            for ln in lines:
+                if verb_re.match(ln):
+                    verb_lines.append(ln)
+            action = (verb_lines[-1] if verb_lines else lines[-1]).strip()
 
         if "[" in action and "]" in action:
             return action
 
-        # Hanabi-style formats: "[Play] X", "[Discard] X", "[Reveal] ...".
-        # If the model outputs "Play 0" / "Discard: 0" / "Reveal player ...", normalize it.
         m = re.match(r"^\s*(play|discard|reveal)\s*[:\-]?\s+(.+?)\s*$", action, flags=re.IGNORECASE)
         if m:
             verb = m.group(1).capitalize()

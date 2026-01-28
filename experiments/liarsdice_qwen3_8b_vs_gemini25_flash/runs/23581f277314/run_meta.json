@@ -1,0 +1,19 @@
+{
+  "experiment_path": "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/experiment.yaml",
+  "run_dir": "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314",
+  "cmd_sh": "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314/cmd_resume.sh",
+  "argv": [
+    "tools/expctl.py",
+    "run",
+    "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/experiment.yaml",
+    "--resume",
+    "--run-id",
+    "23581f277314"
+  ],
+  "started_at_s": 1766824125.1838522,
+  "resumed": true,
+  "ended_at_s": 1766838724.9616978,
+  "elapsed_s": 14599.777845621109,
+  "exit_code": 0,
+  "log_path": "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314/run.log"
+}

@@ -18,8 +18,8 @@ class TestHanabiEnv(unittest.TestCase):
         # For 2 players, initial hands use 5 cards each, so the deck has:
         # 50 - 2*5 = 40 cards remaining after dealing.
         # If both players always discard, the last card is drawn on turn 40.
-        # Hanabi rules: after the last card is drawn, the *other* player gets one final turn.
-        # Therefore the episode should end after 41 completed turns.
+        # Hanabi rules: after the last card is drawn, each player gets one final turn.
+        # Therefore the episode should end after 42 completed turns.
         from mindgames.envs.Hanabi.env import HanabiEnv
 
         env = HanabiEnv()
@@ -32,9 +32,9 @@ class TestHanabiEnv(unittest.TestCase):
             steps += 1
 
         self.assertTrue(done, "Expected episode to terminate by deck exhaustion.")
-        self.assertEqual(steps, 41, "Deck-exhaustion final-round length is off-by-one.")
+        self.assertEqual(steps, 42, "Deck-exhaustion final-round length is off-by-one.")
         self.assertEqual(env.state.game_info[0]["turn_count"], 21)
-        self.assertEqual(env.state.game_info[1]["turn_count"], 20)
+        self.assertEqual(env.state.game_info[1]["turn_count"], 21)
 
     def test_playing_rank5_regains_info_token(self):
         from mindgames.envs.Hanabi.env import HanabiEnv, Card, Suit

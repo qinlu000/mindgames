@@ -1,0 +1,30 @@
+{
+  "envs": {
+    "Hanabi-v0-train": {
+      "episodes": 1,
+      "avg_score_if_coop": 5.0,
+      "perfect_score_rate_if_coop": 0.0,
+      "by_player": {
+        "0": {
+          "avg_reward": 5.0,
+          "avg_turn_count": 31.0,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 1.0
+        },
+        "1": {
+          "avg_reward": 5.0,
+          "avg_turn_count": 30.0,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 1.0
+        }
+      },
+      "end_reasons": {
+        "The team ran out of fuse tokens.": 1
+      }
+    }
+  }
+}

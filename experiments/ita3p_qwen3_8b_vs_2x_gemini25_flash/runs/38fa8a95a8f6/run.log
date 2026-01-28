@@ -1,0 +1,338 @@
+# expctl run: 2025-12-26T21:25:33+0800
+# experiment: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml
+# run_dir: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6
+
+Attempt 1 failed with error: Connection error.
+Attempt 2 failed with error: Connection error.
+Attempt 1 failed with error: Connection error.
+Attempt 2 failed with error: Connection error.
+Attempt 3 failed with error: Connection error.
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http_proxy.py", line 288, in handle_request
+    connect_response = self._connection.handle_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 101, in handle_request
+    raise exc
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 78, in handle_request
+    stream = self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 124, in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 207, in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lgh/anaconda3/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 111] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 982, in request
+    response = self._client.send(
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lgh/anaconda3/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 111] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 410, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 395, in main
+    _game_loop(
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 207, in _game_loop
+    action = agents[player_id](observation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 88, in __call__
+    return self._retry_request(observation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 83, in _retry_request
+    raise last_exception
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 74, in _retry_request
+    response = self._make_request(observation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 50, in _make_request
+    completion = self.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 1192, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1014, in request
+    raise APIConnectionError(request=request) from err
+openai.APIConnectionError: Connection error.
+# expctl run: 2025-12-26T22:58:21+0800
+# experiment: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml
+# run_dir: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6
+# resume: true
+
+WARN: Found incomplete episodes in experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/rollouts.jsonl: [3]. Resuming will rerun them and append new records.
+Attempt 1 failed with error: Request timed out.
+Attempt 1 failed with error: Request timed out.
+Attempt 1 failed with error: Connection error.
+Attempt 2 failed with error: Connection error.
+Attempt 3 failed with error: Connection error.
+Attempt 4 failed with error: Connection error.
+Attempt 5 failed with error: Connection error.
+Attempt 6 failed with error: Connection error.
+Attempt 7 failed with error: Connection error.
+Attempt 8 failed with error: Connection error.
+Attempt 9 failed with error: Connection error.
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http_proxy.py", line 288, in handle_request
+    connect_response = self._connection.handle_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 126, in read
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lgh/anaconda3/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadError: [Errno 104] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 982, in request
+    response = self._client.send(
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lgh/anaconda3/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadError: [Errno 104] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 493, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 478, in main
+    _game_loop(
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 249, in _game_loop
+    action = agents[player_id](observation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 145, in __call__
+    return self._retry_request(observation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 124, in _retry_request
+    response = self._make_request(observation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 100, in _make_request
+    completion = self.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 1192, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1014, in request
+    raise APIConnectionError(request=request) from err
+openai.APIConnectionError: Connection error.
+# expctl run: 2025-12-27T03:56:12+0800
+# experiment: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml
+# run_dir: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6
+# resume: true
+
+WARN: Found incomplete episodes in experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/rollouts.jsonl: [22]. Resuming will rerun them and append new records.
+Attempt 1 failed with error: Connection error.
+Attempt 2 failed with error: Connection error.
+Attempt 3 failed with error: Connection error.
+Attempt 4 failed with error: Connection error.
+Attempt 5 failed with error: Connection error.
+Attempt 6 failed with error: Connection error.
+Attempt 7 failed with error: Connection error.
+Attempt 1 failed with error: Connection error.
+Attempt 2 failed with error: Connection error.
+Attempt 3 failed with error: Connection error.
+Attempt 4 failed with error: Connection error.
+Attempt 5 failed with error: Connection error.
+Attempt 6 failed with error: Connection error.
+Attempt 7 failed with error: Connection error.
+Attempt 8 failed with error: Connection error.
+Attempt 9 failed with error: Connection error.
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http_proxy.py", line 288, in handle_request
+    connect_response = self._connection.handle_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 126, in read
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lgh/anaconda3/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadError: [Errno 104] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 982, in request
+    response = self._client.send(
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lgh/anaconda3/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadError: [Errno 104] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 493, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 478, in main
+    _game_loop(
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 249, in _game_loop
+    action = agents[player_id](observation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 145, in __call__
+    return self._retry_request(observation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 124, in _retry_request
+    response = self._make_request(observation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 100, in _make_request
+    completion = self.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 1192, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1014, in request
+    raise APIConnectionError(request=request) from err
+openai.APIConnectionError: Connection error.
+# expctl run: 2025-12-27T12:42:42+0800
+# experiment: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml
+# run_dir: experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6
+# resume: true
+
+WARN: Found incomplete episodes in experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/rollouts.jsonl: [22]. Resuming will rerun them and append new records.

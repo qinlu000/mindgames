@@ -1,0 +1,60 @@
+schema_version: 1
+name: hanabi_qwen3_8b_vs_gemini25_flash
+kind: rollout_eval
+description: 2-episode Hanabi eval (Qwen3-8B vs Gemini-2.5-Flash) via OpenRouter (OpenAI-compatible
+  endpoint).
+tags:
+- eval
+- rollout
+- hanabi
+- 2p
+- openrouter
+repro:
+  seed: 0
+  python: '>=3.10,<3.13'
+spec:
+  env_id: Hanabi-v0-train
+  num_players: 2
+  episodes: 2
+  agents:
+  - openai:qwen/qwen3-8b
+  - openai:google/gemini-2.5-flash
+  system_prompt: 'You are an expert Hanabi teammate. Output exactly ONE valid action
+    and nothing else. Valid formats: [Discard] X | [Play] X | [Reveal] player N card
+    X color C | [Reveal] player N card X rank R. If you [Reveal], it must be truthful
+    for that specific card index (color in {white,yellow,green,blue,red} or rank in
+    {1,2,3,4,5}).'
+  openai_base_url: null
+  openai_api_key: null
+  timeout_s: 600
+  gen:
+    temperature: 0.2
+    top_p: 1.0
+    max_tokens: null
+    extra_body: null
+  run_tag: '20260116_143048'
+commands:
+- python tools/run_rollouts.py --env-id {spec.env_id} --num-players {spec.num_players}
+  --episodes {spec.episodes} --seed {repro.seed} {agent_flags} --system-prompt {sh:spec.system_prompt}
+  {opt:--openai-base-url spec.openai_base_url} {opt:--openai-api-key spec.openai_api_key}
+  {opt:--timeout spec.timeout_s} --temperature {spec.gen.temperature} --top-p {spec.gen.top_p}
+  {opt:--max-tokens spec.gen.max_tokens} {optsh:--extra-body spec.gen.extra_body}
+  --episode-json-dir {run_dir}/episodes --out {run_dir}/rollouts.jsonl
+- python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl --json > {run_dir}/summary.json
+outputs:
+  files:
+  - '{run_dir}/rollouts.jsonl'
+  - '{run_dir}/summary.json'
+_resolved_commands:
+- 'python tools/run_rollouts.py --env-id Hanabi-v0-train --num-players 2 --episodes
+  2 --seed 0 --agent openai:qwen/qwen3-8b --agent openai:google/gemini-2.5-flash --system-prompt
+  ''You are an expert Hanabi teammate. Output exactly ONE valid action and nothing
+  else. Valid formats: [Discard] X | [Play] X | [Reveal] player N card X color C |
+  [Reveal] player N card X rank R. If you [Reveal], it must be truthful for that specific
+  card index (color in {white,yellow,green,blue,red} or rank in {1,2,3,4,5}).''   --timeout
+  600 --temperature 0.2 --top-p 1.0   --episode-json-dir experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/episodes
+  --out experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/rollouts.jsonl'
+- python tools/summarize_rollouts.py experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/rollouts.jsonl
+  --json > experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/summary.json
+run_id: 6330ac8b165b
+run_dir: experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b

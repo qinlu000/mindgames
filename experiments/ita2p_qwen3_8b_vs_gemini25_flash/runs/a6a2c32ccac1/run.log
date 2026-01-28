@@ -1,0 +1,39 @@
+# expctl run: 2025-12-26T17:12:36+0800
+# experiment: experiments/ita2p_qwen3_8b_vs_gemini25_flash/experiment.yaml
+# run_dir: experiments/ita2p_qwen3_8b_vs_gemini25_flash/runs/a6a2c32ccac1
+
+Attempt 1 failed with error: Request timed out.
+Attempt 2 failed with error: Request timed out.
+Attempt 3 failed with error: Error code: 403 - {'error': {'code': 'bad_response_status_code', 'message': 'Provider API error: bad response status code 403 (request id: 20251226183341566792944tJmBkecf)', 'param': '403', 'type': 'upstream_error'}}
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 410, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 395, in main
+    _game_loop(
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 207, in _game_loop
+    action = agents[player_id](observation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 88, in __call__
+    return self._retry_request(observation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 83, in _retry_request
+    raise last_exception
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 74, in _retry_request
+    response = self._make_request(observation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/openai_agent.py", line 50, in _make_request
+    completion = self.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 1192, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.PermissionDeniedError: Error code: 403 - {'error': {'code': 'bad_response_status_code', 'message': 'Provider API error: bad response status code 403 (request id: 20251226183341566792944tJmBkecf)', 'param': '403', 'type': 'upstream_error'}}

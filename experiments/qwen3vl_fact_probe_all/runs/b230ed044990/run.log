@@ -1,0 +1,5 @@
+# expctl run: 2025-12-23T22:55:32+0800
+# experiment: experiments/qwen3vl_fact_probe_all/experiment.yaml
+# run_dir: experiments/qwen3vl_fact_probe_all/runs/b230ed044990
+
+{"facts_path": "mindgames/envs/TruthAndDeception/facts.json", "agent": "qwen:Qwen/Qwen3-VL-4B-Thinking", "seed": 0, "openai_base_url": "http://127.0.0.1:8010/v1", "gen": {"temperature": 0.6, "top_p": 0.95, "chat_template_kwargs": null, "top_k": 20, "repetition_penalty": 1.0, "presence_penalty": 0.0, "frequency_penalty": null, "gen_seed": 1234, "max_tokens": 4096}, "num_items": 200, "processed_items": 200, "resume": false, "prompt_style": "tag", "metrics": {"accuracy": 0.79, "chance": 0.5, "leakage_score": 0.5800000000000001, "parse_rate": 0.875, "avg_infer_ms": 14593.79}, "elapsed_s": 2918.9091606140137}

@@ -1,0 +1,30 @@
+{
+  "ts": "2025-12-24T21:20:45+0800",
+  "cwd": "/home/cql/projects/games/mindgames",
+  "python": {
+    "executable": "/home/cql/projects/games/mindgames/.venv/bin/python3",
+    "version": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:27:36) [GCC 11.2.0]"
+  },
+  "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "OPENAI_BASE_URL": null,
+    "OPENAI_API_KEY_set": false,
+    "HF_HOME": "/home/cql/hf_cache",
+    "HF_HUB_CACHE": null
+  },
+  "uv_lock_sha256": "203282f5c151d356ec0c816490c9e091e38a81437abdba5862ce0bc729ea3485",
+  "git": {},
+  "packages": {
+    "vllm": "0.13.0",
+    "torch": "2.9.0",
+    "transformers": "4.57.3",
+    "openai": "2.14.0"
+  },
+  "torch": {
+    "torch": "2.9.0+cu128",
+    "cuda": "12.8",
+    "cuda_available": true,
+    "device_count": 1,
+    "device_0": "NVIDIA GeForce RTX 4090"
+  }
+}

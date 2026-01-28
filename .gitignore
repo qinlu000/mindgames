@@ -22,5 +22,4 @@ dist/
 .vllm/
 
 # Experiment outputs
-experiments/**/runs/
 outputs/

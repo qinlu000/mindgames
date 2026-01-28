@@ -1,0 +1,17 @@
+{
+  "os":  "Linux-5.15.0-100-generic-x86_64-with-glibc2.31",
+  "python":  "CPython 3.12.7",
+  "startedAt":  "2025-12-23T15:44:13.355238Z",
+  "args":  [
+    "run",
+    "experiments/qwen3vl_fact_probe_all/experiment.yaml"
+  ],
+  "program":  "/home/cql/projects/games/mindgames/tools/expctl.py",
+  "codePath":  "tools/expctl.py",
+  "codePathLocal":  "tools/expctl.py",
+  "email":  "qinlu2005@gmail.com",
+  "root":  "experiments/qwen3vl_fact_probe_all/runs/b230ed044990",
+  "host":  "ubun",
+  "executable":  "/home/cql/projects/games/mindgames/.venv/bin/python3",
+  "writerId":  "b3awp7vyubedkx6mfgsn51x54dhmn5fd"
+}

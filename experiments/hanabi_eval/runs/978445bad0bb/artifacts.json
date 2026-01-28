@@ -1,0 +1,17 @@
+{
+  "run_id": "978445bad0bb",
+  "outputs": [
+    "experiments/hanabi_eval/runs/978445bad0bb/rollouts.jsonl",
+    "experiments/hanabi_eval/runs/978445bad0bb/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/hanabi_eval/runs/978445bad0bb/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/hanabi_eval/runs/978445bad0bb/summary.json"
+    }
+  ]
+}

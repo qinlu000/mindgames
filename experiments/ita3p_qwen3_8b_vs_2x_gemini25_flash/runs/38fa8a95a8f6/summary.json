@@ -1,0 +1,39 @@
+{
+  "envs": {
+    "IteratedTwoThirdsAverage3P-v0": {
+      "episodes": 30,
+      "avg_score_if_coop": 0.0,
+      "perfect_score_rate_if_coop": 0.0,
+      "by_player": {
+        "0": {
+          "avg_reward": -0.5333333333333333,
+          "avg_turn_count": 5.0,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 0.0
+        },
+        "1": {
+          "avg_reward": -0.06666666666666667,
+          "avg_turn_count": 5.0,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 0.0
+        },
+        "2": {
+          "avg_reward": 0.06666666666666667,
+          "avg_turn_count": 5.0,
+          "invalid_rate": 0.0,
+          "win_rate": 0.0,
+          "loss_rate": 0.0,
+          "draw_rate": 0.0
+        }
+      },
+      "end_reasons": {
+        "Player won more rounds.": 16,
+        "Overall game is a draw.": 14
+      }
+    }
+  }
+}

@@ -19,7 +19,11 @@ spec:
   agents:
     - "openrouter:moonshotai/kimi-k2:free"
     - "openrouter:moonshotai/kimi-k2:free"
-  system_prompt: "You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format."
+  system_prompt: |-
+    You are playing a text-based game.
+    Read the observation carefully and follow all rules.
+    Output EXACTLY ONE valid action in the required format, and NOTHING else.
+    Do NOT output reasoning, explanations, multiple actions, or extra lines.
   # Optional: only used for OpenAI-compatible agents (e.g. openai:/qwen: with local vLLM).
   openai_base_url: null
   openai_api_key: null

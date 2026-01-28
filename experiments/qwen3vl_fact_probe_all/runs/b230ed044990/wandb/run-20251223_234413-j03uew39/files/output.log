@@ -1,0 +1,83 @@
+urllib3.exceptions.SSLError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/requests/adapters.py", line 644, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 519, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Max retries exceeded with url: /graphql (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_login.py", line 387, in _verify_login
+    is_api_key_valid = api.validate_api_key()
+                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/apis/internal.py", line 66, in validate_api_key
+    return self.api.validate_api_key()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/internal/internal_api.py", line 402, in validate_api_key
+    res = self.execute(gql("query { viewer { id } }"))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/internal/internal_api.py", line 391, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/lib/gql_request.py", line 70, in execute
+    request = self.session.post(self.url, **post_args)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/requests/sessions.py", line 637, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/requests/adapters.py", line 675, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Max retries exceeded with url: /graphql (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/expctl.py", line 407, in _maybe_log_wandb
+    run.log_artifact(artifact, aliases=["latest", run_id])
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 458, in wrapper_fn
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 445, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 3166, in log_artifact
+    return self._log_artifact(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 3311, in _log_artifact
+    self._assert_can_log_artifact(artifact)
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 3371, in _assert_can_log_artifact
+    public_api = self._public_api()
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_run.py", line 3359, in _public_api
+    self._cached_public_api = public.Api(overrides, api_key=self._settings.api_key)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/apis/public/api.py", line 319, in __init__
+    wandb_login._verify_login(
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/wandb/sdk/wandb_login.py", line 389, in _verify_login
+    raise AuthenticationError(
+wandb.errors.errors.AuthenticationError: Unable to connect to https://api.wandb.ai to verify API token.

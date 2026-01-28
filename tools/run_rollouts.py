@@ -261,6 +261,41 @@ def _load_rollout_progress(path: Path) -> Tuple[set[int], set[int]]:
     return completed, seen_steps
 
 
+def _prune_partial_episodes(path: Path, partial_episode_ids: List[int]) -> None:
+    if not partial_episode_ids:
+        return
+    keep = set(int(x) for x in partial_episode_ids)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    removed = 0
+    kept = 0
+    with path.open("r", encoding="utf-8") as src, tmp_path.open("w", encoding="utf-8") as dst:
+        for line_no, line in enumerate(src, start=1):
+            raw = line.strip()
+            if not raw:
+                continue
+            try:
+                rec = json.loads(raw)
+            except Exception as e:
+                print(
+                    f"WARN: Invalid JSON on line {line_no} of {path}: {e}. Truncating at this line.",
+                    file=sys.stderr,
+                )
+                break
+            if not isinstance(rec, dict):
+                continue
+            ep_id = _coerce_episode_id(rec.get("episode_id"))
+            if ep_id is not None and ep_id in keep:
+                removed += 1
+                continue
+            dst.write(raw + "\n")
+            kept += 1
+    tmp_path.replace(path)
+    print(
+        f"INFO: Pruned {removed} records for incomplete episodes {sorted(keep)} from {path} (kept {kept} records).",
+        file=sys.stderr,
+    )
+
+
 def _make_env(env_id: str, *, env_kwargs: Optional[Dict[str, Any]] = None):
     if env_id in mg.ENV_REGISTRY:
         return mg.make(env_id=env_id, **(env_kwargs or {}))
@@ -374,6 +409,11 @@ def main() -> int:
         help="If set, append to an existing JSONL and skip completed episodes.",
     )
     ap.add_argument(
+        "--keep-partial",
+        action="store_true",
+        help="When resuming: keep existing partial/incomplete episode records (default is to prune them to avoid duplicates).",
+    )
+    ap.add_argument(
         "--episode-json-dir",
         default=None,
         help="Optional: also write one JSON file per episode into this directory (compact format).",
@@ -398,7 +438,26 @@ def main() -> int:
     )
     ap.add_argument(
         "--system-prompt",
-        default="You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format.",
+        default=(
+            "You are an expert Hanabi teammate.\n"
+            "Output EXACTLY ONE valid action and nothing else (no reasoning).\n\n"
+            "Valid formats:\n"
+            "- [Play] X\n"
+            "- [Discard] X\n"
+            "- [Reveal] player N card X color C\n"
+            "- [Reveal] player N card X rank R\n\n"
+            "Rules (non-standard Hanabi here):\n"
+            "- Reveal must target exactly ONE specific card index in another player's hand.\n"
+            "- Reveal must be truthful for that specific card.\n"
+            "- Do not reveal about yourself.\n"
+            "- Use exactly one hint type: color OR rank.\n\n"
+            "- Fireworks are independent; you may play the next required rank of any color.\n\n"
+            "Strategy priority:\n"
+            "1) If you know a card is playable, [Play] it.\n"
+            "2) Else if a teammate has a clearly playable card and info_tokens>0, reveal that exact card.\n"
+            "3) Else discard the least useful / most uncertain card.\n"
+            "4) Avoid repeating the same Reveal on the same card unless it adds new info."
+        ),
     )
     ap.add_argument("--openai-base-url", default=None, help="Override OPENAI_BASE_URL (for OpenAI/vLLM-compatible servers)")
     ap.add_argument("--openai-api-key", default=None, help="Override OPENAI_API_KEY (for OpenAI/vLLM-compatible servers)")
@@ -409,8 +468,8 @@ def main() -> int:
         help="Per-request timeout in seconds (OpenAI-compatible agents).",
     )
     ap.add_argument("--max-retries", type=int, default=10, help="Max attempts for API calls (OpenAI-compatible agents).")
-    ap.add_argument("--retry-initial-delay", type=float, default=2.0, help="Initial retry delay in seconds.")
-    ap.add_argument("--retry-max-delay", type=float, default=60.0, help="Maximum retry delay in seconds.")
+    ap.add_argument("--retry-initial-delay", type=float, default=0.0, help="Retry delay in seconds (0 = immediate retry).")
+    ap.add_argument("--retry-max-delay", type=float, default=0.0, help="Maximum retry delay in seconds (0 = no cap / unused for immediate retry).")
     ap.add_argument("--temperature", type=float, default=None, help="If set, pass temperature to the backend; otherwise omit it.")
     ap.add_argument("--top-p", type=float, default=None, help="If set, pass top_p to the backend; otherwise omit it.")
     ap.add_argument("--top-k", type=int, default=None)
@@ -542,11 +601,16 @@ def main() -> int:
         completed_ids, seen_steps = _load_rollout_progress(out_path)
         partial = sorted(seen_steps - completed_ids)
         if partial:
-            print(
-                f"WARN: Found incomplete episodes in {out_path}: {partial}. "
-                "Resuming will rerun them and append new records.",
-                file=sys.stderr,
-            )
+            if not args.keep_partial:
+                _prune_partial_episodes(out_path, partial)
+                completed_ids, seen_steps = _load_rollout_progress(out_path)
+                partial = sorted(seen_steps - completed_ids)
+            if partial:
+                print(
+                    f"WARN: Found incomplete episodes in {out_path}: {partial}. "
+                    "Resuming will rerun them and append new records.",
+                    file=sys.stderr,
+                )
         if set(range(args.episodes)).issubset(completed_ids):
             print(f"All {args.episodes} episodes already completed in {out_path}.")
             return 0

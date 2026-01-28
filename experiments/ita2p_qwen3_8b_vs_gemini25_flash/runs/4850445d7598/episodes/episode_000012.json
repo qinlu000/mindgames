@@ -1,0 +1,171 @@
+{
+  "env_id": "IteratedTwoThirdsAverage-v0",
+  "episode_end": {
+    "env_id": "IteratedTwoThirdsAverage-v0",
+    "episode_id": 12,
+    "game_info": {
+      "0": {
+        "invalid_move": false,
+        "reason": "Player 1 won more rounds.",
+        "role": "Player 0",
+        "turn_count": 5
+      },
+      "1": {
+        "invalid_move": false,
+        "reason": "Player 1 won more rounds.",
+        "role": "Player 1",
+        "turn_count": 5
+      }
+    },
+    "rewards": {
+      "0": -1,
+      "1": 1
+    },
+    "seed": 12,
+    "type": "episode_end"
+  },
+  "episode_id": 12,
+  "seed": 12,
+  "steps": [
+    {
+      "action": "[66.66]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 19365,
+      "observation": "\n[GAME] You are Player 0 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0",
+      "player_id": 0,
+      "role": "Player 0",
+      "seed": 12,
+      "step": 0,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 11098,
+      "observation": "\n[GAME] You are Player 1 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0",
+      "player_id": 1,
+      "role": "Player 1",
+      "seed": 12,
+      "step": 1,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[11.11]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 204254,
+      "observation": "\n[GAME] You are Player 0 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 0] [66.66]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)",
+      "player_id": 0,
+      "role": "Player 0",
+      "seed": 12,
+      "step": 2,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 21414,
+      "observation": "\n[GAME] You are Player 1 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 1] [0.0]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)",
+      "player_id": 1,
+      "role": "Player 1",
+      "seed": 12,
+      "step": 3,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 103800,
+      "observation": "\n[GAME] You are Player 0 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 0] [66.66]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n[Player 0] [11.11]\n[GAME] Round 2 results: Player 0 guessed 11.11; Player 1 guessed 0.0; target = 3.70.\n[GAME] Player 1 wins the round!\n[GAME] Round 3/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)",
+      "player_id": 0,
+      "role": "Player 0",
+      "seed": 12,
+      "step": 4,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 13382,
+      "observation": "\n[GAME] You are Player 1 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 1] [0.0]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n[Player 1] [0.0]\n[GAME] Round 2 results: Player 0 guessed 11.11; Player 1 guessed 0.0; target = 3.70.\n[GAME] Player 1 wins the round!\n[GAME] Round 3/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)",
+      "player_id": 1,
+      "role": "Player 1",
+      "seed": 12,
+      "step": 5,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 31570,
+      "observation": "\n[GAME] You are Player 0 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 0] [66.66]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n[Player 0] [11.11]\n[GAME] Round 2 results: Player 0 guessed 11.11; Player 1 guessed 0.0; target = 3.70.\n[GAME] Player 1 wins the round!\n[GAME] Round 3/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n[Player 0] [0.0]\n[GAME] Round 3 results: Player 0 guessed 0.0; Player 1 guessed 0.0; target = 0.00.\n[GAME] Round is a draw.\n[GAME] Round 4/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n  Round 3: P0→0.0, P1→0.0, target=0.00 (draw)",
+      "player_id": 0,
+      "role": "Player 0",
+      "seed": 12,
+      "step": 6,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 7429,
+      "observation": "\n[GAME] You are Player 1 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 1] [0.0]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n[Player 1] [0.0]\n[GAME] Round 2 results: Player 0 guessed 11.11; Player 1 guessed 0.0; target = 3.70.\n[GAME] Player 1 wins the round!\n[GAME] Round 3/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n[Player 1] [0.0]\n[GAME] Round 3 results: Player 0 guessed 0.0; Player 1 guessed 0.0; target = 0.00.\n[GAME] Round is a draw.\n[GAME] Round 4/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n  Round 3: P0→0.0, P1→0.0, target=0.00 (draw)",
+      "player_id": 1,
+      "role": "Player 1",
+      "seed": 12,
+      "step": 7,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": false,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 38351,
+      "observation": "\n[GAME] You are Player 0 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 0] [66.66]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n[Player 0] [11.11]\n[GAME] Round 2 results: Player 0 guessed 11.11; Player 1 guessed 0.0; target = 3.70.\n[GAME] Player 1 wins the round!\n[GAME] Round 3/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n[Player 0] [0.0]\n[GAME] Round 3 results: Player 0 guessed 0.0; Player 1 guessed 0.0; target = 0.00.\n[GAME] Round is a draw.\n[GAME] Round 4/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n  Round 3: P0→0.0, P1→0.0, target=0.00 (draw)\n[Player 0] [0.0]\n[GAME] Round 4 results: Player 0 guessed 0.0; Player 1 guessed 0.0; target = 0.00.\n[GAME] Round is a draw.\n[GAME] Round 5/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n  Round 3: P0→0.0, P1→0.0, target=0.00 (draw)\n  Round 4: P0→0.0, P1→0.0, target=0.00 (draw)",
+      "player_id": 0,
+      "role": "Player 0",
+      "seed": 12,
+      "step": 8,
+      "step_info": {},
+      "type": "step"
+    },
+    {
+      "action": "[0.0]",
+      "done": true,
+      "env_id": "IteratedTwoThirdsAverage-v0",
+      "episode_id": 12,
+      "infer_ms": 10562,
+      "observation": "\n[GAME] You are Player 1 in a 5-round Iterated Two-Thirds Average game.\nEach round, choose a number between 0.0 and 100.0.\nAfter both players choose, the target is (2/3) × (average of both guesses).\nThe player whose guess is closest to the target wins the round.\nReply with your guess in the format '[<number>]'.\n[GAME] Round 1/5\nScore: Player 0 = 0, Player 1 = 0\n[Player 1] [0.0]\n[GAME] Round 1 results: Player 0 guessed 66.66; Player 1 guessed 0.0; target = 22.22.\n[GAME] Player 1 wins the round!\n[GAME] Round 2/5\nScore: Player 0 = 0, Player 1 = 1\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n[Player 1] [0.0]\n[GAME] Round 2 results: Player 0 guessed 11.11; Player 1 guessed 0.0; target = 3.70.\n[GAME] Player 1 wins the round!\n[GAME] Round 3/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n[Player 1] [0.0]\n[GAME] Round 3 results: Player 0 guessed 0.0; Player 1 guessed 0.0; target = 0.00.\n[GAME] Round is a draw.\n[GAME] Round 4/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n  Round 3: P0→0.0, P1→0.0, target=0.00 (draw)\n[Player 1] [0.0]\n[GAME] Round 4 results: Player 0 guessed 0.0; Player 1 guessed 0.0; target = 0.00.\n[GAME] Round is a draw.\n[GAME] Round 5/5\nScore: Player 0 = 0, Player 1 = 2\n\nHistory (completed rounds):\n  Round 1: P0→66.66, P1→0.0, target=22.22 (Player 1 won)\n  Round 2: P0→11.11, P1→0.0, target=3.70 (Player 1 won)\n  Round 3: P0→0.0, P1→0.0, target=0.00 (draw)\n  Round 4: P0→0.0, P1→0.0, target=0.00 (draw)",
+      "player_id": 1,
+      "role": "Player 1",
+      "seed": 12,
+      "step": 9,
+      "step_info": {},
+      "type": "step"
+    }
+  ]
+}

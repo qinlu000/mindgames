@@ -1,0 +1,31 @@
+{
+  "envs": {
+    "LiarsDice-v0-train": {
+      "episodes": 20,
+      "avg_score_if_coop": null,
+      "perfect_score_rate_if_coop": null,
+      "by_player": {
+        "0": {
+          "avg_reward": 0.5,
+          "avg_turn_count": 6.25,
+          "invalid_rate": 0.15,
+          "win_rate": 0.75,
+          "loss_rate": 0.25,
+          "draw_rate": 0.0
+        },
+        "1": {
+          "avg_reward": -0.5,
+          "avg_turn_count": 6.4,
+          "invalid_rate": 0.5,
+          "win_rate": 0.25,
+          "loss_rate": 0.75,
+          "draw_rate": 0.0
+        }
+      },
+      "end_reasons": {
+        "Player 0 wins! Final ranking: [1, 0]": 15,
+        "Player 1 wins! Final ranking: [0, 1]": 5
+      }
+    }
+  }
+}

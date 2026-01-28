@@ -1,0 +1,48 @@
+{
+  "run_id": "38fa8a95a8f6",
+  "experiment_path": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml",
+  "config": {
+    "schema_version": 1,
+    "name": "ita3p_qwen3_8b_vs_2x_gemini25_flash",
+    "kind": "rollout_eval",
+    "description": "3-player IteratedTwoThirdsAverage baseline (Qwen3-8B vs 2× Gemini-2.5-Flash) via UniAPI (OpenAI-compatible endpoint).",
+    "tags": [
+      "eval",
+      "rollout",
+      "IteratedTwoThirdsAverage",
+      "3p",
+      "uniapi",
+      "baseline"
+    ],
+    "repro": {
+      "seed": 0,
+      "python": ">=3.10,<3.13"
+    },
+    "spec": {
+      "env_id": "IteratedTwoThirdsAverage3P-v0",
+      "env_kwargs": {
+        "num_rounds": 5
+      },
+      "run_tag": "20251226_212531",
+      "num_players": 3,
+      "episodes": 30,
+      "agents": [
+        "openai:qwen3-8b",
+        "openai:gemini-2.5-flash",
+        "openai:gemini-2.5-flash"
+      ],
+      "system_prompt": "You are playing a numeric guessing game. Output ONLY your guess as a single bracketed number like [42.0]. No extra words, no explanation.",
+      "openai_base_url": null,
+      "openai_api_key": null,
+      "timeout_s": 120
+    },
+    "outputs": {
+      "files": [
+        "{run_dir}/rollouts.jsonl",
+        "{run_dir}/summary.json"
+      ]
+    },
+    "run_id": "38fa8a95a8f6",
+    "run_dir": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6"
+  }
+}

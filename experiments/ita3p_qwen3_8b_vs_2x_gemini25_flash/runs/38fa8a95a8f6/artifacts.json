@@ -1,0 +1,17 @@
+{
+  "run_id": "38fa8a95a8f6",
+  "outputs": [
+    "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/rollouts.jsonl",
+    "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/summary.json"
+    }
+  ]
+}

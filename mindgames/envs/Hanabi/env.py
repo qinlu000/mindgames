@@ -59,6 +59,7 @@ class HanabiEnv(Env):
         self.hand_size = 5 if num_players <= 3 else 4  # The hand size is 5 for 2-3 players, and 4 for 4-5 players
         self.deck = self._generate_deck()
 
+        player_hands = {player: self.generate_hand(self.deck) for player in range(self.num_players)}
         game_state = {
             "info_tokens": self.info_tokens,
             "fuse_tokens": self.fuse_tokens,
@@ -69,11 +70,9 @@ class HanabiEnv(Env):
                 Suit.BLUE: 0,
                 Suit.RED: 0,
             },
-            "deck_size": self.deck_size,
+            "deck_size": len(self.deck),
             "deck": self.deck,
-            "player_hands": {
-                player: self.generate_hand(self.deck) for player in range(self.num_players)
-            },
+            "player_hands": player_hands,
             "discard_pile": [],
             "last_round": -1,
             "step_count": 0,
@@ -98,6 +97,7 @@ class HanabiEnv(Env):
             f"You are Player {player_id} in a {self.state.num_players}-player Hanabi game.\n"
             "You can see other players' cards but NOT your own. Work as a team to build fireworks.\n\n"
             "Goal: For each color, play ranks 1→5 in order. Wrong plays cost 1 fuse token.\n"
+            "Colors are independent; you may play the next required rank of any color at any time.\n"
             "You have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\n"
             "Valid formats (case-insensitive):\n"
             "- [Play] X\n"
@@ -199,6 +199,12 @@ class HanabiEnv(Env):
         else: # Invalid action
             reason = r"The player provided an invalid action. Players can only '[reveal]', '[play]' or '[discard]'."
             self.state.set_invalid_move(reason=reason)
+            self.state.add_observation(
+                from_id=GAME_ID,
+                to_id=self.state.current_player_id,
+                message="Invalid action. Use exactly one of: [Reveal] ..., [Play] X, or [Discard] X.",
+                observation_type=ObservationType.GAME_MESSAGE,
+            )
 
         # Check whether the game has ended
         self._check_game_end()
@@ -249,7 +255,7 @@ class HanabiEnv(Env):
             try:
                 card_idx = int(match.group(1))
                 card = self.state.game_state['player_hands'][self.state.current_player_id].pop(card_idx)
-                action = f"Player {self.state.current_player_id} discards {str(card)}."
+                action = f"Player {self.state.current_player_id} discards card {card_idx}: {str(card)}."
             except IndexError:
                 reason = "The player attempts to discard a non-existing card."
                 self.state.set_invalid_move(reason=reason)
@@ -279,6 +285,7 @@ class HanabiEnv(Env):
 
             # Draw a new card
             card = self._draw_card(self.state.game_state['deck'])
+            self.state.game_state["deck_size"] = len(self.state.game_state["deck"])
 
             # Give the card to the current player (if any; hands shrink after deck exhaustion)
             if card is not None:
@@ -308,7 +315,7 @@ class HanabiEnv(Env):
             try:
                 card_idx = int(match.group(1))
                 card = self.state.game_state['player_hands'][self.state.current_player_id].pop(card_idx)
-                action = f"Player {self.state.current_player_id} attempts to play {str(card)}."
+                action = f"Player {self.state.current_player_id} attempts to play card {card_idx}: {str(card)}."
             except IndexError:
                 reason = "The player attempts to play a non-existing card."
                 self.state.set_invalid_move(reason=reason)
@@ -349,6 +356,7 @@ class HanabiEnv(Env):
 
             # Draw a new card
             card = self._draw_card(self.state.game_state['deck'])
+            self.state.game_state["deck_size"] = len(self.state.game_state["deck"])
 
             # Give the card to the current player (if any; hands shrink after deck exhaustion)
             if card is not None:
@@ -377,6 +385,13 @@ class HanabiEnv(Env):
         if self.state.game_state['info_tokens'] == 0:  # Invalid action, no info tokens left
             reason = "Player attempted to give a hint without having any info tokens."
             self.state.set_invalid_move(reason=reason)
+            self.state.add_observation(
+                from_id=GAME_ID,
+                to_id=self.state.current_player_id,
+                message="Invalid hint: you have no info tokens remaining.",
+                observation_type=ObservationType.GAME_MESSAGE,
+            )
+            return
 
         else:  # Parse the message and send it to the selected player
             card_index, color, player, rank = self._parse_hint(action)
@@ -585,12 +600,16 @@ class HanabiEnv(Env):
         # Losing conditions
         if len(self.state.game_state['deck']) == 0:  # The deck has run out
             if self.state.game_state['last_round'] == -1:  # Start the last round
-                self.state.add_observation(from_id=-1, to_id=-1, message="There are no cards left in the deck. "
-                                                                         "After each remaining player takes one more turn, the game ends.",
-                                           observation_type=ObservationType.GAME_MESSAGE)
-                # By Hanabi rules, the player who drew the last card does NOT get an extra turn.
-                # The last player to act is the one immediately before the current player.
-                self.state.game_state['last_round'] = (self.state.current_player_id - 1) % self.num_players
+                self.state.add_observation(
+                    from_id=-1,
+                    to_id=-1,
+                    message="There are no cards left in the deck. After each player takes one more turn, the game ends.",
+                    observation_type=ObservationType.GAME_MESSAGE,
+                )
+                # Standard Hanabi: once the last card is drawn, there is one final round in which
+                # each player (including the player who drew the last card) takes one more turn.
+                # End when turn order returns to the drawer.
+                self.state.game_state['last_round'] = self.state.current_player_id
 
             elif self.state.game_state['last_round'] == self.state.current_player_id:  # End the last round
                 self.state.set_draw(reason="The deck has run out.")

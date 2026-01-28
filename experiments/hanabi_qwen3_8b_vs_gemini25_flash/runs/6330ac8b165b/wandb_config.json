@@ -1,0 +1,49 @@
+{
+  "run_id": "6330ac8b165b",
+  "experiment_path": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/experiment.yaml",
+  "config": {
+    "schema_version": 1,
+    "name": "hanabi_qwen3_8b_vs_gemini25_flash",
+    "kind": "rollout_eval",
+    "description": "2-episode Hanabi eval (Qwen3-8B vs Gemini-2.5-Flash) via OpenRouter (OpenAI-compatible endpoint).",
+    "tags": [
+      "eval",
+      "rollout",
+      "hanabi",
+      "2p",
+      "openrouter"
+    ],
+    "repro": {
+      "seed": 0,
+      "python": ">=3.10,<3.13"
+    },
+    "spec": {
+      "env_id": "Hanabi-v0-train",
+      "num_players": 2,
+      "episodes": 2,
+      "agents": [
+        "openai:qwen/qwen3-8b",
+        "openai:google/gemini-2.5-flash"
+      ],
+      "system_prompt": "You are an expert Hanabi teammate. Output exactly ONE valid action and nothing else. Valid formats: [Discard] X | [Play] X | [Reveal] player N card X color C | [Reveal] player N card X rank R. If you [Reveal], it must be truthful for that specific card index (color in {white,yellow,green,blue,red} or rank in {1,2,3,4,5}).",
+      "openai_base_url": null,
+      "openai_api_key": null,
+      "timeout_s": 600,
+      "gen": {
+        "temperature": 0.2,
+        "top_p": 1.0,
+        "max_tokens": null,
+        "extra_body": null
+      },
+      "run_tag": "20260116_143048"
+    },
+    "outputs": {
+      "files": [
+        "{run_dir}/rollouts.jsonl",
+        "{run_dir}/summary.json"
+      ]
+    },
+    "run_id": "6330ac8b165b",
+    "run_dir": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b"
+  }
+}

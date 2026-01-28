@@ -38,7 +38,7 @@ class TestRunnerSmoke(unittest.TestCase):
         self.assertEqual(end["type"], "episode_end")
 
         steps = [r for r in records if r.get("type") == "step"]
-        self.assertEqual(len(steps), 41)
+        self.assertEqual(len(steps), 42)
 
         rewards = end.get("rewards") or {}
         self.assertEqual(float(rewards.get("0", rewards.get(0))), 0.0)

@@ -1,0 +1,17 @@
+{
+  "run_id": "a5335ce00b58",
+  "outputs": [
+    "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58/probe.jsonl",
+    "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58/probe.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/qwen3vl_fact_probe_all/runs/a5335ce00b58/summary.json"
+    }
+  ]
+}

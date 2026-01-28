@@ -1,0 +1,57 @@
+{
+  "run_id": "b230ed044990",
+  "experiment_path": "experiments/qwen3vl_fact_probe_all/experiment.yaml",
+  "config": {
+    "schema_version": 1,
+    "name": "qwen3vl_fact_probe_all",
+    "kind": "generic",
+    "description": "Knowledge-only probe for TruthAndDeception facts (tests potential memorization / world-knowledge leakage).",
+    "tags": [
+      "eval",
+      "probe",
+      "truth_and_deception"
+    ],
+    "repro": {
+      "seed": 0,
+      "python": ">=3.10,<3.13"
+    },
+    "spec": {
+      "facts_path": "mindgames/envs/TruthAndDeception/facts.json",
+      "agent": "qwen:Qwen/Qwen3-VL-4B-Thinking",
+      "model": null,
+      "openai_base_url": "http://127.0.0.1:8010/v1",
+      "openai_api_key": "dummy",
+      "timeout_s": null,
+      "num_items": 200,
+      "prompt_style": "tag",
+      "system_prompt": "You are doing a strict multiple-choice knowledge check. Output ONLY the final choice in the required format.",
+      "resume": false,
+      "output_minimal": true,
+      "gen": {
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "top_k": 20,
+        "repetition_penalty": 1.0,
+        "presence_penalty": 0.0,
+        "gen_seed": 1234,
+        "max_tokens": 4096,
+        "max_new_tokens": 128,
+        "extra_body": null,
+        "chat_template_kwargs": null,
+        "disable_thinking": false
+      }
+    },
+    "outputs": {
+      "files": [
+        "{run_dir}/probe.jsonl",
+        "{run_dir}/summary.json"
+      ]
+    },
+    "wandb": {
+      "project": "mindgames",
+      "job_type": "probe"
+    },
+    "run_id": "b230ed044990",
+    "run_dir": "experiments/qwen3vl_fact_probe_all/runs/b230ed044990"
+  }
+}

@@ -1,0 +1,26 @@
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_setup.py:_flush():80] Current SDK version is 0.23.1
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_setup.py:_flush():80] Configure stats pid to 2574673
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_setup.py:_flush():80] Loading settings from /home/cql/.config/wandb/settings
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_setup.py:_flush():80] Loading settings from /home/cql/projects/games/mindgames/wandb/settings
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_setup.py:_flush():80] Loading settings from environment variables
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_init.py:setup_run_log_directory():714] Logging user logs to experiments/qwen3vl_fact_probe_all/runs/b230ed044990/wandb/run-20251223_234413-j03uew39/logs/debug.log
+2025-12-23 23:44:13,357 INFO    MainThread:2574673 [wandb_init.py:setup_run_log_directory():715] Logging internal logs to experiments/qwen3vl_fact_probe_all/runs/b230ed044990/wandb/run-20251223_234413-j03uew39/logs/debug-internal.log
+2025-12-23 23:44:13,358 INFO    MainThread:2574673 [wandb_init.py:init():841] calling init triggers
+2025-12-23 23:44:13,358 INFO    MainThread:2574673 [wandb_init.py:init():846] wandb.init called with sweep_config: {}
+config: {'experiment': {'name': 'qwen3vl_fact_probe_all', 'kind': 'generic', 'description': 'Knowledge-only probe for TruthAndDeception facts (tests potential memorization / world-knowledge leakage).', 'tags': ['eval', 'probe', 'truth_and_deception'], 'path': 'experiments/qwen3vl_fact_probe_all/experiment.yaml', 'run_id': 'b230ed044990'}, 'repro': {'seed': 0, 'python': '>=3.10,<3.13'}, 'spec': {'facts_path': 'mindgames/envs/TruthAndDeception/facts.json', 'agent': 'qwen:Qwen/Qwen3-VL-4B-Thinking', 'model': None, 'openai_base_url': 'http://127.0.0.1:8010/v1', 'openai_api_key': '<redacted>', 'timeout_s': None, 'num_items': 200, 'prompt_style': 'tag', 'system_prompt': 'You are doing a strict multiple-choice knowledge check. Output ONLY the final choice in the required format.', 'resume': False, 'output_minimal': True, 'gen': {'temperature': 0.6, 'top_p': 0.95, 'top_k': 20, 'repetition_penalty': 1.0, 'presence_penalty': 0.0, 'gen_seed': 1234, 'max_tokens': 4096, 'max_new_tokens': 128, 'extra_body': None, 'chat_template_kwargs': None, 'disable_thinking': False}}, '_wandb': {}}
+2025-12-23 23:44:13,358 INFO    MainThread:2574673 [wandb_init.py:init():889] starting backend
+2025-12-23 23:44:13,692 INFO    MainThread:2574673 [wandb_init.py:init():892] sending inform_init request
+2025-12-23 23:44:13,702 INFO    MainThread:2574673 [wandb_init.py:init():900] backend started and connected
+2025-12-23 23:44:13,703 INFO    MainThread:2574673 [wandb_init.py:init():970] updated telemetry
+2025-12-23 23:44:13,704 INFO    MainThread:2574673 [wandb_init.py:init():994] communicating run to backend with 90.0 second timeout
+2025-12-23 23:44:14,796 INFO    MainThread:2574673 [wandb_init.py:init():1041] starting run threads in backend
+2025-12-23 23:44:14,889 INFO    MainThread:2574673 [wandb_run.py:_console_start():2521] atexit reg
+2025-12-23 23:44:14,889 INFO    MainThread:2574673 [wandb_run.py:_redirect():2369] redirect: wrap_raw
+2025-12-23 23:44:14,889 INFO    MainThread:2574673 [wandb_run.py:_redirect():2438] Wrapping output streams.
+2025-12-23 23:44:14,889 INFO    MainThread:2574673 [wandb_run.py:_redirect():2461] Redirects installed.
+2025-12-23 23:44:14,899 INFO    MainThread:2574673 [wandb_init.py:init():1081] run started, returning control to user process
+2025-12-23 23:44:14,942 INFO    MainThread:2574673 [wandb_run.py:_finish():2287] finishing run qinlu-shenzhen-university/mindgames/j03uew39
+2025-12-23 23:44:14,945 INFO    MainThread:2574673 [wandb_run.py:_atexit_cleanup():2486] got exitcode: 1
+2025-12-23 23:44:14,945 INFO    MainThread:2574673 [wandb_run.py:_restore():2468] restore
+2025-12-23 23:44:14,945 INFO    MainThread:2574673 [wandb_run.py:_restore():2474] restore done
+2025-12-23 23:44:16,140 INFO    MainThread:2574673 [wandb_run.py:_footer_sync_info():3862] logging synced files

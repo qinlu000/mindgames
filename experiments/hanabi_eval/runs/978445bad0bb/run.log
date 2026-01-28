@@ -1,0 +1,39 @@
+# expctl run: 2025-12-24T20:24:51+0800
+# experiment: experiments/hanabi_eval/experiment.yaml
+# run_dir: experiments/hanabi_eval/runs/978445bad0bb
+
+Attempt 1 failed with error: Error code: 400 - {'error': {'message': "'max_tokens' or 'max_completion_tokens' is too large: 2048. This model's maximum context length is 16384 tokens and your request has 14456 input tokens (2048 > 16384 - 14456). None", 'type': 'BadRequestError', 'param': None, 'code': 400}}
+Attempt 2 failed with error: Error code: 400 - {'error': {'message': "'max_tokens' or 'max_completion_tokens' is too large: 2048. This model's maximum context length is 16384 tokens and your request has 14456 input tokens (2048 > 16384 - 14456). None", 'type': 'BadRequestError', 'param': None, 'code': 400}}
+Attempt 3 failed with error: Error code: 400 - {'error': {'message': "'max_tokens' or 'max_completion_tokens' is too large: 2048. This model's maximum context length is 16384 tokens and your request has 14456 input tokens (2048 > 16384 - 14456). None", 'type': 'BadRequestError', 'param': None, 'code': 400}}
+Traceback (most recent call last):
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 344, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 331, in main
+    _game_loop(
+  File "/home/cql/projects/games/mindgames/tools/run_rollouts.py", line 184, in _game_loop
+    action = agents[player_id](observation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/basic_agents.py", line 294, in __call__
+    return self._retry_request(observation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/basic_agents.py", line 280, in _retry_request
+    raise last_exception
+  File "/home/cql/projects/games/mindgames/mindgames/agents/basic_agents.py", line 271, in _retry_request
+    response = self._make_request(observation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/mindgames/agents/qwen_agent.py", line 56, in _make_request
+    completion = self.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 1192, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cql/projects/games/mindgames/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': "'max_tokens' or 'max_completion_tokens' is too large: 2048. This model's maximum context length is 16384 tokens and your request has 14456 input tokens (2048 > 16384 - 14456). None", 'type': 'BadRequestError', 'param': None, 'code': 400}}

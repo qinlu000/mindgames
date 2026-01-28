@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Tuple
 
-from mindgames.agents.openai_agent import OpenAIAgent
+from mindgames.agents.openai_agent import OpenAIAgent, STANDARD_GAME_PROMPT
 
 
 class QwenAgent(OpenAIAgent):
@@ -11,7 +11,7 @@ class QwenAgent(OpenAIAgent):
     def __init__(
         self,
         model_name: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: Optional[str] = STANDARD_GAME_PROMPT,
         *,
         enable_thinking: Optional[bool] = None,
         chat_template_kwargs: Optional[Dict[str, Any]] = None,

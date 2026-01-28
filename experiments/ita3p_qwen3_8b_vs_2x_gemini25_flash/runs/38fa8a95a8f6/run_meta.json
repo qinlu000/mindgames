@@ -1,0 +1,20 @@
+{
+  "experiment_path": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml",
+  "run_dir": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6",
+  "cmd_sh": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/cmd_resume.sh",
+  "argv": [
+    "tools/expctl.py",
+    "run",
+    "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/experiment.yaml",
+    "--resume",
+    "--run-id",
+    "38fa8a95a8f6",
+    "--no-wandb"
+  ],
+  "started_at_s": 1766810562.1701953,
+  "resumed": true,
+  "ended_at_s": 1766817023.8265026,
+  "elapsed_s": 6461.656307220459,
+  "exit_code": 0,
+  "log_path": "experiments/ita3p_qwen3_8b_vs_2x_gemini25_flash/runs/38fa8a95a8f6/run.log"
+}

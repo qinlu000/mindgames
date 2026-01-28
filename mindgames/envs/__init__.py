@@ -22,6 +22,15 @@ register_with_versions(
     fuse_tokens=4,
 )
 
+# Hanabi (standard hinting)
+register_with_versions(
+    id="HanabiStandard-v0",
+    entry_point="mindgames.envs.Hanabi.env_standard:HanabiStandardEnv",
+    wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS},
+    info_tokens=8,
+    fuse_tokens=4,
+)
+
 # Truth & Deception (2-player)
 register_with_versions(
     id="TruthAndDeception-v0",

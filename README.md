@@ -25,6 +25,20 @@ cd mindgames
 python tools/jsonl_to_json.py data/rollouts.jsonl --out data/rollouts.json
 ```
 
+## Fine-tune from rollouts (SFT)
+1) Convert rollout JSONL → chat-style SFT JSONL:
+```bash
+cd mindgames
+python tools/rollouts_to_sft_jsonl.py --in data/rollouts.jsonl --out data/hanabi.sft.jsonl --env-id Hanabi-v0-train --min-score 10
+```
+
+2) Train (LoRA) with TRL:
+```bash
+pip install -U trl transformers accelerate peft datasets
+cd mindgames
+python tools/train_sft_trl.py --model Qwen/Qwen2.5-7B-Instruct --data data/hanabi.sft.jsonl --output-dir runs/sft_out
+```
+
 ## API keys without `export` (dotenv)
 If `mindgames/.env` exists, importing `mindgames` will automatically load it (without overriding already-set env vars).
 

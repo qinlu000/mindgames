@@ -1,0 +1,20 @@
+{
+  "experiment_path": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/experiment.yaml",
+  "run_dir": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b",
+  "cmd_sh": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/cmd_resume.sh",
+  "argv": [
+    "tools/expctl.py",
+    "run",
+    "experiments/hanabi_qwen3_8b_vs_gemini25_flash/experiment.yaml",
+    "--resume",
+    "--run-dir",
+    "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b",
+    "--no-wandb"
+  ],
+  "started_at_s": 1768577079.3411024,
+  "resumed": true,
+  "ended_at_s": 1768584028.314604,
+  "elapsed_s": 6948.9735016822815,
+  "exit_code": 0,
+  "log_path": "experiments/hanabi_qwen3_8b_vs_gemini25_flash/runs/6330ac8b165b/run.log"
+}

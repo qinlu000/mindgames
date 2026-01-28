@@ -1,0 +1,52 @@
+{
+  "run_id": "59ec2499339e",
+  "experiment_path": "experiments/liarsdice_eval/experiment.yaml",
+  "config": {
+    "schema_version": 1,
+    "name": "liarsdice_eval",
+    "kind": "rollout_eval",
+    "description": "Baseline evaluation for Liar's Dice using a fixed protocol (repeatable across model/prompt changes).",
+    "tags": [
+      "eval",
+      "rollout",
+      "liarsdice"
+    ],
+    "repro": {
+      "seed": 0,
+      "python": ">=3.10,<3.13"
+    },
+    "spec": {
+      "env_id": "LiarsDice-v0-train",
+      "num_players": 2,
+      "episodes": 20,
+      "variant": "turn_board_v1",
+      "agents": [
+        "qwen:Qwen/Qwen3-VL-4B-Instruct",
+        "qwen:Qwen/Qwen3-VL-4B-Instruct"
+      ],
+      "system_prompt": "You are an expert Liar's Dice player. Output exactly ONE valid action in the required bracket format (either [Bid: Q, F] or [Call]) and nothing else.",
+      "openai_base_url": "http://127.0.0.1:8010/v1",
+      "openai_api_key": "dummy",
+      "timeout_s": 120,
+      "gen": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "repetition_penalty": 1.0,
+        "presence_penalty": 1.5,
+        "gen_seed": null,
+        "extra_body": null,
+        "chat_template_kwargs": null,
+        "disable_thinking": false
+      }
+    },
+    "outputs": {
+      "files": [
+        "{run_dir}/rollouts.jsonl",
+        "{run_dir}/summary.json"
+      ]
+    },
+    "run_id": "59ec2499339e",
+    "run_dir": "experiments/liarsdice_eval/runs/59ec2499339e"
+  }
+}

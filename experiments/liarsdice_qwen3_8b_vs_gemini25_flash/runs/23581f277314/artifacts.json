@@ -1,0 +1,17 @@
+{
+  "run_id": "23581f277314",
+  "outputs": [
+    "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314/rollouts.jsonl",
+    "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/liarsdice_qwen3_8b_vs_gemini25_flash/runs/23581f277314/summary.json"
+    }
+  ]
+}

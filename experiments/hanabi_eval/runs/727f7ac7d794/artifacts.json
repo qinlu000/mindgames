@@ -1,0 +1,17 @@
+{
+  "run_id": "727f7ac7d794",
+  "outputs": [
+    "experiments/hanabi_eval/runs/727f7ac7d794/rollouts.jsonl",
+    "experiments/hanabi_eval/runs/727f7ac7d794/summary.json"
+  ],
+  "suggested_wandb_artifacts": [
+    {
+      "type": "eval_results",
+      "path": "experiments/hanabi_eval/runs/727f7ac7d794/rollouts.jsonl"
+    },
+    {
+      "type": "eval_results",
+      "path": "experiments/hanabi_eval/runs/727f7ac7d794/summary.json"
+    }
+  ]
+}

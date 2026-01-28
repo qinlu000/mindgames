@@ -40,6 +40,12 @@ def main() -> int:
     ap.add_argument("--system", default="You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format.")
     ap.add_argument("--env-id", default="", help="Optional filter: only keep this env_id")
     ap.add_argument("--skip-invalid", action="store_true", help="Drop all steps from players flagged invalid_move at episode end")
+    ap.add_argument(
+        "--min-score",
+        type=float,
+        default=None,
+        help="Optional: only keep episodes whose (cooperative) episode score >= this value (uses the first reward value).",
+    )
     args = ap.parse_args()
 
     records = _read_jsonl(Path(args.in_path))
@@ -58,6 +64,18 @@ def main() -> int:
 
         rewards = end_rec.get("rewards") or {}
         game_info = end_rec.get("game_info") or {}
+        # Cooperative envs like Hanabi use identical rewards across players (final score).
+        episode_score = None
+        if rewards:
+            try:
+                episode_score = float(next(iter(rewards.values())))
+            except Exception:
+                episode_score = None
+        if args.min_score is not None and episode_score is not None and episode_score < args.min_score:
+            episode_steps = []
+            episode_env_id = None
+            episode_id = None
+            return
 
         for s in episode_steps:
             pid = s.get("player_id")
@@ -81,6 +99,7 @@ def main() -> int:
                     "player_id": pid,
                     "role": s.get("role"),
                     "infer_ms": s.get("infer_ms"),
+                    "episode_score": episode_score,
                     "reward": rewards.get(pid, rewards.get(pid_key)),
                     "invalid_move": invalid,
                 },

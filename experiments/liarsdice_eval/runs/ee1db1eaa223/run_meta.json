@@ -1,0 +1,16 @@
+{
+  "experiment_path": "experiments/liarsdice_eval/experiment.yaml",
+  "run_dir": "experiments/liarsdice_eval/runs/ee1db1eaa223",
+  "cmd_sh": "experiments/liarsdice_eval/runs/ee1db1eaa223/cmd.sh",
+  "argv": [
+    "tools/expctl.py",
+    "run",
+    "experiments/liarsdice_eval/experiment.yaml",
+    "--no-wandb"
+  ],
+  "started_at_s": 1766579010.8191957,
+  "ended_at_s": 1766579039.444417,
+  "elapsed_s": 28.625221252441406,
+  "exit_code": 0,
+  "log_path": "experiments/liarsdice_eval/runs/ee1db1eaa223/run.log"
+}
