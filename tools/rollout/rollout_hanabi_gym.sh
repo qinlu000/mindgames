@@ -10,6 +10,7 @@ set -euo pipefail
 #   GYM_ENV=hanabi_env
 #   VLLM_TENSOR_PARALLEL_SIZE=1
 #   VLLM_DATA_PARALLEL_SIZE=1
+#   VLLM_MAX_NUM_SEQS=16
 #   VLLM_ENABLE_LORA=true
 #   VLLM_MAX_LORA_RANK=8
 #   CUDA_VISIBLE_DEVICES=0
@@ -23,6 +24,7 @@ GYM_ENV="${GYM_ENV:-hanabi_env}"
 
 VLLM_TENSOR_PARALLEL_SIZE="${VLLM_TENSOR_PARALLEL_SIZE:-1}"
 VLLM_DATA_PARALLEL_SIZE="${VLLM_DATA_PARALLEL_SIZE:-1}"
+VLLM_MAX_NUM_SEQS="${VLLM_MAX_NUM_SEQS:-16}"
 VLLM_ENABLE_LORA="${VLLM_ENABLE_LORA:-true}"
 VLLM_MAX_LORA_RANK="${VLLM_MAX_LORA_RANK:-8}"
 
@@ -50,5 +52,6 @@ NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}" \
   --vllm_use_async_engine true \
   --vllm_tensor_parallel_size "$VLLM_TENSOR_PARALLEL_SIZE" \
   --vllm_data_parallel_size "$VLLM_DATA_PARALLEL_SIZE" \
+  --vllm_max_num_seqs "$VLLM_MAX_NUM_SEQS" \
   --vllm_enable_lora "$VLLM_ENABLE_LORA" \
   --vllm_max_lora_rank "$VLLM_MAX_LORA_RANK"

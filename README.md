@@ -64,12 +64,15 @@ uv sync --extra serve
 
 Ensure `data/hanabi.grpo.jsonl` exists. If you want a custom max episode length, add
 `"max_steps": <int>` to `env_config` (default is 300 from `mindgames/envs/Hanabi/env.py`).
+To control training length, set `NUM_TRAIN_EPOCHS` or `MAX_STEPS` in the train command.
+If both are set, `MAX_STEPS` wins. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
 
-4+4 GPU split example (8x H800):
+4+4 GPU split example (8x H800, group size 16):
 ```bash
 # Terminal 1: rollout server (GPUs 0-3)
 CUDA_VISIBLE_DEVICES=0,1,2,3 \
 VLLM_TENSOR_PARALLEL_SIZE=4 \
+VLLM_MAX_NUM_SEQS=16 \
 NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
 bash tools/rollout/rollout_hanabi_gym.sh
 
@@ -78,9 +81,11 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 NPROC_PER_NODE=4 \
 NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
 DATASET=data/hanabi.grpo.jsonl VLLM_MODE=server \
 VLLM_SERVER_HOST=127.0.0.1 VLLM_SERVER_PORT=8000 \
+NUM_GENERATIONS=16 GENERATION_BATCH_SIZE=16 \
 REWARD_FUNCS= EXTERNAL_PLUGINS= \
 bash tools/train/train_grpo_msswift.sh
 ```
+Optional W&B wrapper: `bash tools/train/train_grpo_hanabi_server_wandb.sh`
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
 ## GRPO (Hi-ToM default)

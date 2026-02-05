@@ -12,11 +12,13 @@ set -euo pipefail
 #   REWARD_FUNCS=hitom_accuracy
 #   REWARD_MODEL=
 #   EXTERNAL_PLUGINS=tools/swift_plugins/hitom_dataset.py,tools/swift_plugins/hitom_reward.py
-#   NUM_GENERATIONS=2
-#   GENERATION_BATCH_SIZE=2
+#   NUM_GENERATIONS=16
+#   GENERATION_BATCH_SIZE=16
 #   MAX_LENGTH=4096
 #   MAX_PROMPT_LENGTH=        # alias for MAX_LENGTH
 #   MAX_COMPLETION_LENGTH=8192
+#   NUM_TRAIN_EPOCHS=
+#   MAX_STEPS=
 #   REPORT_TO=tensorboard   # set to wandb to enable W&B
 #   RUN_NAME=
 #   EXTERNAL_PLUGINS=
@@ -48,10 +50,12 @@ OUTPUT_DIR="${OUTPUT_DIR:-output/qwen3-8b-hitom-grpo}"
 REWARD_FUNCS="${REWARD_FUNCS-hitom_accuracy}"
 REWARD_MODEL="${REWARD_MODEL:-}"
 EXTERNAL_PLUGINS="${EXTERNAL_PLUGINS-tools/swift_plugins/hitom_dataset.py,tools/swift_plugins/hitom_reward.py}"
-NUM_GENERATIONS="${NUM_GENERATIONS:-2}"
+NUM_GENERATIONS="${NUM_GENERATIONS:-16}"
 GENERATION_BATCH_SIZE="${GENERATION_BATCH_SIZE:-$NUM_GENERATIONS}"
 MAX_LENGTH="${MAX_LENGTH:-${MAX_PROMPT_LENGTH:-4096}}"
 MAX_COMPLETION_LENGTH="${MAX_COMPLETION_LENGTH:-8192}"
+NUM_TRAIN_EPOCHS="${NUM_TRAIN_EPOCHS:-}"
+MAX_STEPS="${MAX_STEPS:-}"
 REPORT_TO="${REPORT_TO:-tensorboard}"
 RUN_NAME="${RUN_NAME:-}"
 
@@ -102,6 +106,12 @@ if [ -n "$MAX_LENGTH" ]; then
 fi
 if [ -n "$MAX_COMPLETION_LENGTH" ]; then
   EXTRA_ARGS+=(--max_completion_length "$MAX_COMPLETION_LENGTH")
+fi
+if [ -n "$NUM_TRAIN_EPOCHS" ]; then
+  EXTRA_ARGS+=(--num_train_epochs "$NUM_TRAIN_EPOCHS")
+fi
+if [ -n "$MAX_STEPS" ]; then
+  EXTRA_ARGS+=(--max_steps "$MAX_STEPS")
 fi
 
 if [ "$VLLM_MODE" = "server" ]; then
