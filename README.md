@@ -12,6 +12,17 @@ This folder mirrors the **project layout style** of `spiral-rl/spiral`, but vend
 python mindgames/tools/rollout/run_rollouts.py --help
 ```
 
+## Parallel Hanabi rollouts (OpenAI-compatible, e.g. OpenRouter)
+```bash
+# Set your OpenAI-compatible key (OpenRouter uses OPENAI_API_KEY + OPENAI_BASE_URL).
+export OPENAI_API_KEY="..."
+export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
+
+# Run 100 episodes across multiple workers.
+EPISODES=100 WORKERS=8 \
+bash tools/rollout/run_hanabi_qwen3_235b_thinking_parallel.sh
+```
+
 ## Read JSONL logs (human-friendly)
 `tools/rollout/run_rollouts.py` writes JSONL (one record per step). For a readable terminal view:
 ```bash
@@ -191,6 +202,7 @@ python tools/analysis/probe_fact_leakage.py \
 
 ## Tools overview
 - `tools/rollout/rollout_hanabi_gym.sh`: vLLM rollout server for Hanabi gym GRPO.
+- `tools/rollout/run_hanabi_qwen3_235b_thinking_parallel.sh`: parallel Hanabi rollouts with Qwen3-235B Thinking (OpenAI-compatible endpoint).
 - `tools/rollout/hanabi_gym_plugin.py`: gym env plugin used by the rollout server.
 - `tools/train/train_grpo_msswift.sh`: GRPO training entrypoint (ms-swift).
 - `tools/rollout/run_rollouts.py`: offline rollout runner (non-GRPO).
