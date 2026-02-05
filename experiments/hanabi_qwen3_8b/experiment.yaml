@@ -1,50 +1,45 @@
 schema_version: 1
-name: PLACEHOLDER_NAME
+name: hanabi_qwen3_8b
 kind: rollout_eval
-description: Evaluate one or more agents in a MindGames env with a fixed protocol.
-tags: ["eval", "rollout"]
+description: Hanabi rollout eval with two Qwen3-8B agents (vLLM local).
+tags: ["eval", "rollout", "hanabi", "qwen3"]
 
 repro:
   seed: 0
   python: ">=3.10,<3.13"
 
 spec:
-  env_id: "Hanabi-v0"
-  # Optional: JSON dict passed to the env constructor (mindgames envs only).
+  env_id: "Hanabi-v0-train"
   env_kwargs: null
-  # Optional: run instance tag. If set, it will change the run_id hash (useful for repeated runs).
   run_tag: null
   num_players: 2
-  episodes: 20
+  episodes: 2
   agents:
-    - "openrouter:moonshotai/kimi-k2:free"
-    - "openrouter:moonshotai/kimi-k2:free"
+    - "qwen:Qwen/Qwen3-8B"
+    - "qwen:Qwen/Qwen3-8B"
   system_prompt: |-
     You are playing a text-based game.
     Read the observation carefully and follow all rules.
     Output EXACTLY ONE valid action in the required format, and NOTHING else.
     Do NOT output reasoning, explanations, multiple actions, or extra lines.
-  # Optional: only used for OpenAI-compatible agents (e.g. openai:/qwen: with local vLLM).
-  openai_base_url: null
-  openai_api_key: null
+  openai_base_url: "http://localhost:8000/v1"
+  openai_api_key: "dummy"
   timeout_s: null
   gen:
-    temperature: 0.2
-    top_p: 1.0
-    top_k: null
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
     repetition_penalty: null
     presence_penalty: null
     frequency_penalty: null
     gen_seed: null
     max_tokens: null
-    extra_body: null
-    chat_template_kwargs: null
+    extra_body:
+      min_p: 0.0
+    chat_template_kwargs:
+      enable_thinking: true
     disable_thinking: false
 
-# Commands are rendered by expctl with variables:
-# - {run_id} and {run_dir}
-# - {spec.*} from the spec section
-# - {agent_flags}: expanded from spec.agents into repeated `--agent ...` flags
 commands:
   - >-
     python tools/rollout/run_rollouts.py

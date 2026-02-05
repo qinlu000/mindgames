@@ -85,6 +85,7 @@ def _compact_step_rec(step_rec: Dict[str, Any], *, max_obs_chars: Optional[int])
         "role": step_rec.get("role"),
         "action": step_rec.get("action"),
         "raw_action": raw_action,
+        "reasoning": step_rec.get("reasoning", step_rec.get("raw_reasoning")),
         "normalized_action": normalized_action,
         "infer_ms": step_rec.get("infer_ms"),
         "done": step_rec.get("done"),

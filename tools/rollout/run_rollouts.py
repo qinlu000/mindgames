@@ -6,7 +6,7 @@ Designed as a minimal, generic runner for *any* TextArena env id.
 Works even if TextArena isn't installed, as long as this repo contains ./textarena.
 
 Example:
-  python tools/run_textarena_rollouts.py \\
+  python tools/rollout/run_rollouts.py \\
     --env-id TruthAndDeception-v0-train --num-players 2 --episodes 20 \\
     --agent openrouter:moonshotai/kimi-k2:free --agent openrouter:moonshotai/kimi-k2:free \\
     --out data/tad.jsonl
@@ -26,11 +26,18 @@ from typing import Any, Dict, List, Optional, Tuple
 from rollout_utils import _compact_step_rec
 
 
+def _find_project_root() -> Path:
+    for parent in Path(__file__).resolve().parents:
+        if parent.name == "mindgames":
+            return parent
+    raise RuntimeError("Could not locate mindgames project root.")
+
+
 def _ensure_pkg_importable() -> None:
     # Ensure both:
     # - `mindgames/` (project root) is importable, and
     # - sibling `textarena/` is importable when running from the mindgames folder.
-    project_root = Path(__file__).resolve().parents[1]  # .../mindgames
+    project_root = _find_project_root()
     repo_root = project_root.parent  # .../ (contains mindgames/ and textarena/)
     sys.path.insert(0, str(project_root))
     sys.path.insert(0, str(repo_root))
@@ -334,6 +341,7 @@ def _game_loop(
         action = agents[player_id](observation)
         infer_ms = int((time.time() - t0) * 1000)
         normalized_action = _normalize_action(env, action)
+        _, raw_reasoning = agents[player_id].get_last_content_reasoning()
 
         done, step_info = env.step(action=action)
 
@@ -348,6 +356,8 @@ def _game_loop(
             "observation": observation,
             "action": action,
             "raw_action": action,
+            "reasoning": raw_reasoning,
+            "raw_reasoning": raw_reasoning,
             "normalized_action": normalized_action,
             "infer_ms": infer_ms,
             "done": done,

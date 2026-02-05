@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Convert mindgames rollout JSONL (from tools/run_rollouts.py) into
+Convert mindgames rollout JSONL (from tools/rollout/run_rollouts.py) into
 a generic chat-style SFT JSONL dataset.
 
 Output schema (per line):

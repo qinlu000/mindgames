@@ -47,7 +47,7 @@ spec:
 
 commands:
   - >-
-    python tools/probe_fact_leakage.py
+    python tools/analysis/probe_fact_leakage.py
     --facts {spec.facts_path}
     --agent {spec.agent}
     {opt:--model spec.model}

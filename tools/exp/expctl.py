@@ -9,8 +9,8 @@ Goals:
 
 Usage (recommended with uv):
   cd mindgames
-  uv run python tools/expctl.py init --template rollout_eval --name hanabi_baseline
-  uv run python tools/expctl.py prepare experiments/hanabi_baseline/experiment.yaml
+  uv run python tools/exp/expctl.py init --template rollout_eval --name hanabi_baseline
+  uv run python tools/exp/expctl.py prepare experiments/hanabi_baseline/experiment.yaml
 """
 
 from __future__ import annotations
@@ -32,7 +32,14 @@ import yaml
 from jsonschema import Draft202012Validator
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+def _find_project_root() -> Path:
+    for parent in Path(__file__).resolve().parents:
+        if parent.name == "mindgames":
+            return parent
+    raise RuntimeError("Could not locate mindgames project root.")
+
+
+PROJECT_ROOT = _find_project_root()
 EXPERIMENTS_DIR = PROJECT_ROOT / "experiments"
 SCHEMA_PATH = EXPERIMENTS_DIR / "_schema" / "experiment.schema.json"
 TEMPLATES_DIR = EXPERIMENTS_DIR / "templates"

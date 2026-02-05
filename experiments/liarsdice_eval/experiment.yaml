@@ -33,7 +33,7 @@ spec:
     disable_thinking: false
 commands:
   - >-
-    python tools/run_rollouts.py
+    python tools/rollout/run_rollouts.py
     --env-id {spec.env_id}
     --num-players {spec.num_players}
     --episodes {spec.episodes}
@@ -56,7 +56,7 @@ commands:
     {opt:--max-tokens spec.gen.max_tokens}
     --out {run_dir}/rollouts.jsonl
   - >-
-    python tools/summarize_rollouts.py {run_dir}/rollouts.jsonl
+    python tools/rollout/summarize_rollouts.py {run_dir}/rollouts.jsonl
     --json > {run_dir}/summary.json
 
 outputs:

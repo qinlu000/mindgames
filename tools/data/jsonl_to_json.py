@@ -4,7 +4,7 @@ Convert JSONL logs (one JSON object per line) into a single JSON array.
 
 Example:
   cd mindgames
-  python tools/jsonl_to_json.py data/rollouts.jsonl --out data/rollouts.json
+  python tools/data/jsonl_to_json.py data/rollouts.jsonl --out data/rollouts.json
 """
 
 from __future__ import annotations
@@ -59,4 +59,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

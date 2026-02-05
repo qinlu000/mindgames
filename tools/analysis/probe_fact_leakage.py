@@ -27,9 +27,18 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
+def _find_project_root() -> Path:
+    for parent in Path(__file__).resolve().parents:
+        if parent.name == "mindgames":
+            return parent
+    raise RuntimeError("Could not locate mindgames project root.")
+
+
+PROJECT_ROOT = _find_project_root()
+
+
 def _ensure_pkg_importable() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    sys.path.insert(0, str(project_root))
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 
 _ensure_pkg_importable()
@@ -313,13 +322,7 @@ def _jsonl_write(fp, obj: Dict[str, Any]) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    default_facts = (
-        Path(__file__).resolve().parents[1]
-        / "mindgames"
-        / "envs"
-        / "TruthAndDeception"
-        / "facts.json"
-    )
+    default_facts = PROJECT_ROOT / "mindgames" / "envs" / "TruthAndDeception" / "facts.json"
     ap.add_argument("--facts", type=Path, default=default_facts, help="Path to TruthAndDeception facts.json")
     ap.add_argument(
         "--agent",

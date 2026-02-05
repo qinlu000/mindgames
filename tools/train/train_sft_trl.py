@@ -2,7 +2,7 @@
 """
 Minimal chat-style SFT (LoRA) with TRL.
 
-Intended input: JSONL produced by `tools/rollouts_to_sft_jsonl.py`:
+Intended input: JSONL produced by `tools/data/rollouts_to_sft_jsonl.py`:
 {"messages":[{"role":"system","content":"..."},{"role":"user","content":"..."},{"role":"assistant","content":"..."}], "meta": {...}}
 """
 
@@ -72,7 +72,9 @@ def main() -> int:
 
     preview = _load_jsonl_preview(data_path, n=1)
     if not preview or "messages" not in preview[0]:
-        raise SystemExit("Dataset must be JSONL with a top-level `messages` field (see tools/rollouts_to_sft_jsonl.py).")
+        raise SystemExit(
+            "Dataset must be JSONL with a top-level `messages` field (see tools/data/rollouts_to_sft_jsonl.py)."
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     if tokenizer.pad_token is None:

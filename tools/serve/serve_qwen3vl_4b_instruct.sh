@@ -13,7 +13,7 @@ set -euo pipefail
 #   MAX_NUM_SEQS=16
 #
 # Example:
-#   CUDA_VISIBLE_DEVICES=1 PORT=8011 bash tools/serve_qwen3vl_4b_instruct.sh
+#   CUDA_VISIBLE_DEVICES=1 PORT=8011 bash tools/serve/serve_qwen3vl_4b_instruct.sh
 
 MODEL="${MODEL:-Qwen/Qwen3-VL-4B-Instruct}"
 HOST="${HOST:-0.0.0.0}"
@@ -30,4 +30,3 @@ uv run vllm serve "$MODEL" \
   --dtype bfloat16 --tensor-parallel-size 1 \
   --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
   --max-model-len "$MAX_MODEL_LEN" --max-num-seqs "$MAX_NUM_SEQS"
-

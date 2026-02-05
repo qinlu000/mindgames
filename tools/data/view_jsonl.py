@@ -3,9 +3,9 @@
 Pretty-print mindgames JSONL logs for human reading.
 
 Examples:
-  python tools/view_jsonl.py data/rollouts.jsonl | less -R
-  python tools/view_jsonl.py data/rollouts.jsonl --episode-id 0
-  python tools/view_jsonl.py data/rollouts.jsonl --tail 30
+  python tools/data/view_jsonl.py data/rollouts.jsonl | less -R
+  python tools/data/view_jsonl.py data/rollouts.jsonl --episode-id 0
+  python tools/data/view_jsonl.py data/rollouts.jsonl --tail 30
 """
 
 from __future__ import annotations

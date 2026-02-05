@@ -19,7 +19,7 @@ set -euo pipefail
 #
 # Multi-GPU example (2× GPUs, more headroom / throughput):
 #   CUDA_VISIBLE_DEVICES=0,1 TENSOR_PARALLEL_SIZE=2 MAX_MODEL_LEN=32768 MAX_NUM_SEQS=32 \
-#     bash tools/serve_qwen3_8b.sh
+#     bash tools/serve/serve_qwen3_8b.sh
 
 MODEL="${MODEL:-Qwen/Qwen3-8B-Instruct}"
 HOST="${HOST:-0.0.0.0}"
@@ -39,4 +39,3 @@ uv run vllm serve "$MODEL" \
   --dtype "$DTYPE" --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
   --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
   --max-model-len "$MAX_MODEL_LEN" --max-num-seqs "$MAX_NUM_SEQS"
-

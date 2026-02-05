@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Summarize mindgames rollout JSONL (from tools/run_rollouts.py).
+Summarize mindgames rollout JSONL (from tools/rollout/run_rollouts.py).
 
 Focuses on practical eval metrics:
 - win/loss/draw rates (when rewards are competitive)
@@ -9,8 +9,8 @@ Focuses on practical eval metrics:
 - avg turn_count
 
 Examples:
-  python tools/summarize_textarena_rollouts.py data/tad.rollouts.jsonl
-  python tools/summarize_textarena_rollouts.py data/hanabi.rollouts.jsonl --json
+  python tools/rollout/summarize_rollouts.py data/tad.rollouts.jsonl
+  python tools/rollout/summarize_rollouts.py data/hanabi.rollouts.jsonl --json
 """
 
 from __future__ import annotations

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Split a rollouts JSONL file (from tools/run_rollouts.py) into one JSON per episode.
+Split a rollouts JSONL file (from tools/rollout/run_rollouts.py) into one JSON per episode.
 
 Example:
   cd mindgames
-  python tools/split_rollouts_jsonl.py experiments/hanabi_eval/runs/<run_id>/rollouts.jsonl --out-dir experiments/hanabi_eval/runs/<run_id>/episodes
+  python tools/rollout/split_rollouts_jsonl.py experiments/hanabi_eval/runs/<run_id>/rollouts.jsonl --out-dir experiments/hanabi_eval/runs/<run_id>/episodes
 """
 
 from __future__ import annotations
