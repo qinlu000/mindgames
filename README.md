@@ -65,7 +65,7 @@ uv sync --extra serve
 Ensure `data/hanabi.grpo.jsonl` exists. If you want a custom max episode length, add
 `"max_steps": <int>` to `env_config` (default is 300 from `mindgames/envs/Hanabi/env.py`).
 To control training length, set `NUM_TRAIN_EPOCHS` or `MAX_STEPS` in the train command.
-If both are set, `MAX_STEPS` wins. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
+If both are set, `MAX_STEPS` wins. Defaults to `MAX_STEPS=500`. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
 
 4+4 GPU split example (8x H800, group size 16):
 ```bash

@@ -50,7 +50,7 @@ bash tools/train/train_grpo_hanabi_server_wandb.sh
 - `VLLM_SERVER_HOST`/`VLLM_SERVER_PORT`: must match the rollout server.
 - `REWARD_FUNCS=`: empty for Hanabi gym rewards (do not set a reward model).
 - `NUM_TRAIN_EPOCHS`/`MAX_STEPS`: control training length (epochs or optimizer steps).
-  If both are set, `MAX_STEPS` wins. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
+  If both are set, `MAX_STEPS` wins. Defaults to `MAX_STEPS=500`. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
 
 ## Troubleshooting
 - "Address already in use": change `PORT` in `tools/rollout/rollout_hanabi_gym.sh`
