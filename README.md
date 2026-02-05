@@ -52,13 +52,44 @@ bash tools/train/train_sft_msswift.sh
 ```
 Note: the script sets `NCCL_P2P_DISABLE=1` and `NCCL_IB_DISABLE=1` by default for RTX 4000-series stability. Override to `0` on systems with supported P2P/IB.
 
-4) Train (GRPO) with ms-swift:
+## GRPO Hanabi (gym env, 2 players)
+This uses ms-swift + a vLLM rollout server. The reward comes from the Hanabi env, so keep `REWARD_FUNCS` empty.
+
+Prereqs (one-time):
+```bash
+cd mindgames
+uv sync --extra serve
+# or: uv add "ms-swift[all]"
+```
+
+Ensure `data/hanabi.grpo.jsonl` exists. If you want a custom max episode length, add
+`"max_steps": <int>` to `env_config` (default is 300 from `mindgames/envs/Hanabi/env.py`).
+
+4+4 GPU split example (8x H800):
+```bash
+# Terminal 1: rollout server (GPUs 0-3)
+CUDA_VISIBLE_DEVICES=0,1,2,3 \
+VLLM_TENSOR_PARALLEL_SIZE=4 \
+NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+bash tools/rollout/rollout_hanabi_gym.sh
+
+# Terminal 2: GRPO training (GPUs 4-7)
+CUDA_VISIBLE_DEVICES=4,5,6,7 NPROC_PER_NODE=4 \
+NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+DATASET=data/hanabi.grpo.jsonl VLLM_MODE=server \
+VLLM_SERVER_HOST=127.0.0.1 VLLM_SERVER_PORT=8000 \
+REWARD_FUNCS= EXTERNAL_PLUGINS= \
+bash tools/train/train_grpo_msswift.sh
+```
+More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
+
+## GRPO (Hi-ToM default)
 ```bash
 cd mindgames
 uv add "ms-swift[all]"
 bash tools/train/train_grpo_msswift.sh
 
-# Reward config (required for GRPO):
+# Reward config (required for Hi-ToM GRPO):
 # REWARD_FUNCS=hitom_accuracy \
 # EXTERNAL_PLUGINS=tools/swift_plugins/hitom_dataset.py,tools/swift_plugins/hitom_reward.py \
 # bash tools/train/train_grpo_msswift.sh
@@ -67,19 +98,6 @@ bash tools/train/train_grpo_msswift.sh
 # CUDA_VISIBLE_DEVICES=0,1,2,3 NPROC_PER_NODE=4 \
 #   bash tools/train/train_grpo_msswift.sh
 ```
-
-Hanabi GRPO (gym env, 2 players):
-```bash
-# 1) start rollout server (in one terminal)
-cd mindgames
-bash tools/rollout/rollout_hanabi_gym.sh
-
-# 2) train (in another terminal)
-DATASET=data/hanabi.grpo.jsonl VLLM_MODE=server \
-VLLM_SERVER_HOST=127.0.0.1 VLLM_SERVER_PORT=8000 REWARD_FUNCS= \
-  bash tools/train/train_grpo_msswift.sh
-```
-Single-node multi-GPU notes (8x H800, split GPUs) are in `docs/hanabi_grpo.md`.
 
 ## API keys without `export` (dotenv)
 If `mindgames/.env` exists, importing `mindgames` will automatically load it (without overriding already-set env vars).
