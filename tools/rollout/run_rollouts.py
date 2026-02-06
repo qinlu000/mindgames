@@ -412,6 +412,12 @@ def main() -> int:
     ap.add_argument("--num-players", type=int, required=True)
     ap.add_argument("--episodes", type=int, default=1)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument(
+        "--episode-id-offset",
+        type=int,
+        default=0,
+        help="Offset added to episode_id for this run (useful for sharded/parallel rollouts with unique episode ids).",
+    )
     ap.add_argument("--out", required=True, help="Output JSONL path")
     ap.add_argument(
         "--resume",
@@ -621,7 +627,8 @@ def main() -> int:
                     "Resuming will rerun them and append new records.",
                     file=sys.stderr,
                 )
-        if set(range(args.episodes)).issubset(completed_ids):
+        expected_ids = {int(args.episode_id_offset) + ep for ep in range(args.episodes)}
+        if expected_ids.issubset(completed_ids):
             print(f"All {args.episodes} episodes already completed in {out_path}.")
             return 0
 
@@ -629,7 +636,8 @@ def main() -> int:
     # Use line-buffered output so rollouts are visible in near-real time.
     with out_path.open(file_mode, encoding="utf-8", buffering=1) as f:
         for ep in range(args.episodes):
-            if ep in completed_ids:
+            episode_id = int(args.episode_id_offset) + ep
+            if episode_id in completed_ids:
                 continue
             seed = args.seed + ep if args.seed is not None else None
             _game_loop(
@@ -637,7 +645,7 @@ def main() -> int:
                 num_players=args.num_players,
                 agents=agents,
                 seed=seed,
-                episode_id=ep,
+                episode_id=episode_id,
                 out_fp=f,
                 episode_json_dir=episode_json_dir,
                 episode_json_max_obs_chars=(None if int(args.episode_json_max_obs_chars) == 0 else int(args.episode_json_max_obs_chars)),

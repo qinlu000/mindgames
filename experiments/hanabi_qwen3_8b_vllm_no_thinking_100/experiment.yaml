@@ -1,0 +1,89 @@
+schema_version: 1
+name: hanabi_qwen3_8b_vllm_no_thinking_100
+kind: rollout_eval
+description: Hanabi rollout eval with two Qwen3-8B agents (OpenAI agent -> local vLLM, thinking disabled).
+tags: ["eval", "rollout", "hanabi", "qwen3", "vllm", "openai_agent", "no_thinking"]
+
+repro:
+  seed: 0
+  python: ">=3.10,<3.13"
+
+spec:
+  env_id: "Hanabi-v0-train"
+  env_kwargs: null
+  # Optional: run instance tag. If set, it will change the run_id hash (useful for repeated runs).
+  run_tag: null
+  num_players: 2
+  episodes: 100
+  model: "Qwen/Qwen3-8B"
+  cuda_visible_devices: "0,1,2,3"
+  parallel:
+    workers: 25
+    host: "127.0.0.1"
+    port: 8000
+    bind_host: "127.0.0.1"
+  vllm:
+    gpu_mem_util: 0.90
+    max_model_len: 8192
+    max_num_seqs: 32
+    dtype: "bfloat16"
+  agents:
+    - "openai:Qwen/Qwen3-8B"
+    - "openai:Qwen/Qwen3-8B"
+  system_prompt: |-
+    You are playing a text-based game.
+    Read the observation carefully and follow all rules.
+    Output EXACTLY ONE valid action in the required format, and NOTHING else.
+    Do NOT output reasoning, explanations, multiple actions, or extra lines.
+  # Use environment variables (OPENAI_BASE_URL / OPENAI_API_KEY) by default.
+  openai_base_url: null
+  openai_api_key: null
+  timeout_s: null
+  gen:
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+    repetition_penalty: null
+    presence_penalty: null
+    frequency_penalty: null
+    gen_seed: null
+    max_tokens: null
+    extra_body:
+      min_p: 0.0
+    chat_template_kwargs: null
+    disable_thinking: false
+
+commands:
+  - >-
+    OUT_DIR={sh:run_dir}
+    MODEL={sh:spec.model}
+    ENV_ID={sh:spec.env_id}
+    NUM_PLAYERS={spec.num_players}
+    EPISODES={spec.episodes}
+    SEED={repro.seed}
+    CUDA_VISIBLE_DEVICES={sh:spec.cuda_visible_devices}
+    HOST={sh:spec.parallel.host}
+    BIND_HOST={sh:spec.parallel.bind_host}
+    PORT={spec.parallel.port}
+    WORKERS={spec.parallel.workers}
+    GPU_MEM_UTIL={spec.vllm.gpu_mem_util}
+    MAX_MODEL_LEN={spec.vllm.max_model_len}
+    MAX_NUM_SEQS={spec.vllm.max_num_seqs}
+    DTYPE={sh:spec.vllm.dtype}
+    TEMPERATURE={spec.gen.temperature}
+    TOP_P={spec.gen.top_p}
+    TOP_K={spec.gen.top_k}
+    MAX_TOKENS={spec.gen.max_tokens}
+    EXTRA_BODY={sh:spec.gen.extra_body}
+    DISABLE_THINKING={spec.gen.disable_thinking}
+    SYSTEM_PROMPT={sh:spec.system_prompt}
+    bash tools/rollout/run_hanabi_qwen3_8b_vllm_1server_parallel.sh
+
+outputs:
+  files:
+    - "{run_dir}/rollouts.jsonl"
+    - "{run_dir}/summary.json"
+
+wandb:
+  project: "mindgames"
+  job_type: "eval"
