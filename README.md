@@ -42,14 +42,7 @@ bash tools/train/train_grpo_msswift.sh
 ```
 Wrapper for 8x H800 (still requires Terminal 1 rollout server):
 ```bash
-# Terminal 2 alternative: train + W&B logs + W&B ckpt artifact + HF push
-CUDA_VISIBLE_DEVICES=4,5,6,7 NPROC_PER_NODE=4 \
-NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
-HF_TOKEN=hf_xxx \
-HF_REPO_ID=csminion/qwen3-8b-hanabi-grpo \
-WANDB_API_KEY=your_wandb_key \
-WANDB_PROJECT=mindgames \
-RUN_NAME=grpo-hanabi \
+# Terminal 2 alternative: direct run (script uses built-in defaults)
 bash tools/train/train_grpo_hanabi_server_wandb.sh
 ```
 
@@ -58,6 +51,7 @@ Notes for the wrapper:
 - It logs training metrics to W&B and uploads `OUTPUT_DIR` as a W&B `model` artifact.
 - It pushes model outputs to Hugging Face Hub at the end (`hub_strategy=end`).
 - For new repos, HF usually auto-creates `HF_REPO_ID` on first successful push if token has write permission.
+- To change account/key/repo, edit defaults in `tools/train/train_grpo_hanabi_server_wandb.sh`.
 
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
