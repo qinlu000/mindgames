@@ -40,7 +40,25 @@ NUM_GENERATIONS=16 GENERATION_BATCH_SIZE=16 \
 REWARD_FUNCS= EXTERNAL_PLUGINS= \
 bash tools/train/train_grpo_msswift.sh
 ```
-Optional W&B wrapper: `bash tools/train/train_grpo_hanabi_server_wandb.sh`
+Wrapper for 8x H800 (still requires Terminal 1 rollout server):
+```bash
+# Terminal 2 alternative: train + W&B logs + W&B ckpt artifact + HF push
+CUDA_VISIBLE_DEVICES=4,5,6,7 NPROC_PER_NODE=4 \
+NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+HF_TOKEN=hf_xxx \
+HF_REPO_ID=csminion/qwen3-8b-hanabi-grpo \
+WANDB_API_KEY=your_wandb_key \
+WANDB_PROJECT=mindgames \
+RUN_NAME=grpo-hanabi \
+bash tools/train/train_grpo_hanabi_server_wandb.sh
+```
+
+Notes for the wrapper:
+- It uses `VLLM_MODE=server` (external rollout server), not colocated vLLM.
+- It logs training metrics to W&B and uploads `OUTPUT_DIR` as a W&B `model` artifact.
+- It pushes model outputs to Hugging Face Hub at the end (`hub_strategy=end`).
+- For new repos, HF usually auto-creates `HF_REPO_ID` on first successful push if token has write permission.
+
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
 ## Parallel Hanabi rollouts (OpenAI-compatible, e.g. OpenRouter)

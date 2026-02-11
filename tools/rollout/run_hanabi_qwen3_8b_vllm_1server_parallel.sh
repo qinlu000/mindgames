@@ -55,13 +55,14 @@ MAX_MODEL_LEN="${MAX_MODEL_LEN:-8192}"
 MAX_NUM_SEQS="${MAX_NUM_SEQS:-32}"
 DTYPE="${DTYPE:-bfloat16}"
 VLLM_API_KEY="${VLLM_API_KEY:-dummy}"
+REASONING_PARSER="${REASONING_PARSER:-}"
 
 OUT_DIR="${OUT_DIR:-${RUN_DIR:-}}"
 
 TEMPERATURE="${TEMPERATURE:-0.6}"
 TOP_P="${TOP_P:-0.95}"
 TOP_K="${TOP_K:-20}"
-MAX_TOKENS="${MAX_TOKENS:-32}"
+MAX_TOKENS="${MAX_TOKENS:-}"
 
 if [[ -z "${OUT_DIR}" ]]; then
   echo "OUT_DIR is required (or set RUN_DIR)." >&2
@@ -112,6 +113,10 @@ mkdir -p "$(dirname "${VLLM_LOG}")"
 export CUDA_VISIBLE_DEVICES
 
 echo "Starting vLLM server on ${BIND_HOST}:${PORT} (client: ${HOST}:${PORT}) TP=${TP} GPUs=${CUDA_VISIBLE_DEVICES}"
+reasoning_flag=()
+if [[ -n "${REASONING_PARSER}" ]]; then
+  reasoning_flag=(--reasoning-parser "${REASONING_PARSER}")
+fi
 "${VLLM[@]}" serve "${MODEL}" \
   --host "${BIND_HOST}" --port "${PORT}" \
   --api-key "${VLLM_API_KEY}" \
@@ -121,6 +126,7 @@ echo "Starting vLLM server on ${BIND_HOST}:${PORT} (client: ${HOST}:${PORT}) TP=
   --max-num-seqs "${MAX_NUM_SEQS}" \
   --trust-remote-code \
   --dtype "${DTYPE}" \
+  "${reasoning_flag[@]}" \
   > "${VLLM_LOG}" 2>&1 &
 VLLM_PID=$!
 
@@ -183,6 +189,11 @@ if [[ -n "${EXTRA_BODY}" ]]; then
   extra_body_flag=(--extra-body "${EXTRA_BODY}")
 fi
 
+max_tokens_flag=()
+if [[ -n "${MAX_TOKENS}" && "${MAX_TOKENS}" != "None" && "${MAX_TOKENS}" != "null" ]]; then
+  max_tokens_flag=(--max-tokens "${MAX_TOKENS}")
+fi
+
 echo "Launching ${WORKERS} workers for ${EPISODES} episodes (single server concurrency)..."
 
 base=$((EPISODES / WORKERS))
@@ -221,7 +232,7 @@ for w in $(seq 0 $((WORKERS - 1))); do
       --top-p "${TOP_P}" \
       --top-k "${TOP_K}" \
       "${extra_body_flag[@]}" \
-      --max-tokens "${MAX_TOKENS}" \
+      "${max_tokens_flag[@]}" \
       "${disable_thinking_flag[@]}" \
       --episode-json-dir "${out_dir}/episodes" \
       --out "${out_dir}/rollouts.jsonl"

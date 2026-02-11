@@ -1,0 +1,103 @@
+schema_version: 1
+name: hanabi_hitom_merged_20_nothinking
+kind: rollout_eval
+description: Evaluate one or more agents in a MindGames env with a fixed protocol.
+tags: ["eval", "rollout"]
+
+repro:
+  seed: 0
+  python: ">=3.10,<3.13"
+
+spec:
+  env_id: "Hanabi-v0-train"
+  # Optional: JSON dict passed to the env constructor (mindgames envs only).
+  env_kwargs: null
+  # Optional: run instance tag. If set, it will change the run_id hash (useful for repeated runs).
+  run_tag: null
+  num_players: 2
+  episodes: 20
+  agents:
+    - "openai:output/qwen3-8b-hitom-merged"
+    - "openai:output/qwen3-8b-hitom-merged"
+  system_prompt: |-
+    You are an expert Hanabi teammate.
+    Output EXACTLY ONE valid action and nothing else (no reasoning).
+
+    Valid formats:
+    - [Play] X
+    - [Discard] X
+    - [Reveal] player N card X color C
+    - [Reveal] player N card X rank R
+
+    Rules (non-standard Hanabi here):
+    - Reveal must target exactly ONE specific card index in another player's hand.
+    - Reveal must be truthful for that specific card.
+    - Do not reveal about yourself.
+    - Use exactly one hint type: color OR rank.
+
+    - Fireworks are independent; you may play the next required rank of any color.
+
+    Strategy priority:
+    1) If you know a card is playable, [Play] it.
+    2) Else if a teammate has a clearly playable card and info_tokens>0, reveal that exact card.
+    3) Else discard the least useful / most uncertain card.
+    4) Avoid repeating the same Reveal on the same card unless it adds new info.
+  # Optional: only used for OpenAI-compatible agents (e.g. openai:/qwen: with local vLLM).
+  openai_base_url: "http://127.0.0.1:8020/v1"
+  openai_api_key: "dummy"
+  timeout_s: null
+  gen:
+    temperature: null
+    top_p: null
+    top_k: null
+    repetition_penalty: null
+    presence_penalty: null
+    frequency_penalty: null
+    gen_seed: null
+    max_tokens: null
+    extra_body: null
+    chat_template_kwargs: null
+    disable_thinking: true
+
+# Commands are rendered by expctl with variables:
+# - {run_id} and {run_dir}
+# - {spec.*} from the spec section
+# - {agent_flags}: expanded from spec.agents into repeated `--agent ...` flags
+commands:
+  - >-
+    python tools/rollout/run_rollouts.py
+    --env-id {spec.env_id}
+    {optsh:--env-kwargs spec.env_kwargs}
+    --num-players {spec.num_players}
+    --episodes {spec.episodes}
+    --seed {repro.seed}
+    {agent_flags}
+    --system-prompt {sh:spec.system_prompt}
+    {opt:--openai-base-url spec.openai_base_url}
+    {opt:--openai-api-key spec.openai_api_key}
+    {opt:--timeout spec.timeout_s}
+    {opt:--temperature spec.gen.temperature}
+    {opt:--top-p spec.gen.top_p}
+    {opt:--top-k spec.gen.top_k}
+    {opt:--repetition-penalty spec.gen.repetition_penalty}
+    {opt:--presence-penalty spec.gen.presence_penalty}
+    {opt:--frequency-penalty spec.gen.frequency_penalty}
+    {opt:--gen-seed spec.gen.gen_seed}
+    {optsh:--extra-body spec.gen.extra_body}
+    {optsh:--chat-template-kwargs spec.gen.chat_template_kwargs}
+    {flag:--disable-thinking spec.gen.disable_thinking}
+    {opt:--max-tokens spec.gen.max_tokens}
+    --episode-json-dir {run_dir}/episodes
+    --out {run_dir}/rollouts.jsonl
+  - >-
+    python tools/rollout/summarize_rollouts.py {run_dir}/rollouts.jsonl
+    --json > {run_dir}/summary.json
+
+outputs:
+  files:
+    - "{run_dir}/rollouts.jsonl"
+    - "{run_dir}/summary.json"
+
+wandb:
+  project: "mindgames"
+  job_type: "eval"

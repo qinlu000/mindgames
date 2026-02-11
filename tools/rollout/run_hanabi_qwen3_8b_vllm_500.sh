@@ -20,7 +20,7 @@ OUT_DIR="${OUT_DIR:-outputs/hanabi_qwen3_8b_500}"
 TEMPERATURE="${TEMPERATURE:-0.6}"
 TOP_P="${TOP_P:-0.95}"
 TOP_K="${TOP_K:-20}"
-MAX_TOKENS="${MAX_TOKENS:-32}"
+MAX_TOKENS="${MAX_TOKENS:-}"
 DISABLE_THINKING="${DISABLE_THINKING:-1}"
 
 mkdir -p "${OUT_DIR}"
@@ -70,6 +70,11 @@ if [[ "${DISABLE_THINKING}" == "1" || "${DISABLE_THINKING}" == "true" ]]; then
   disable_thinking_flag=(--disable-thinking)
 fi
 
+max_tokens_flag=()
+if [[ -n "${MAX_TOKENS}" && "${MAX_TOKENS}" != "None" && "${MAX_TOKENS}" != "null" ]]; then
+  max_tokens_flag=(--max-tokens "${MAX_TOKENS}")
+fi
+
 uv run python tools/rollout/run_rollouts.py \
   --env-id Hanabi-v0-train \
   --num-players 2 \
@@ -80,7 +85,7 @@ uv run python tools/rollout/run_rollouts.py \
   --temperature "${TEMPERATURE}" \
   --top-p "${TOP_P}" \
   --top-k "${TOP_K}" \
-  --max-tokens "${MAX_TOKENS}" \
+  "${max_tokens_flag[@]}" \
   "${disable_thinking_flag[@]}" \
   --resume \
   --episode-json-dir "${OUT_DIR}/episodes" \

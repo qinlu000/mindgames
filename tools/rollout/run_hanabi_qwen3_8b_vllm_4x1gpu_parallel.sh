@@ -39,6 +39,7 @@ EPISODES="${EPISODES:-100}"
 SEED="${SEED:-0}"
 DISABLE_THINKING="${DISABLE_THINKING:-1}"
 EXTRA_BODY="${EXTRA_BODY:-}"
+MAX_TOKENS="${MAX_TOKENS:-}"
 
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
 HOST="${HOST:-127.0.0.1}"
@@ -208,6 +209,11 @@ for w in $(seq 0 $((WORKERS - 1))); do
     extra_body_flag=(--extra-body "${EXTRA_BODY}")
   fi
 
+  max_tokens_flag=()
+  if [[ -n "${MAX_TOKENS}" && "${MAX_TOKENS}" != "None" && "${MAX_TOKENS}" != "null" ]]; then
+    max_tokens_flag=(--max-tokens "${MAX_TOKENS}")
+  fi
+
   (
     set +e
     echo "Worker ${w} start: $(date -Is)"
@@ -225,7 +231,7 @@ for w in $(seq 0 $((WORKERS - 1))); do
       --top-p "${TOP_P:-0.95}" \
       --top-k "${TOP_K:-20}" \
       "${extra_body_flag[@]}" \
-      --max-tokens "${MAX_TOKENS:-32}" \
+      "${max_tokens_flag[@]}" \
       "${disable_thinking_flag[@]}" \
       --episode-json-dir "${out_dir}/episodes" \
       --out "${out_dir}/rollouts.jsonl"

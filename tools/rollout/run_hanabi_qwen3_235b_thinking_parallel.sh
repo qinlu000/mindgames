@@ -12,7 +12,7 @@ set -euo pipefail
 #   OUT_ROOT=outputs/hanabi_qwen3_235b_thinking_parallel
 #   TEMPERATURE=0.2
 #   TOP_P=1.0
-#   MAX_TOKENS=8192
+#   MAX_TOKENS=<unset by default; only pass when explicitly set>
 #   NUM_PLAYERS=2
 #   SUMMARIZE=1
 #   OPENAI_BASE_URL=https://openrouter.ai/api/v1
@@ -28,7 +28,7 @@ OUT_ROOT="${OUT_ROOT:-outputs/hanabi_qwen3_235b_thinking_parallel}"
 
 TEMPERATURE="${TEMPERATURE:-0.2}"
 TOP_P="${TOP_P:-1.0}"
-MAX_TOKENS="${MAX_TOKENS:-8192}"
+MAX_TOKENS="${MAX_TOKENS:-}"
 NUM_PLAYERS="${NUM_PLAYERS:-2}"
 SUMMARIZE="${SUMMARIZE:-1}"
 
@@ -63,6 +63,11 @@ for w in $(seq 0 $((WORKERS - 1))); do
   out_dir="${OUT_ROOT}/worker_${w}"
   mkdir -p "${out_dir}"
 
+  max_tokens_flag=()
+  if [[ -n "${MAX_TOKENS}" && "${MAX_TOKENS}" != "None" && "${MAX_TOKENS}" != "null" ]]; then
+    max_tokens_flag=(--max-tokens "${MAX_TOKENS}")
+  fi
+
   (
     uv run python tools/rollout/run_rollouts.py \
       --env-id Hanabi-v0-train \
@@ -73,7 +78,7 @@ for w in $(seq 0 $((WORKERS - 1))); do
       --agent "openai:${MODEL}" \
       --temperature "${TEMPERATURE}" \
       --top-p "${TOP_P}" \
-      --max-tokens "${MAX_TOKENS}" \
+      "${max_tokens_flag[@]}" \
       --episode-json-dir "${out_dir}/episodes" \
       --out "${out_dir}/rollouts.jsonl" \
       > "${out_dir}/run.log" 2>&1

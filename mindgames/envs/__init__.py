@@ -83,6 +83,20 @@ register_with_versions(
     num_dice=12,
 )
 
+# Codenames (2v2 word deduction)
+register_with_versions(
+    id="Codenames-v0",
+    entry_point="mindgames.envs.Codenames.env:CodenamesEnv",
+    wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS},
+    hardcore=False,
+)
+register_with_versions(
+    id="Codenames-v0-hardcore",
+    entry_point="mindgames.envs.Codenames.env:CodenamesEnv",
+    wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS},
+    hardcore=True,
+)
+
 # Iterated Two-Thirds Average (2-player)
 register_with_versions(
     id="IteratedTwoThirdsAverage-v0",

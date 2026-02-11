@@ -22,6 +22,12 @@ set -euo pipefail
 #   REPORT_TO=tensorboard   # set to wandb to enable W&B
 #   RUN_NAME=
 #   EXTERNAL_PLUGINS=
+#   PUSH_TO_HUB=false
+#   USE_HF=false
+#   HUB_MODEL_ID=
+#   HUB_TOKEN=
+#   HUB_STRATEGY=end
+#   HUB_PRIVATE_REPO=
 #   USE_VLLM=true
 #   VLLM_MODE=colocate
 #   VLLM_SERVER_HOST=
@@ -58,6 +64,12 @@ NUM_TRAIN_EPOCHS="${NUM_TRAIN_EPOCHS:-}"
 MAX_STEPS="${MAX_STEPS:-500}"
 REPORT_TO="${REPORT_TO:-tensorboard}"
 RUN_NAME="${RUN_NAME:-}"
+PUSH_TO_HUB="${PUSH_TO_HUB:-false}"
+USE_HF="${USE_HF:-false}"
+HUB_MODEL_ID="${HUB_MODEL_ID:-}"
+HUB_TOKEN="${HUB_TOKEN:-}"
+HUB_STRATEGY="${HUB_STRATEGY:-end}"
+HUB_PRIVATE_REPO="${HUB_PRIVATE_REPO:-}"
 
 USE_VLLM="${USE_VLLM:-true}"
 VLLM_MODE="${VLLM_MODE:-colocate}"
@@ -112,6 +124,24 @@ if [ -n "$NUM_TRAIN_EPOCHS" ]; then
 fi
 if [ -n "$MAX_STEPS" ]; then
   EXTRA_ARGS+=(--max_steps "$MAX_STEPS")
+fi
+
+if [ "$PUSH_TO_HUB" = "true" ]; then
+  EXTRA_ARGS+=(--push_to_hub true)
+  EXTRA_ARGS+=(--use_hf "$USE_HF")
+
+  if [ -n "$HUB_MODEL_ID" ]; then
+    EXTRA_ARGS+=(--hub_model_id "$HUB_MODEL_ID")
+  fi
+  if [ -n "$HUB_TOKEN" ]; then
+    EXTRA_ARGS+=(--hub_token "$HUB_TOKEN")
+  fi
+  if [ -n "$HUB_STRATEGY" ]; then
+    EXTRA_ARGS+=(--hub_strategy "$HUB_STRATEGY")
+  fi
+  if [ -n "$HUB_PRIVATE_REPO" ]; then
+    EXTRA_ARGS+=(--hub_private_repo "$HUB_PRIVATE_REPO")
+  fi
 fi
 
 if [ "$VLLM_MODE" = "server" ]; then

@@ -27,6 +27,7 @@ spec:
     max_model_len: 8192
     max_num_seqs: 32
     dtype: "bfloat16"
+    reasoning_parser: "qwen3"
   agents:
     - "openai:Qwen/Qwen3-8B"
     - "openai:Qwen/Qwen3-8B"
@@ -70,6 +71,7 @@ commands:
     MAX_MODEL_LEN={spec.vllm.max_model_len}
     MAX_NUM_SEQS={spec.vllm.max_num_seqs}
     DTYPE={sh:spec.vllm.dtype}
+    REASONING_PARSER={sh:spec.vllm.reasoning_parser}
     TEMPERATURE={spec.gen.temperature}
     TOP_P={spec.gen.top_p}
     TOP_K={spec.gen.top_k}
