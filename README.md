@@ -22,25 +22,16 @@ Ensure `data/hanabi.grpo.jsonl` exists. If you want a custom max episode length,
 To control training length, set `NUM_TRAIN_EPOCHS` or `MAX_STEPS` in the train command.
 If both are set, `MAX_STEPS` wins. Defaults to `MAX_STEPS=500`. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
 
-4+4 GPU split example (8x H800, group size 16):
+4+4 GPU split example (8x H800, group size 16, recommended):
 ```bash
 # Terminal 1: rollout server (script uses built-in 0-3 GPU defaults)
 bash tools/rollout/rollout_hanabi_gym.sh
 
-# Terminal 2: GRPO training (GPUs 4-7)
-CUDA_VISIBLE_DEVICES=4,5,6,7 NPROC_PER_NODE=4 \
-NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
-DATASET=data/hanabi.grpo.jsonl VLLM_MODE=server \
-VLLM_SERVER_HOST=127.0.0.1 VLLM_SERVER_PORT=8000 \
-NUM_GENERATIONS=16 GENERATION_BATCH_SIZE=16 \
-REWARD_FUNCS= EXTERNAL_PLUGINS= \
-bash tools/train/train_grpo_msswift.sh
-```
-Wrapper for 8x H800 (still requires Terminal 1 rollout server):
-```bash
-# Terminal 2 alternative: direct run (script uses built-in defaults)
+# Terminal 2: GRPO training (script uses built-in 4-7 GPU defaults)
 bash tools/train/train_grpo_hanabi_server_wandb.sh
 ```
+
+Advanced (manual control, optional): use `tools/train/train_grpo_msswift.sh` with explicit env vars.
 
 Notes for the wrapper:
 - It uses `VLLM_MODE=server` (external rollout server), not colocated vLLM.
