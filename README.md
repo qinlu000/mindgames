@@ -24,11 +24,7 @@ If both are set, `MAX_STEPS` wins. Defaults to `MAX_STEPS=500`. With the default
 
 4+4 GPU split example (8x H800, group size 16):
 ```bash
-# Terminal 1: rollout server (GPUs 0-3)
-CUDA_VISIBLE_DEVICES=0,1,2,3 \
-VLLM_TENSOR_PARALLEL_SIZE=4 \
-VLLM_MAX_NUM_SEQS=16 \
-NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+# Terminal 1: rollout server (script uses built-in 0-3 GPU defaults)
 bash tools/rollout/rollout_hanabi_gym.sh
 
 # Terminal 2: GRPO training (GPUs 4-7)
@@ -52,6 +48,8 @@ Notes for the wrapper:
 - It pushes model outputs to Hugging Face Hub at the end (`hub_strategy=end`).
 - For new repos, HF usually auto-creates `HF_REPO_ID` on first successful push if token has write permission.
 - To change account/key/repo, edit defaults in `tools/train/train_grpo_hanabi_server_wandb.sh`.
+
+To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_hanabi_gym.sh`.
 
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 

@@ -13,10 +13,7 @@ Run the rollout server and training in two terminals.
 
 Terminal 1 (rollout server on GPUs 0-3):
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2,3 \
-VLLM_TENSOR_PARALLEL_SIZE=4 \
-VLLM_MAX_NUM_SEQS=16 \
-NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+# Uses built-in 8x H800 rollout defaults in the script.
 bash tools/rollout/rollout_hanabi_gym.sh
 ```
 
