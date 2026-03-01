@@ -46,7 +46,7 @@ More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
 ## Hanabi API batch self-play (OpenAI-compatible, e.g. OpenRouter)
 ```bash
-export OPENAI_BASE_URL="https://openrouter.ai/api/v1" OPENAI_API_KEY="..." && MODELS_FILE="data/hanabi_api_models_15.txt" MODEL_GEN_FILE="data/hanabi_api_model_gen_overrides.json" bash tools/rollout/run_hanabi_api_batch_eval.sh
+export OPENAI_BASE_URL="https://openrouter.ai/api/v1" OPENAI_API_KEY="..." && MODELS_FILE="data/hanabi_api_models_15.txt" MODEL_GEN_FILE="data/hanabi_api_model_gen_overrides.json" PARALLEL_JOBS=15 bash tools/rollout/run_hanabi_api_batch_eval.sh
 ```
 
 ## Hanabi: human + LLM mixed play

@@ -20,6 +20,7 @@ set -euo pipefail
 #   MIN_MODELS=15
 #   AGENT_KIND=openai              # openai|qwen|openrouter|gemini|...
 #   MODEL_GEN_FILE=path/to/model_gen_overrides.json
+#   PARALLEL_JOBS=15               # >1: run models in parallel
 #   CONTINUE_ON_ERROR=1
 #   DRY_RUN=0
 
@@ -55,6 +56,7 @@ OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-}"
 
 CONTINUE_ON_ERROR="${CONTINUE_ON_ERROR:-1}"
 DRY_RUN="${DRY_RUN:-0}"
+PARALLEL_JOBS="${PARALLEL_JOBS:-1}"
 
 is_true() {
   case "${1,,}" in
@@ -91,6 +93,10 @@ if ! [[ "$EPISODES" =~ ^[0-9]+$ ]] || [[ "$EPISODES" -lt 1 ]]; then
 fi
 if ! [[ "$MIN_MODELS" =~ ^[0-9]+$ ]] || [[ "$MIN_MODELS" -lt 1 ]]; then
   echo "MIN_MODELS must be a positive integer, got: $MIN_MODELS" >&2
+  exit 1
+fi
+if ! [[ "$PARALLEL_JOBS" =~ ^[0-9]+$ ]] || [[ "$PARALLEL_JOBS" -lt 1 ]]; then
+  echo "PARALLEL_JOBS must be a positive integer, got: $PARALLEL_JOBS" >&2
   exit 1
 fi
 
@@ -140,6 +146,17 @@ mkdir -p "$OUT_ROOT"
 printf "%s\n" "${MODELS[@]}" > "$OUT_ROOT/models.txt"
 printf "model\tseed\n" > "$OUT_ROOT/model_seeds.tsv"
 
+declare -a MODEL_SEEDS=()
+for i in "${!MODELS[@]}"; do
+  model="${MODELS[$i]}"
+  model_seed="$SEED"
+  if is_true "$RANDOMIZE_SEED_PER_MODEL"; then
+    model_seed="$(rand_seed)"
+  fi
+  MODEL_SEEDS[$i]="$model_seed"
+  printf "%s\t%s\n" "$model" "$model_seed" >> "$OUT_ROOT/model_seeds.tsv"
+done
+
 echo "Hanabi API batch eval started"
 echo "OUT_ROOT=$OUT_ROOT"
 echo "MODELS_FILE=$MODELS_FILE"
@@ -149,24 +166,34 @@ echo "EPISODES=$EPISODES"
 echo "AGENT_KIND=$AGENT_KIND"
 echo "ENV_ID=$ENV_ID"
 echo "DRY_RUN=$DRY_RUN"
+echo "PARALLEL_JOBS=$PARALLEL_JOBS"
 
-failed_models=()
+if [[ "$PARALLEL_JOBS" -gt 1 ]] && ! is_true "$CONTINUE_ON_ERROR"; then
+  echo "WARN: PARALLEL_JOBS>1 with CONTINUE_ON_ERROR=0 may still run already queued models." >&2
+fi
 
-for i in "${!MODELS[@]}"; do
-  model="${MODELS[$i]}"
+run_one_model() {
+  local i="$1"
+  local model="${MODELS[$i]}"
+  local model_seed="${MODEL_SEEDS[$i]}"
 
-  model_seed="$SEED"
-  if is_true "$RANDOMIZE_SEED_PER_MODEL"; then
-    model_seed="$(rand_seed)"
-  fi
-
+  local idx_tag
+  local model_tag
+  local model_out
   idx_tag="$(printf '%03d' "$i")"
   model_tag="${idx_tag}_$(safe_name "$model")"
   model_out="$OUT_ROOT/$model_tag"
   mkdir -p "$model_out"
   printf "%s\n" "$model" > "$model_out/model.txt"
-  printf "%s\t%s\n" "$model" "$model_seed" >> "$OUT_ROOT/model_seeds.tsv"
 
+  local temperature_flag=()
+  local top_p_flag=()
+  local top_k_flag=()
+  local max_tokens_flag=()
+  local disable_flag=()
+  local base_url_flag=()
+  local api_key_flag=()
+  local agent_gen_flags=()
   temperature_flag=()
   top_p_flag=()
   top_k_flag=()
@@ -192,6 +219,7 @@ for i in "${!MODELS[@]}"; do
     disable_flag=(--disable-thinking)
   fi
 
+  local model_gen_json=""
   model_gen_json=""
   if [[ -n "$MODEL_GEN_FILE" ]]; then
     model_gen_json="$("${PY[@]}" - "$MODEL_GEN_FILE" "$model" <<'PY'
@@ -261,9 +289,10 @@ PY
 
   if is_true "$DRY_RUN"; then
     echo "DRY_RUN: would run ${AGENT_KIND}:${model} for ${EPISODES} episodes."
-    continue
+    return 0
   fi
 
+  local rc=0
   rc=0
   (
     "${PY[@]}" tools/rollout/run_rollouts.py \
@@ -290,17 +319,74 @@ PY
   ) > "$model_out/run.log" 2>&1 || rc=$?
 
   if [[ "$rc" -ne 0 ]]; then
-    echo "Model run failed: $model (exit=${rc})" >&2
-    failed_models+=("$model")
-    if ! is_true "$CONTINUE_ON_ERROR"; then
-      echo "Stopping on first failure. Set CONTINUE_ON_ERROR=1 to continue." >&2
-      break
-    fi
-    continue
+    return "$rc"
   fi
 
   "${PY[@]}" tools/rollout/summarize_rollouts.py "$model_out/rollouts.jsonl" --json > "$model_out/summary.json"
-done
+}
+
+failed_models=()
+
+if [[ "$PARALLEL_JOBS" -le 1 ]]; then
+  for i in "${!MODELS[@]}"; do
+    model="${MODELS[$i]}"
+    rc=0
+    run_one_model "$i" || rc=$?
+    if [[ "$rc" -ne 0 ]]; then
+      echo "Model run failed: $model (exit=${rc})" >&2
+      failed_models+=("$model")
+      if ! is_true "$CONTINUE_ON_ERROR"; then
+        echo "Stopping on first failure. Set CONTINUE_ON_ERROR=1 to continue." >&2
+        break
+      fi
+    fi
+  done
+else
+  status_dir="$OUT_ROOT/.status_codes"
+  mkdir -p "$status_dir"
+  rm -f "$status_dir"/*.code 2>/dev/null || true
+
+  for i in "${!MODELS[@]}"; do
+    code_file="$status_dir/$(printf '%03d' "$i").code"
+    (
+      set +e
+      run_one_model "$i"
+      rc=$?
+      printf "%s\n" "$rc" > "$code_file"
+      exit 0
+    ) &
+
+    while true; do
+      running_jobs="$(jobs -pr | wc -l | tr -d ' ')"
+      if [[ "$running_jobs" -lt "$PARALLEL_JOBS" ]]; then
+        break
+      fi
+      sleep 0.2
+    done
+  done
+
+  wait || true
+
+  for i in "${!MODELS[@]}"; do
+    model="${MODELS[$i]}"
+    code_file="$status_dir/$(printf '%03d' "$i").code"
+    if [[ ! -f "$code_file" ]]; then
+      echo "Model run failed: $model (missing status code)" >&2
+      failed_models+=("$model")
+      continue
+    fi
+    rc="$(cat "$code_file")"
+    if ! [[ "$rc" =~ ^[0-9]+$ ]]; then
+      echo "Model run failed: $model (invalid status code: $rc)" >&2
+      failed_models+=("$model")
+      continue
+    fi
+    if [[ "$rc" -ne 0 ]]; then
+      echo "Model run failed: $model (exit=${rc})" >&2
+      failed_models+=("$model")
+    fi
+  done
+fi
 
 "${PY[@]}" - "$OUT_ROOT" <<'PY'
 import json
