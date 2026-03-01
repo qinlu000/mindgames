@@ -24,10 +24,10 @@ OUTPUT_DIR="${OUTPUT_DIR:-output/qwen3-8b-hitom}"
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}"
 NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}"
 
-if command -v uv >/dev/null 2>&1; then
-  SWIFT_CMD=(uv run swift)
-elif [ -x ".venv/bin/swift" ]; then
+if [ -x ".venv/bin/swift" ]; then
   SWIFT_CMD=(.venv/bin/swift)
+elif command -v uv >/dev/null 2>&1; then
+  SWIFT_CMD=(uv run swift)
 elif command -v swift >/dev/null 2>&1; then
   SWIFT_CMD=(swift)
 else

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -33,6 +34,39 @@ def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
     return out
 
 
+def _pick_reasoning(step_rec: Dict[str, Any], reasoning_field: str) -> str:
+    if reasoning_field and reasoning_field != "auto":
+        val = step_rec.get(reasoning_field)
+        return "" if val is None else str(val).strip()
+    for key in ("raw_reasoning", "reasoning"):
+        val = step_rec.get(key)
+        if isinstance(val, str) and val.strip():
+            return val.strip()
+    return ""
+
+
+def _ensure_think_wrapped(reasoning: str, think_open: str, think_close: str) -> str:
+    reasoning = reasoning.strip()
+    if not reasoning:
+        return ""
+    if think_open in reasoning and think_close in reasoning:
+        return reasoning
+    return f"{think_open}\n{reasoning}\n{think_close}"
+
+
+def _assistant_content(step_rec: Dict[str, Any], args: argparse.Namespace) -> str:
+    action = str(step_rec.get("action", "")).strip()
+    if args.assistant_format == "action":
+        return action
+    reasoning = _pick_reasoning(step_rec, args.reasoning_field)
+    if not reasoning:
+        return action
+    think_block = _ensure_think_wrapped(reasoning, args.think_open, args.think_close)
+    if not action:
+        return think_block
+    return f"{think_block}\n{action}"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="in_path", required=True, help="Rollouts JSONL")
@@ -46,7 +80,40 @@ def main() -> int:
         default=None,
         help="Optional: only keep episodes whose (cooperative) episode score >= this value (uses the first reward value).",
     )
+    ap.add_argument(
+        "--assistant-format",
+        choices=["action", "think_action"],
+        default="action",
+        help="Assistant target format: action only, or <think>reasoning</think> + action.",
+    )
+    ap.add_argument(
+        "--reasoning-field",
+        default="auto",
+        help="Reasoning field to use when --assistant-format=think_action. "
+             "Use 'auto' to prefer raw_reasoning then reasoning.",
+    )
+    ap.add_argument(
+        "--think-open",
+        default="<think>",
+        help="Opening think tag when wrapping reasoning.",
+    )
+    ap.add_argument(
+        "--think-close",
+        default="</think>",
+        help="Closing think tag when wrapping reasoning.",
+    )
+    ap.add_argument(
+        "--require-action-pattern",
+        action="store_true",
+        help="Drop samples whose action does not match the standard Hanabi action format.",
+    )
+    ap.add_argument(
+        "--action-pattern",
+        default=r"^\[(Play|Discard|Reveal)\]\s+",
+        help="Regex used with --require-action-pattern, matched against raw action.",
+    )
     args = ap.parse_args()
+    action_re = re.compile(args.action_pattern, re.IGNORECASE)
 
     records = _read_jsonl(Path(args.in_path))
     out_file = Path(args.out_path)
@@ -84,12 +151,15 @@ def main() -> int:
             invalid = bool(pid_info.get("invalid_move", False))
             if args.skip_invalid and invalid:
                 continue
+            action_text = str(s.get("action", "")).strip()
+            if args.require_action_pattern and not action_re.search(action_text):
+                continue
 
             sample = {
                 "messages": [
                     {"role": "system", "content": args.system},
                     {"role": "user", "content": s.get("observation", "")},
-                    {"role": "assistant", "content": s.get("action", "")},
+                    {"role": "assistant", "content": _assistant_content(s, args)},
                 ],
                 "meta": {
                     "env_id": episode_env_id,

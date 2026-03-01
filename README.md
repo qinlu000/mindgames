@@ -54,3 +54,15 @@ export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
 EPISODES=100 WORKERS=50 \
 bash tools/rollout/run_hanabi_qwen3_235b_thinking_parallel.sh
 ```
+
+## Hanabi: human + LLM mixed play
+```bash
+# Example: you play seat 0, seat 1 is a scripted baseline (replace with openai:/qwen: model spec if needed).
+uv run python tools/run_rollouts.py \
+  --env-id Hanabi-v0-train \
+  --num-players 2 \
+  --episodes 1 \
+  --human-players 0 \
+  --llm-agent scripted:hanabi_discard0 \
+  --out data/hanabi_human_llm.jsonl
+```

@@ -10,6 +10,12 @@ Example:
     --env-id TruthAndDeception-v0-train --num-players 2 --episodes 20 \\
     --agent openrouter:moonshotai/kimi-k2:free --agent openrouter:moonshotai/kimi-k2:free \\
     --out data/tad.jsonl
+
+Human + LLM mixed seats (convenience mode):
+  python tools/rollout/run_rollouts.py \\
+    --env-id Hanabi-v0-train --num-players 2 --episodes 1 \\
+    --human-players 0 --llm-agent openai:gpt-4.1-mini \\
+    --out data/hanabi_human_llm.jsonl
 """
 
 from __future__ import annotations
@@ -64,6 +70,25 @@ def _parse_agent_spec(s: str) -> AgentSpec:
             raise ValueError(f"Invalid --agent spec (missing model): {s}")
         return AgentSpec(kind=kind, model=model)
     return AgentSpec(kind=s.lower(), model=None)
+
+
+def _parse_player_ids(raw: str, *, num_players: int) -> List[int]:
+    ids: List[int] = []
+    for token in raw.split(","):
+        tok = token.strip()
+        if not tok:
+            continue
+        try:
+            pid = int(tok)
+        except Exception as e:
+            raise ValueError(f"Invalid player id in --human-players: {tok!r}") from e
+        if pid < 0 or pid >= num_players:
+            raise ValueError(
+                f"Player id out of range in --human-players: {pid} (expected 0..{num_players - 1})"
+            )
+        if pid not in ids:
+            ids.append(pid)
+    return ids
 
 
 def _build_agent(
@@ -447,6 +472,22 @@ def main() -> int:
         help="Repeatable. Spec: human | scripted:<name> | hf:<hf_model> | openai:<model> | qwen:<model> | gemini:<model> | openrouter:<model> | ollama:<model>",
     )
     ap.add_argument(
+        "--human-players",
+        default=None,
+        help=(
+            "Convenience mode for mixed human+LLM play. Comma-separated player ids that use `human` agent "
+            "(e.g. '0' or '0,2'). Requires --llm-agent and cannot be combined with --agent."
+        ),
+    )
+    ap.add_argument(
+        "--llm-agent",
+        default=None,
+        help=(
+            "Agent spec used by all non-human seats when --human-players is set, "
+            "e.g. openai:gpt-4.1-mini or qwen:Qwen/Qwen3-8B."
+        ),
+    )
+    ap.add_argument(
         "--agent-gen",
         action="append",
         default=[],
@@ -477,6 +518,25 @@ def main() -> int:
     )
     ap.add_argument("--openai-base-url", default=None, help="Override OPENAI_BASE_URL (for OpenAI/vLLM-compatible servers)")
     ap.add_argument("--openai-api-key", default=None, help="Override OPENAI_API_KEY (for OpenAI/vLLM-compatible servers)")
+    ap.add_argument(
+        "--agent-openai-base-url",
+        action="append",
+        default=[],
+        help=(
+            "Optional per-agent OpenAI base_url (repeatable, aligned with --agent order). "
+            "Useful for cross-play with multiple local vLLM servers. "
+            "If one value is provided with multiple players, it is replicated."
+        ),
+    )
+    ap.add_argument(
+        "--agent-openai-api-key",
+        action="append",
+        default=[],
+        help=(
+            "Optional per-agent OpenAI API key (repeatable, aligned with --agent order). "
+            "If one value is provided with multiple players, it is replicated."
+        ),
+    )
     ap.add_argument(
         "--timeout",
         type=float,
@@ -526,14 +586,50 @@ def main() -> int:
     else:
         env_kwargs = None
 
-    if not args.agent:
-        raise SystemExit("Provide at least one --agent. If num_players>1, either repeat --agent or pass one to replicate.")
+    if args.human_players and args.agent:
+        raise SystemExit("Cannot combine --human-players with --agent. Use only one style.")
 
-    specs = [_parse_agent_spec(a) for a in args.agent]
-    if len(specs) == 1 and args.num_players > 1:
-        specs = specs * args.num_players
-    if len(specs) != args.num_players:
-        raise SystemExit(f"Need exactly {args.num_players} agents; got {len(specs)} via --agent")
+    if args.llm_agent and not args.human_players:
+        raise SystemExit("--llm-agent requires --human-players.")
+
+    if args.human_players:
+        if not args.llm_agent:
+            raise SystemExit("--human-players requires --llm-agent.")
+        try:
+            human_player_ids = _parse_player_ids(args.human_players, num_players=args.num_players)
+        except ValueError as e:
+            raise SystemExit(str(e)) from e
+        if not human_player_ids:
+            raise SystemExit("--human-players did not contain any valid player ids.")
+        if len(human_player_ids) >= args.num_players:
+            raise SystemExit("--human-players must leave at least one non-human seat for --llm-agent.")
+
+        llm_spec = _parse_agent_spec(args.llm_agent)
+        if llm_spec.kind == "human":
+            raise SystemExit("--llm-agent cannot be `human`.")
+
+        human_set = set(human_player_ids)
+        specs = [
+            (AgentSpec(kind="human", model=None) if i in human_set else AgentSpec(kind=llm_spec.kind, model=llm_spec.model))
+            for i in range(args.num_players)
+        ]
+
+        resolved = ", ".join(
+            f"player {i}={'human' if i in human_set else f'{llm_spec.kind}:{llm_spec.model or ''}'.rstrip(':')}"
+            for i in range(args.num_players)
+        )
+        print(f"INFO: Mixed human+LLM mode resolved agents -> {resolved}", file=sys.stderr)
+    else:
+        if not args.agent:
+            raise SystemExit(
+                "Provide at least one --agent. If num_players>1, either repeat --agent or pass one to replicate."
+            )
+
+        specs = [_parse_agent_spec(a) for a in args.agent]
+        if len(specs) == 1 and args.num_players > 1:
+            specs = specs * args.num_players
+        if len(specs) != args.num_players:
+            raise SystemExit(f"Need exactly {args.num_players} agents; got {len(specs)} via --agent")
 
     agent_gen_raw: List[Optional[Dict[str, Any]]] = []
     if args.agent_gen:
@@ -551,6 +647,30 @@ def main() -> int:
             raise SystemExit(f"Need 0, 1, or {args.num_players} --agent-gen entries; got {len(agent_gen_raw)}")
     else:
         agent_gen_raw = [None] * args.num_players
+
+    agent_base_urls: List[Optional[str]] = []
+    if args.agent_openai_base_url:
+        agent_base_urls = [s if isinstance(s, str) and s.strip() else None for s in args.agent_openai_base_url]
+        if len(agent_base_urls) == 1 and args.num_players > 1:
+            agent_base_urls = agent_base_urls * args.num_players
+        if len(agent_base_urls) != args.num_players:
+            raise SystemExit(
+                f"Need 0, 1, or {args.num_players} --agent-openai-base-url entries; got {len(agent_base_urls)}"
+            )
+    else:
+        agent_base_urls = [None] * args.num_players
+
+    agent_api_keys: List[Optional[str]] = []
+    if args.agent_openai_api_key:
+        agent_api_keys = [s if isinstance(s, str) and s.strip() else None for s in args.agent_openai_api_key]
+        if len(agent_api_keys) == 1 and args.num_players > 1:
+            agent_api_keys = agent_api_keys * args.num_players
+        if len(agent_api_keys) != args.num_players:
+            raise SystemExit(
+                f"Need 0, 1, or {args.num_players} --agent-openai-api-key entries; got {len(agent_api_keys)}"
+            )
+    else:
+        agent_api_keys = [None] * args.num_players
 
     if args.chat_template_kwargs is not None:
         try:
@@ -601,8 +721,8 @@ def main() -> int:
             specs[i],
             args.system_prompt,
             merged_gen,
-            openai_api_key=args.openai_api_key,
-            openai_base_url=args.openai_base_url,
+            openai_api_key=(agent_api_keys[i] if agent_api_keys[i] is not None else args.openai_api_key),
+            openai_base_url=(agent_base_urls[i] if agent_base_urls[i] is not None else args.openai_base_url),
             request_timeout_s=request_timeout_s,
             retry_kwargs=retry_kwargs,
         )

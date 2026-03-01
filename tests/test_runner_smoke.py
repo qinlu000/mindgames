@@ -44,6 +44,44 @@ class TestRunnerSmoke(unittest.TestCase):
         self.assertEqual(float(rewards.get("0", rewards.get(0))), 0.0)
         self.assertEqual(float(rewards.get("1", rewards.get(1))), 0.0)
 
+    def test_run_rollouts_hanabi_human_llm_mixed_mode(self):
+        repo_root = Path(__file__).resolve().parents[1]
+        out_dir = Path(tempfile.mkdtemp(prefix="mindgames_runner_human_llm_"))
+        out_path = out_dir / "rollouts.jsonl"
+
+        cmd = [
+            sys.executable,
+            str(repo_root / "tools" / "run_rollouts.py"),
+            "--env-id",
+            "Hanabi-v0-train",
+            "--num-players",
+            "2",
+            "--episodes",
+            "1",
+            "--seed",
+            "0",
+            "--human-players",
+            "0",
+            "--llm-agent",
+            "scripted:hanabi_discard0",
+            "--out",
+            str(out_path),
+        ]
+
+        # Player 0 (human) acts 21 times in this deterministic discard-only game.
+        human_actions = ("\n".join(["[Discard] 0"] * 64)) + "\n"
+        proc = subprocess.run(cmd, cwd=str(repo_root), input=human_actions, capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, msg=f"stderr:\n{proc.stderr}\nstdout:\n{proc.stdout}")
+        self.assertTrue(out_path.exists())
+
+        records = [json.loads(line) for line in out_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        end = records[-1]
+        self.assertEqual(end["type"], "episode_end")
+
+        steps = [r for r in records if r.get("type") == "step"]
+        self.assertEqual(len(steps), 42)
+        self.assertIn("Mixed human+LLM mode resolved agents", proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
