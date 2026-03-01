@@ -44,15 +44,9 @@ To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_
 
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
-## Parallel Hanabi rollouts (OpenAI-compatible, e.g. OpenRouter)
+## Hanabi API batch self-play (OpenAI-compatible, e.g. OpenRouter)
 ```bash
-# Set your OpenAI-compatible key (OpenRouter uses OPENAI_API_KEY + OPENAI_BASE_URL).
-export OPENAI_API_KEY="..."
-export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
-
-# Run 100 episodes across multiple workers.
-EPISODES=100 WORKERS=50 \
-bash tools/rollout/run_hanabi_qwen3_235b_thinking_parallel.sh
+export OPENAI_BASE_URL="https://openrouter.ai/api/v1" OPENAI_API_KEY="..." && MODELS_FILE="data/hanabi_api_models_15.txt" bash tools/rollout/run_hanabi_api_batch_eval.sh
 ```
 
 ## Hanabi: human + LLM mixed play
