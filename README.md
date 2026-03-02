@@ -60,3 +60,20 @@ uv run python tools/run_rollouts.py \
   --llm-agent scripted:hanabi_discard0 \
   --out data/hanabi_human_llm.jsonl
 ```
+
+## Hanabi: human + LLM web GUI (format-safe actions)
+```bash
+# Starts a local web app at http://127.0.0.1:8765 .
+# Human seat(s) use button/select controls; non-human seats use --llm-agent.
+uv run python tools/hanabi_human_ai_gui.py \
+  --env-id Hanabi-v0-train \
+  --num-players 2 \
+  --human-players 0 \
+  --llm-agent scripted:hanabi_discard0 \
+  --host 127.0.0.1 \
+  --port 8765
+```
+
+Examples:
+- Replace `--llm-agent scripted:hanabi_discard0` with `openai:gpt-4.1-mini` (or `qwen:<model>`) as needed.
+- For OpenAI-compatible backends, pass `--openai-base-url` / `--openai-api-key` (or set `OPENAI_BASE_URL` / `OPENAI_API_KEY`).
