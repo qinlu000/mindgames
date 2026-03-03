@@ -4,7 +4,7 @@ set -euo pipefail
 # Batch-evaluate many API models on Hanabi (self-play: same model as P0/P1).
 #
 # Defaults target the user request:
-# - at least 15 models
+# - use all models from MODELS_FILE (MIN_MODELS defaults to file count)
 # - 10 episodes per model
 # - OpenAI-compatible API call path
 #
@@ -17,7 +17,7 @@ set -euo pipefail
 # Optional common overrides:
 #   OUT_ROOT=outputs/hanabi_api_batch_$(date +%Y%m%d_%H%M%S)
 #   EPISODES=10
-#   MIN_MODELS=15
+#   MIN_MODELS=11               # optional lower bound; default is model file count
 #   AGENT_KIND=openai              # openai|qwen|openrouter|gemini|...
 #   MODEL_GEN_FILE=path/to/model_gen_overrides.json
 #   PARALLEL_JOBS=15               # >1: run models in parallel
@@ -35,7 +35,7 @@ NUM_PLAYERS="${NUM_PLAYERS:-2}"
 EPISODES="${EPISODES:-10}"
 SEED="${SEED:-0}"
 RANDOMIZE_SEED_PER_MODEL="${RANDOMIZE_SEED_PER_MODEL:-0}"
-MIN_MODELS="${MIN_MODELS:-15}"
+MIN_MODELS="${MIN_MODELS:-}"
 
 AGENT_KIND="${AGENT_KIND:-openai}"
 MODEL_GEN_FILE="${MODEL_GEN_FILE:-}"
@@ -91,9 +91,11 @@ if ! [[ "$EPISODES" =~ ^[0-9]+$ ]] || [[ "$EPISODES" -lt 1 ]]; then
   echo "EPISODES must be a positive integer, got: $EPISODES" >&2
   exit 1
 fi
-if ! [[ "$MIN_MODELS" =~ ^[0-9]+$ ]] || [[ "$MIN_MODELS" -lt 1 ]]; then
-  echo "MIN_MODELS must be a positive integer, got: $MIN_MODELS" >&2
-  exit 1
+if [[ -n "$MIN_MODELS" ]]; then
+  if ! [[ "$MIN_MODELS" =~ ^[0-9]+$ ]] || [[ "$MIN_MODELS" -lt 1 ]]; then
+    echo "MIN_MODELS must be a positive integer, got: $MIN_MODELS" >&2
+    exit 1
+  fi
 fi
 if ! [[ "$PARALLEL_JOBS" =~ ^[0-9]+$ ]] || [[ "$PARALLEL_JOBS" -lt 1 ]]; then
   echo "PARALLEL_JOBS must be a positive integer, got: $PARALLEL_JOBS" >&2
@@ -112,6 +114,13 @@ mapfile -t MODELS < <(
   ' "$MODELS_FILE"
 )
 
+if [[ "${#MODELS[@]}" -eq 0 ]]; then
+  echo "No models found in ${MODELS_FILE}" >&2
+  exit 1
+fi
+if [[ -z "$MIN_MODELS" ]]; then
+  MIN_MODELS="${#MODELS[@]}"
+fi
 if [[ "${#MODELS[@]}" -lt "$MIN_MODELS" ]]; then
   echo "Need at least ${MIN_MODELS} models, found ${#MODELS[@]} in ${MODELS_FILE}" >&2
   exit 1

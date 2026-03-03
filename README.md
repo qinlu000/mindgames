@@ -48,6 +48,7 @@ More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 ```bash
 export OPENAI_BASE_URL="https://openrouter.ai/api/v1" OPENAI_API_KEY="..." && MODELS_FILE="data/hanabi_api_models_15.txt" MODEL_GEN_FILE="data/hanabi_api_model_gen_overrides.json" PARALLEL_JOBS=15 bash tools/rollout/run_hanabi_api_batch_eval.sh
 ```
+`MIN_MODELS` is optional now; if omitted, it defaults to the actual non-comment model count in `MODELS_FILE`.
 
 ## Hanabi: human + LLM mixed play
 ```bash
