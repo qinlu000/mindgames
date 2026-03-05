@@ -83,6 +83,7 @@ class OpenAIAgent(Agent):
         self.verbose = verbose
         self.max_retries = max_retries
         self.retry_delay_s = retry_delay_s
+        self.stream = bool(kwargs.pop("stream", False))
         self.kwargs = kwargs
         self.last_message = None
         self.last_usage = None
@@ -149,6 +150,71 @@ class OpenAIAgent(Agent):
         messages = [{"role": "user", "content": observation}]
         if self.system_prompt:
             messages.insert(0, {"role": "system", "content": self.system_prompt})
+
+        if self.stream:
+            stream_resp = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                n=1,
+                stream=True,
+                **self.kwargs,
+            )
+
+            content_parts: list[str] = []
+            reasoning_parts: list[str] = []
+            self.last_usage = None
+            try:
+                for chunk in stream_resp:
+                    usage = getattr(chunk, "usage", None)
+                    if usage is not None:
+                        try:
+                            self.last_usage = usage.model_dump()
+                        except Exception:
+                            self.last_usage = None
+
+                    choices = getattr(chunk, "choices", None)
+                    if not choices:
+                        continue
+                    delta = getattr(choices[0], "delta", None)
+                    if delta is None:
+                        continue
+
+                    piece = getattr(delta, "content", None)
+                    if isinstance(piece, str):
+                        content_parts.append(piece)
+                    elif isinstance(piece, list):
+                        for part in piece:
+                            text = None
+                            if isinstance(part, dict):
+                                text = part.get("text") or part.get("content")
+                            else:
+                                text = getattr(part, "text", None) or getattr(part, "content", None)
+                            if isinstance(text, str):
+                                content_parts.append(text)
+
+                    reason_piece = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+                    if isinstance(reason_piece, str):
+                        reasoning_parts.append(reason_piece)
+            finally:
+                close_fn = getattr(stream_resp, "close", None)
+                if callable(close_fn):
+                    close_fn()
+
+            content = "".join(content_parts).strip()
+            reasoning = "".join(reasoning_parts).strip()
+            self.last_message = {
+                "role": "assistant",
+                "content": content or None,
+            }
+            if reasoning:
+                self.last_message["reasoning"] = reasoning
+
+            if not content:
+                fallback = _extract_action_from_text(reasoning) if reasoning else None
+                if fallback:
+                    return fallback
+                raise RuntimeError(f"Empty model response (streaming, no assistant content). last_message={self.last_message}")
+            return content
 
         completion = self.client.chat.completions.create(
             model=self.model_name,

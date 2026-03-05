@@ -131,6 +131,8 @@ def _build_agent(
             kwargs["presence_penalty"] = float(gen_kwargs["presence_penalty"])
         if gen_kwargs.get("frequency_penalty") is not None:
             kwargs["frequency_penalty"] = float(gen_kwargs["frequency_penalty"])
+        if gen_kwargs.get("stream"):
+            kwargs["stream"] = True
         if extra_body:
             kwargs["extra_body"] = extra_body
         if request_timeout_s is not None:
@@ -546,6 +548,11 @@ def main() -> int:
     ap.add_argument("--max-retries", type=int, default=10, help="Max attempts for API calls (OpenAI-compatible agents).")
     ap.add_argument("--retry-initial-delay", type=float, default=0.0, help="Retry delay in seconds (0 = immediate retry).")
     ap.add_argument("--retry-max-delay", type=float, default=0.0, help="Maximum retry delay in seconds (0 = no cap / unused for immediate retry).")
+    ap.add_argument(
+        "--stream",
+        action="store_true",
+        help="Use streaming for OpenAI-compatible chat completions (openai/qwen agent kinds).",
+    )
     ap.add_argument("--temperature", type=float, default=None, help="If set, pass temperature to the backend; otherwise omit it.")
     ap.add_argument("--top-p", type=float, default=None, help="If set, pass top_p to the backend; otherwise omit it.")
     ap.add_argument("--top-k", type=int, default=None)
@@ -701,6 +708,7 @@ def main() -> int:
         "repetition_penalty": args.repetition_penalty,
         "presence_penalty": args.presence_penalty,
         "frequency_penalty": args.frequency_penalty,
+        "stream": bool(args.stream),
         "gen_seed": args.gen_seed,
         "extra_body": extra_body,
         "chat_template_kwargs": chat_template_kwargs,

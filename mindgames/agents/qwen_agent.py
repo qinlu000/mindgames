@@ -48,6 +48,15 @@ class QwenAgent(OpenAIAgent):
         self.last_reasoning = None
 
     def _make_request(self, observation: str) -> str:
+        if getattr(self, "stream", False):
+            text = super()._make_request(observation)
+            last = self.last_message if isinstance(self.last_message, dict) else {}
+            self.last_response = None
+            self.last_content = last.get("content") if isinstance(last.get("content"), str) else None
+            reasoning = last.get("reasoning") or last.get("reasoning_content")
+            self.last_reasoning = reasoning if isinstance(reasoning, str) else None
+            return text
+
         messages = [{"role": "user", "content": observation}]
         if self.system_prompt:
             messages.insert(0, {"role": "system", "content": self.system_prompt})

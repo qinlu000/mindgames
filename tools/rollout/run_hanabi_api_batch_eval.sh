@@ -40,15 +40,17 @@ MIN_MODELS="${MIN_MODELS:-}"
 AGENT_KIND="${AGENT_KIND:-openai}"
 MODEL_GEN_FILE="${MODEL_GEN_FILE:-}"
 
-TIMEOUT="${TIMEOUT:-120}"
+TIMEOUT="${TIMEOUT:-300}"
 MAX_RETRIES="${MAX_RETRIES:-10}"
 RETRY_INITIAL_DELAY="${RETRY_INITIAL_DELAY:-0}"
 RETRY_MAX_DELAY="${RETRY_MAX_DELAY:-0}"
-TEMPERATURE="${TEMPERATURE:-0.2}"
-TOP_P="${TOP_P:-1.0}"
+# By default do not send sampling params; let provider-side model defaults apply.
+TEMPERATURE="${TEMPERATURE:-}"
+TOP_P="${TOP_P:-}"
 TOP_K="${TOP_K:-}"
 MAX_TOKENS="${MAX_TOKENS:-}"
 DISABLE_THINKING="${DISABLE_THINKING:-0}"
+STREAM="${STREAM:-0}"
 
 OPENAI_BASE_URL="${OPENAI_BASE_URL:-}"
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
@@ -176,6 +178,7 @@ echo "AGENT_KIND=$AGENT_KIND"
 echo "ENV_ID=$ENV_ID"
 echo "DRY_RUN=$DRY_RUN"
 echo "PARALLEL_JOBS=$PARALLEL_JOBS"
+echo "STREAM=$STREAM"
 
 if [[ "$PARALLEL_JOBS" -gt 1 ]] && ! is_true "$CONTINUE_ON_ERROR"; then
   echo "WARN: PARALLEL_JOBS>1 with CONTINUE_ON_ERROR=0 may still run already queued models." >&2
@@ -200,6 +203,7 @@ run_one_model() {
   local top_k_flag=()
   local max_tokens_flag=()
   local disable_flag=()
+  local stream_flag=()
   local base_url_flag=()
   local api_key_flag=()
   local agent_gen_flags=()
@@ -208,6 +212,7 @@ run_one_model() {
   top_k_flag=()
   max_tokens_flag=()
   disable_flag=()
+  stream_flag=()
   base_url_flag=()
   api_key_flag=()
   agent_gen_flags=()
@@ -226,6 +231,9 @@ run_one_model() {
   fi
   if is_true "$DISABLE_THINKING"; then
     disable_flag=(--disable-thinking)
+  fi
+  if is_true "$STREAM"; then
+    stream_flag=(--stream)
   fi
 
   local model_gen_json=""
@@ -316,6 +324,7 @@ PY
       --max-retries "$MAX_RETRIES" \
       --retry-initial-delay "$RETRY_INITIAL_DELAY" \
       --retry-max-delay "$RETRY_MAX_DELAY" \
+      "${stream_flag[@]}" \
       "${temperature_flag[@]}" \
       "${top_p_flag[@]}" \
       "${top_k_flag[@]}" \

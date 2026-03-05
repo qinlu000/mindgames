@@ -62,6 +62,17 @@ More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 export OPENAI_BASE_URL="https://openrouter.ai/api/v1" OPENAI_API_KEY="..." && MODELS_FILE="data/hanabi_api_models_15.txt" MODEL_GEN_FILE="data/hanabi_api_model_gen_overrides.json" PARALLEL_JOBS=15 bash tools/rollout/run_hanabi_api_batch_eval.sh
 ```
 `MIN_MODELS` is optional now; if omitted, it defaults to the actual non-comment model count in `MODELS_FILE`.
+`EPISODES` defaults to `10` per model.
+`TIMEOUT` defaults to `300` seconds per request.
+By default the batch script does **not** send `temperature/top_p`; provider-side defaults apply unless you set them.
+Set `STREAM=1` to enable streaming for OpenAI-compatible (`openai`/`qwen`) calls, e.g.:
+```bash
+OPENAI_BASE_URL="https://openrouter.ai/api/v1" OPENAI_API_KEY="..." \
+MODELS_FILE="data/hanabi_api_models_15.txt" \
+MODEL_GEN_FILE="data/hanabi_api_model_gen_overrides.json" \
+PARALLEL_JOBS=15 STREAM=1 \
+bash tools/rollout/run_hanabi_api_batch_eval.sh
+```
 
 ## Hanabi: human + LLM mixed play
 ```bash

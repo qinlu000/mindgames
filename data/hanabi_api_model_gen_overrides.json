@@ -9,6 +9,8 @@
     }
   },
   "claude-sonnet-4-5-20250929": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
@@ -16,27 +18,56 @@
     }
   },
   "gemini-3.1-pro-preview": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
-      "reasoning": {
-        "effort": "high"
+      "google": {
+        "thinking_config": {
+          "thinking_level": "high",
+          "include_thoughts": true
+        }
       }
     }
   },
   "gemini-3-pro": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
-      "reasoning": {
-        "effort": "high"
+      "google": {
+        "thinking_config": {
+          "thinking_level": "high",
+          "include_thoughts": true
+        }
+      }
+    }
+  },
+  "gemini-2.5-flash": {
+    "temperature": null,
+    "top_p": null,
+    "extra_body": {
+      "google": {
+        "thinking_config": {
+          "thinking_level": "high",
+          "include_thoughts": true
+        }
       }
     }
   },
   "gemini-3-flash": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
-      "reasoning": {
-        "effort": "high"
+      "google": {
+        "thinking_config": {
+          "thinking_level": "high",
+          "include_thoughts": true
+        }
       }
     }
   },
   "qwen3.5-397b-a17b": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
@@ -44,6 +75,8 @@
     }
   },
   "minimax-m2.5": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
@@ -51,6 +84,8 @@
     }
   },
   "deepseek-r1": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
@@ -58,6 +93,8 @@
     }
   },
   "deepseek-v3.2-ks": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
@@ -65,6 +102,8 @@
     }
   },
   "glm-5": {
+    "temperature": null,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
@@ -72,6 +111,8 @@
     }
   },
   "kimi-k2.5": {
+    "temperature": 1.0,
+    "top_p": null,
     "extra_body": {
       "reasoning": {
         "effort": "high"
