@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import threading
 import time
 from dataclasses import dataclass
@@ -33,6 +34,23 @@ DEFAULT_SYSTEM_PROMPT = (
     "2) Else if a teammate has a clearly playable card and info_tokens>0, reveal that exact card.\n"
     "3) Else discard the least useful / most uncertain card.\n"
     "4) Avoid repeating the same Reveal on the same card unless it adds new info."
+)
+
+_REVEAL_COLOR_RE = re.compile(
+    r"^\[Reveal\]\s+player\s+(?P<player>\d+)\s+card\s+(?P<card>\d+)\s+color\s+(?P<color>[a-zA-Z]+)\s*$",
+    re.IGNORECASE,
+)
+_REVEAL_RANK_RE = re.compile(
+    r"^\[Reveal\]\s+player\s+(?P<player>\d+)\s+card\s+(?P<card>\d+)\s+rank\s+(?P<rank>\d+)\s*$",
+    re.IGNORECASE,
+)
+_OBS_REVEAL_COLOR_RE = re.compile(
+    r"^Card\s+(?P<card>\d+)\s+from\s+player\s+(?P<player>\d+)\s+is\s+(?P<color>[a-zA-Z]+)\.\s*$",
+    re.IGNORECASE,
+)
+_OBS_REVEAL_RANK_RE = re.compile(
+    r"^Card\s+(?P<card>\d+)\s+from\s+player\s+(?P<player>\d+)\s+has\s+rank\s+(?P<rank>\d+)\.\s*$",
+    re.IGNORECASE,
 )
 
 
@@ -723,6 +741,69 @@ def _normalize_action(env: mg.Env, action: str) -> str:
     return normalized
 
 
+def _parse_reveal_action(action: str) -> Optional[Dict[str, Any]]:
+    txt = (action or "").strip()
+
+    m = _REVEAL_COLOR_RE.match(txt)
+    if m is not None:
+        return {
+            "target_player": int(m.group("player")),
+            "card_index": int(m.group("card")),
+            "hint_type": "color",
+            "hint_value": m.group("color").lower(),
+        }
+
+    m = _REVEAL_RANK_RE.match(txt)
+    if m is not None:
+        return {
+            "target_player": int(m.group("player")),
+            "card_index": int(m.group("card")),
+            "hint_type": "rank",
+            "hint_value": int(m.group("rank")),
+        }
+
+    return None
+
+
+def _observation_contains_reveal_message(
+    observation_text: str,
+    *,
+    target_player: int,
+    card_index: int,
+    hint_type: str,
+    hint_value: Any,
+) -> bool:
+    lines = (observation_text or "").splitlines()
+    for raw in lines:
+        line = raw.strip()
+
+        if hint_type == "color":
+            m = _OBS_REVEAL_COLOR_RE.match(line)
+            if m is None:
+                continue
+            if int(m.group("player")) != int(target_player):
+                continue
+            if int(m.group("card")) != int(card_index):
+                continue
+            if m.group("color").lower() != str(hint_value).lower():
+                continue
+            return True
+
+        elif hint_type == "rank":
+            m = _OBS_REVEAL_RANK_RE.match(line)
+            if m is None:
+                continue
+            if int(m.group("player")) != int(target_player):
+                continue
+            if int(m.group("card")) != int(card_index):
+                continue
+            if int(m.group("rank")) != int(hint_value):
+                continue
+            return True
+
+    return False
+
+
 class HanabiHumanAIGame:
     def __init__(
         self,
@@ -1035,6 +1116,42 @@ class HanabiHumanAIGame:
 
         raise ValueError(f"Unsupported action type: {action_type!r}")
 
+    def _previous_turn_hint_for_player_unlocked(self, player_id: int, observation_text: str) -> Optional[str]:
+        if not self.step_history:
+            return None
+
+        last = self.step_history[-1]
+        raw_actor = last.get("player_id")
+        try:
+            actor_id = int(raw_actor)
+        except Exception:
+            return None
+        if actor_id == int(player_id):
+            return None
+
+        action = str(last.get("normalized_action") or last.get("action") or "").strip()
+        parsed = _parse_reveal_action(action)
+        if parsed is None:
+            return None
+        if int(parsed["target_player"]) != int(player_id):
+            return None
+
+        card_index = int(parsed["card_index"])
+        hint_type = str(parsed["hint_type"])
+        hint_value = parsed["hint_value"]
+        if not _observation_contains_reveal_message(
+            observation_text,
+            target_player=int(player_id),
+            card_index=card_index,
+            hint_type=hint_type,
+            hint_value=hint_value,
+        ):
+            return None
+
+        if hint_type == "color":
+            return f"Previous turn hint: Player {actor_id} revealed your card {card_index} color {hint_value}."
+        return f"Previous turn hint: Player {actor_id} revealed your card {card_index} rank {hint_value}."
+
     def submit_action(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         with self.lock:
             if self.env is None:
@@ -1074,6 +1191,16 @@ class HanabiHumanAIGame:
 
         current_player_id = self._current_player_id
         is_human_turn = (not self.done) and (current_player_id in self.human_players)
+        observation_text = self._current_observation or ""
+        previous_turn_hint: Optional[str] = None
+        if is_human_turn and current_player_id is not None:
+            previous_turn_hint = self._previous_turn_hint_for_player_unlocked(current_player_id, observation_text)
+            if previous_turn_hint:
+                observation_text = observation_text.rstrip()
+                if observation_text:
+                    observation_text = f"{observation_text}\n\n{previous_turn_hint}"
+                else:
+                    observation_text = previous_turn_hint
 
         fireworks_raw = game_state.get("fireworks", {})
         fireworks: Dict[str, int] = {}
@@ -1101,7 +1228,8 @@ class HanabiHumanAIGame:
             "done": self.done,
             "current_player_id": current_player_id,
             "is_human_turn": is_human_turn,
-            "observation": self._current_observation or "",
+            "observation": observation_text,
+            "previous_turn_hint": previous_turn_hint,
             "board": board,
             "game_state": {
                 "info_tokens": int(game_state.get("info_tokens", 0)),

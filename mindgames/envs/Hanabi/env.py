@@ -166,6 +166,10 @@ class HanabiEnv(Env):
         Returns:
             Tuple[bool, Info]: information regarding the current game step.
         """
+        # Do not mutate game state after terminal conditions are reached.
+        if self.state.done:
+            return self.state.step(rotate_player=False)
+
         acting_player_id = self.state.current_player_id
         self.state.game_state["step_count"] = int(self.state.game_state.get("step_count", 0)) + 1
         if self.max_steps is not None and self.state.game_state["step_count"] > self.max_steps:

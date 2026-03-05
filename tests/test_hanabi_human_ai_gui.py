@@ -62,6 +62,81 @@ class TestHanabiHumanAIGUI(unittest.TestCase):
         self.assertTrue(state["is_human_turn"])
         self.assertFalse(state["done"])
 
+    def test_observation_includes_previous_turn_hint_for_human(self):
+        session = self._make_session()
+        state = session.start_new_game(seed=0)
+        self.assertTrue(state["is_human_turn"])
+        session._current_observation = (session._current_observation or "") + "\n\nRecent events:\nCard 2 from player 0 is white.\n"
+
+        session.step_history.append(
+            {
+                "step": 999,
+                "player_id": 1,
+                "actor": "ai",
+                "observation": "",
+                "action": "[Reveal] player 0 card 2 color white",
+                "normalized_action": "[Reveal] player 0 card 2 color white",
+                "infer_ms": 123,
+                "reasoning": None,
+                "step_info": {},
+                "done": False,
+            }
+        )
+
+        state_after = session.get_public_state()
+        expected = "Previous turn hint: Player 1 revealed your card 2 color white."
+        self.assertEqual(state_after["previous_turn_hint"], expected)
+        self.assertIn(expected, state_after["observation"])
+
+    def test_previous_turn_hint_absent_when_last_action_not_reveal(self):
+        session = self._make_session()
+        state = session.start_new_game(seed=0)
+        self.assertTrue(state["is_human_turn"])
+
+        session.step_history.append(
+            {
+                "step": 999,
+                "player_id": 1,
+                "actor": "ai",
+                "observation": "",
+                "action": "[Discard] 0",
+                "normalized_action": "[Discard] 0",
+                "infer_ms": 50,
+                "reasoning": None,
+                "step_info": {},
+                "done": False,
+            }
+        )
+
+        state_after = session.get_public_state()
+        self.assertIsNone(state_after["previous_turn_hint"])
+        self.assertNotIn("Previous turn hint:", state_after["observation"])
+
+    def test_previous_turn_hint_absent_for_unobserved_invalid_reveal_attempt(self):
+        session = self._make_session()
+        state = session.start_new_game(seed=0)
+        self.assertTrue(state["is_human_turn"])
+
+        # No matching reveal message is present in observation (e.g., invalid reveal attempt).
+        session.step_history.append(
+            {
+                "step": 999,
+                "player_id": 1,
+                "actor": "ai",
+                "observation": "",
+                "action": "[Reveal] player 0 card 2 color white",
+                "normalized_action": "[Reveal] player 0 card 2 color white",
+                "infer_ms": 50,
+                "reasoning": None,
+                "step_info": {},
+                "done": False,
+            }
+        )
+
+        state_after = session.get_public_state()
+        self.assertIsNone(state_after["previous_turn_hint"])
+        self.assertNotIn("Previous turn hint:", state_after["observation"])
+
 
 if __name__ == "__main__":
     unittest.main()

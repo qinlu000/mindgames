@@ -1,5 +1,6 @@
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -51,6 +52,28 @@ class TestHanabiEnv(unittest.TestCase):
         self.assertFalse(done)
         self.assertEqual(env.state.game_state["fireworks"][Suit.RED], 5)
         self.assertEqual(env.state.game_state["info_tokens"], 8)
+
+    def test_no_state_mutation_after_game_done(self):
+        from mindgames.envs.Hanabi.env import HanabiEnv
+
+        env = HanabiEnv()
+        env.reset(num_players=2, seed=0)
+
+        done = False
+        # Force terminal state by repeatedly making likely-invalid plays.
+        for _ in range(20):
+            done, _ = env.step("[Play] 0")
+            if done:
+                break
+        self.assertTrue(done, "Expected game to end before post-terminal check.")
+
+        snapshot = deepcopy(env.state.game_state)
+        current_player_id = env.state.current_player_id
+
+        done_after, _ = env.step("[Discard] 0")
+        self.assertTrue(done_after)
+        self.assertEqual(current_player_id, env.state.current_player_id)
+        self.assertEqual(snapshot, env.state.game_state, "Game state mutated after terminal step.")
 
 
 if __name__ == "__main__":
