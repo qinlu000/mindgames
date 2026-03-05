@@ -8,8 +8,8 @@ set -euo pipefail
 #   MODEL=/workspace/models/Qwen3-8B (if exists), otherwise Qwen/Qwen3-8B
 #   CUDA_VISIBLE_DEVICES=<auto: second half of visible GPUs, e.g. 5-9 on 10 GPUs>
 #   NPROC_PER_NODE=<auto: equals number of train GPUs>
-#   NCCL_P2P_DISABLE=0
-#   NCCL_IB_DISABLE=0
+#   NCCL_P2P_DISABLE=1
+#   NCCL_IB_DISABLE=1
 #   DATASET=data/hanabi.grpo.jsonl
 #   OUTPUT_DIR=output/qwen3-8b-hanabi-grpo
 #   NUM_GENERATIONS=<auto: 2 * NPROC_PER_NODE for heavy-thinking setup>
@@ -20,6 +20,7 @@ set -euo pipefail
 #   MAX_STEPS=500
 #   VLLM_SERVER_HOST=127.0.0.1
 #   VLLM_SERVER_PORT=8000
+#   VLLM_SERVER_GROUP_PORT=        # optional, auto-pick if empty. Supports comma-separated lists.
 #   REPORT_TO=wandb
 #   RUN_NAME=grpo-hanabi
 #   WANDB_PROJECT=mindgames
@@ -78,6 +79,94 @@ _build_range_csv() {
   echo "$out"
 }
 
+_is_local_host() {
+  local host="$1"
+  [ "$host" = "127.0.0.1" ] || [ "$host" = "localhost" ] || [ "$host" = "::1" ]
+}
+
+_all_local_hosts_csv() {
+  local raw="$1"
+  local item
+  if [ -z "$raw" ]; then
+    return 1
+  fi
+  IFS=',' read -r -a _items <<< "$raw"
+  for item in "${_items[@]}"; do
+    item="${item//[[:space:]]/}"
+    if [ -z "$item" ]; then
+      continue
+    fi
+    if ! _is_local_host "$item"; then
+      return 1
+    fi
+  done
+  return 0
+}
+
+_has_local_host_csv() {
+  local raw="$1"
+  local item
+  if [ -z "$raw" ]; then
+    return 1
+  fi
+  IFS=',' read -r -a _items <<< "$raw"
+  for item in "${_items[@]}"; do
+    item="${item//[[:space:]]/}"
+    if [ -z "$item" ]; then
+      continue
+    fi
+    if _is_local_host "$item"; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+_pick_free_port() {
+  local start="${1:-51216}"
+  local end="${2:-51350}"
+  python - "$start" "$end" <<'PY'
+import socket
+import sys
+
+start = int(sys.argv[1])
+end = int(sys.argv[2])
+for port in range(start, end + 1):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind(("0.0.0.0", port))
+    except OSError:
+        pass
+    else:
+        print(port)
+        s.close()
+        raise SystemExit(0)
+    s.close()
+raise SystemExit(1)
+PY
+}
+
+_pick_free_ports_csv() {
+  local count="${1:-1}"
+  local start="${2:-51216}"
+  local end="${3:-51350}"
+  local ports=()
+  local next_start="$start"
+  local picked
+
+  while [ "${#ports[@]}" -lt "$count" ]; do
+    if ! picked="$(_pick_free_port "$next_start" "$end")"; then
+      return 1
+    fi
+    ports+=("$picked")
+    next_start=$((picked + 1))
+  done
+
+  local out
+  out="$(IFS=,; echo "${ports[*]}")"
+  echo "$out"
+}
+
 if [ -z "${MODEL:-}" ]; then
   if [ -d "/workspace/models/Qwen3-8B" ]; then
     MODEL="/workspace/models/Qwen3-8B"
@@ -116,8 +205,8 @@ if [ "$NPROC_PER_NODE" -lt 1 ]; then
   exit 1
 fi
 
-NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-0}"
-NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-0}"
+NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}"
+NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}"
 DATASET="${DATASET:-data/hanabi.grpo.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-output/qwen3-8b-hanabi-grpo}"
 MAX_LENGTH="${MAX_LENGTH:-16384}"
@@ -141,6 +230,7 @@ NUM_TRAIN_EPOCHS="${NUM_TRAIN_EPOCHS:-}"
 MAX_STEPS="${MAX_STEPS:-500}"
 VLLM_SERVER_HOST="${VLLM_SERVER_HOST:-127.0.0.1}"
 VLLM_SERVER_PORT="${VLLM_SERVER_PORT:-8000}"
+VLLM_SERVER_GROUP_PORT="${VLLM_SERVER_GROUP_PORT:-}"
 REPORT_TO="${REPORT_TO:-wandb}"
 RUN_NAME="${RUN_NAME:-grpo-hanabi}"
 WANDB_PROJECT="${WANDB_PROJECT:-mindgames}"
@@ -181,7 +271,30 @@ if [ "$PUSH_TO_HUB" = "true" ]; then
   fi
 fi
 
-echo "[hanabi-train] model=$MODEL server=${VLLM_SERVER_HOST}:${VLLM_SERVER_PORT} cuda=$CUDA_VISIBLE_DEVICES nproc=$NPROC_PER_NODE num_generations=$NUM_GENERATIONS gen_batch=$GENERATION_BATCH_SIZE max_length=$MAX_LENGTH max_completion_length=$MAX_COMPLETION_LENGTH"
+if [ -z "$VLLM_SERVER_GROUP_PORT" ]; then
+  host_count="$(_count_csv_items "$VLLM_SERVER_HOST")"
+  if [ "$host_count" -lt 1 ]; then
+    host_count=1
+  fi
+  if _all_local_hosts_csv "$VLLM_SERVER_HOST"; then
+    if [ "$host_count" -eq 1 ]; then
+      if picked_port="$(_pick_free_port 51216 51350)"; then
+        VLLM_SERVER_GROUP_PORT="$picked_port"
+      fi
+    elif picked_ports="$(_pick_free_ports_csv "$host_count" 51216 51350)"; then
+      VLLM_SERVER_GROUP_PORT="$picked_ports"
+    fi
+  fi
+fi
+
+if _has_local_host_csv "$VLLM_SERVER_HOST"; then
+  NO_PROXY="${NO_PROXY:-}"
+  no_proxy="${no_proxy:-}"
+  export NO_PROXY="${NO_PROXY:+$NO_PROXY,}127.0.0.1,localhost,::1"
+  export no_proxy="${no_proxy:+$no_proxy,}127.0.0.1,localhost,::1"
+fi
+
+echo "[hanabi-train] model=$MODEL server=${VLLM_SERVER_HOST}:${VLLM_SERVER_PORT} group_port=${VLLM_SERVER_GROUP_PORT:-auto} cuda=$CUDA_VISIBLE_DEVICES nproc=$NPROC_PER_NODE num_generations=$NUM_GENERATIONS gen_batch=$GENERATION_BATCH_SIZE max_length=$MAX_LENGTH max_completion_length=$MAX_COMPLETION_LENGTH"
 
 if [ "$DRY_RUN" = "true" ]; then
   exit 0
@@ -195,6 +308,7 @@ NCCL_P2P_DISABLE="$NCCL_P2P_DISABLE" NCCL_IB_DISABLE="$NCCL_IB_DISABLE" \
 MODEL="$MODEL" \
 VLLM_MODE=server \
 VLLM_SERVER_HOST="$VLLM_SERVER_HOST" VLLM_SERVER_PORT="$VLLM_SERVER_PORT" \
+VLLM_SERVER_GROUP_PORT="$VLLM_SERVER_GROUP_PORT" \
 DATASET="$DATASET" OUTPUT_DIR="$OUTPUT_DIR" \
 NUM_GENERATIONS="$NUM_GENERATIONS" GENERATION_BATCH_SIZE="$GENERATION_BATCH_SIZE" \
 MAX_LENGTH="$MAX_LENGTH" MAX_COMPLETION_LENGTH="$MAX_COMPLETION_LENGTH" \

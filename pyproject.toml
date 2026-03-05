@@ -12,7 +12,7 @@ license = { text = "MIT" }
 authors = [{ name = "cql" }]
 dependencies = [
     "msgspec>=0.20.0",
-  "vllm>=0.13.0,<0.14",
+    "vllm>=0.15.1,<0.16",
 ]
 
 [project.optional-dependencies]
@@ -23,10 +23,10 @@ agents = [
   "transformers",
 ]
 serve = [
-  "vllm>=0.13.0,<0.14",
+    "vllm>=0.15.1,<0.16",
 ]
 train = [
-  "ms-swift[all]>=3.12.4,<3.13",
+    "ms-swift>=4.0.0,<4.1",
 ]
 
 [dependency-groups]
@@ -38,6 +38,7 @@ dev = [
 
 [tool.uv]
 default-groups = ["dev"]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
 
 [tool.hatch.version]
 path = "mindgames/__about__.py"

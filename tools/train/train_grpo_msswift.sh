@@ -30,8 +30,9 @@ set -euo pipefail
 #   HUB_PRIVATE_REPO=
 #   USE_VLLM=true
 #   VLLM_MODE=colocate
-#   VLLM_SERVER_HOST=
-#   VLLM_SERVER_PORT=
+#   VLLM_SERVER_HOST=                  # single host or comma-separated list for multi-server
+#   VLLM_SERVER_PORT=                  # single port or comma-separated list, one per host
+#   VLLM_SERVER_GROUP_PORT=            # optional comma-separated list, one per host
 #   CUDA_VISIBLE_DEVICES=0
 #   NPROC_PER_NODE=1
 #   NCCL_P2P_DISABLE=1
@@ -75,6 +76,7 @@ USE_VLLM="${USE_VLLM:-true}"
 VLLM_MODE="${VLLM_MODE:-colocate}"
 VLLM_SERVER_HOST="${VLLM_SERVER_HOST:-}"
 VLLM_SERVER_PORT="${VLLM_SERVER_PORT:-}"
+VLLM_SERVER_GROUP_PORT="${VLLM_SERVER_GROUP_PORT:-}"
 NPROC_PER_NODE="${NPROC_PER_NODE:-1}"
 
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}"
@@ -96,6 +98,12 @@ REWARD_FUNCS="${REWARD_FUNCS//,/ }"
 IFS=' ' read -r -a REWARD_FUNCS_ARR <<< "$REWARD_FUNCS"
 EXTERNAL_PLUGINS="${EXTERNAL_PLUGINS//,/ }"
 IFS=' ' read -r -a EXTERNAL_PLUGINS_ARR <<< "$EXTERNAL_PLUGINS"
+VLLM_SERVER_HOST_NORM="${VLLM_SERVER_HOST//,/ }"
+VLLM_SERVER_PORT_NORM="${VLLM_SERVER_PORT//,/ }"
+VLLM_SERVER_GROUP_PORT_NORM="${VLLM_SERVER_GROUP_PORT//,/ }"
+IFS=' ' read -r -a VLLM_SERVER_HOST_ARR <<< "$VLLM_SERVER_HOST_NORM"
+IFS=' ' read -r -a VLLM_SERVER_PORT_ARR <<< "$VLLM_SERVER_PORT_NORM"
+IFS=' ' read -r -a VLLM_SERVER_GROUP_PORT_ARR <<< "$VLLM_SERVER_GROUP_PORT_NORM"
 
 EXTRA_ARGS=()
 if [ "${#EXTERNAL_PLUGINS_ARR[@]}" -gt 0 ] && [ -n "${EXTERNAL_PLUGINS_ARR[0]}" ]; then
@@ -145,11 +153,31 @@ if [ "$PUSH_TO_HUB" = "true" ]; then
 fi
 
 if [ "$VLLM_MODE" = "server" ]; then
-  if [ -n "$VLLM_SERVER_HOST" ]; then
-    EXTRA_ARGS+=(--vllm_server_host "$VLLM_SERVER_HOST")
+  if [ "${#VLLM_SERVER_HOST_ARR[@]}" -gt 1 ] && [ "${#VLLM_SERVER_PORT_ARR[@]}" -eq 0 ]; then
+    echo "VLLM_SERVER_PORT must provide one port per host when multiple VLLM_SERVER_HOST values are set." >&2
+    exit 1
   fi
-  if [ -n "$VLLM_SERVER_PORT" ]; then
-    EXTRA_ARGS+=(--vllm_server_port "$VLLM_SERVER_PORT")
+  if [ "${#VLLM_SERVER_HOST_ARR[@]}" -gt 0 ] && [ "${#VLLM_SERVER_PORT_ARR[@]}" -gt 0 ] && [ "${#VLLM_SERVER_HOST_ARR[@]}" -ne "${#VLLM_SERVER_PORT_ARR[@]}" ]; then
+    echo "VLLM_SERVER_HOST count (${#VLLM_SERVER_HOST_ARR[@]}) must match VLLM_SERVER_PORT count (${#VLLM_SERVER_PORT_ARR[@]})." >&2
+    exit 1
+  fi
+  server_count="${#VLLM_SERVER_HOST_ARR[@]}"
+  if [ "$server_count" -eq 0 ] && [ "${#VLLM_SERVER_PORT_ARR[@]}" -gt 0 ]; then
+    server_count="${#VLLM_SERVER_PORT_ARR[@]}"
+  fi
+  if [ "${#VLLM_SERVER_GROUP_PORT_ARR[@]}" -gt 0 ] && [ "$server_count" -gt 0 ] && [ "${#VLLM_SERVER_GROUP_PORT_ARR[@]}" -ne "$server_count" ]; then
+    echo "VLLM_SERVER_GROUP_PORT count (${#VLLM_SERVER_GROUP_PORT_ARR[@]}) must match server count (${server_count})." >&2
+    exit 1
+  fi
+
+  if [ "${#VLLM_SERVER_HOST_ARR[@]}" -gt 0 ]; then
+    EXTRA_ARGS+=(--vllm_server_host "${VLLM_SERVER_HOST_ARR[@]}")
+  fi
+  if [ "${#VLLM_SERVER_PORT_ARR[@]}" -gt 0 ]; then
+    EXTRA_ARGS+=(--vllm_server_port "${VLLM_SERVER_PORT_ARR[@]}")
+  fi
+  if [ "${#VLLM_SERVER_GROUP_PORT_ARR[@]}" -gt 0 ]; then
+    EXTRA_ARGS+=(--vllm_server_group_port "${VLLM_SERVER_GROUP_PORT_ARR[@]}")
   fi
 fi
 

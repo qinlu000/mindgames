@@ -4,7 +4,12 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Tuple
 
 import mindgames as mg
-from swift.plugin import Env, envs
+try:
+    # ms-swift >= 4.0
+    from swift.rollout import Env, envs
+except ImportError:
+    # ms-swift < 4.0
+    from swift.plugin import Env, envs
 
 
 class HanabiGymEnv(Env):

@@ -16,8 +16,8 @@ set -euo pipefail
 #   VLLM_ENABLE_LORA=true
 #   VLLM_MAX_LORA_RANK=8
 #   VLLM_USE_ASYNC_ENGINE=true
-#   NCCL_P2P_DISABLE=0
-#   NCCL_IB_DISABLE=0
+#   NCCL_P2P_DISABLE=1
+#   NCCL_IB_DISABLE=1
 #   DRY_RUN=false
 
 HOST="${HOST:-127.0.0.1}"
@@ -149,8 +149,8 @@ if [ "$DRY_RUN" = "true" ]; then
 fi
 
 CUDA_VISIBLE_DEVICES="$CUDA_VISIBLE_DEVICES" \
-NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-0}" \
-NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-0}" \
+NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}" \
+NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}" \
 "${SWIFT_CMD[@]}" rollout \
   --model "$MODEL" \
   --host "$HOST" --port "$PORT" \

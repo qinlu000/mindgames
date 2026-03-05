@@ -3,47 +3,78 @@
 ## Install environment
 ```bash
 cd mindgames
-uv sync
-# OpenAI-compatible rollouts (OpenRouter/OpenAI/etc.).
-uv sync --extra agents
-# GRPO Hanabi (vLLM server + ms-swift).
-uv sync --extra serve
-```
-If you prefer, you can replace the last line with:
-```bash
-uv add "ms-swift[all]"
+uv sync --frozen --extra train --extra serve --extra agents
 ```
 
 ## GRPO Hanabi (gym env, 2 players)
 This uses ms-swift + a vLLM rollout server. The reward comes from the Hanabi env, so keep `REWARD_FUNCS` empty.
 
-Ensure `data/hanabi.grpo.jsonl` exists. If you want a custom max episode length, add
-`"max_steps": <int>` to `env_config` (default is 300 from `mindgames/envs/Hanabi/env.py`).
-To control training length, set `NUM_TRAIN_EPOCHS` or `MAX_STEPS` in the train command.
-If both are set, `MAX_STEPS` wins. Defaults to `MAX_STEPS=500`. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
-
-Auto split quick start:
+Dataset note:
+- `data/hanabi.grpo.template.jsonl` is a template, not for training.
+- `data/hanabi.grpo.jsonl` must contain non-empty `messages` rows (already prepared in this repo).
+- Quick check:
 ```bash
-# Terminal 1: rollout server (first half GPUs by default)
-bash tools/rollout/rollout_hanabi_gym.sh
-
-# Terminal 2: GRPO training (second half GPUs by default)
-bash tools/train/train_grpo_hanabi_server_wandb.sh
+wc -l data/hanabi.grpo.jsonl
+head -n 1 data/hanabi.grpo.jsonl
 ```
 
-For a thinking-heavy run on 10x A100, a good starting point is:
-```bash
-# Terminal 1
-CUDA_VISIBLE_DEVICES=0,1,2,3,4 VLLM_TENSOR_PARALLEL_SIZE=1 VLLM_DATA_PARALLEL_SIZE=5 VLLM_MAX_MODEL_LEN=16384 VLLM_MAX_NUM_SEQS=16 \
-bash tools/rollout/rollout_hanabi_gym.sh
+### Quick start (recommended for handoff, 8xH800)
+Use the simple scripts (no machine-specific workaround logic).
 
-# Terminal 2
-CUDA_VISIBLE_DEVICES=5,6,7,8,9 NPROC_PER_NODE=5 NUM_GENERATIONS=10 GENERATION_BATCH_SIZE=32 \
-MAX_LENGTH=16384 MAX_COMPLETION_LENGTH=16384 MAX_STEPS=500 PUSH_TO_HUB=false USE_HF=false \
-bash tools/train/train_grpo_hanabi_server_wandb.sh
+Terminal 1 (rollout on GPU 0-3):
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3 \
+VLLM_TENSOR_PARALLEL_SIZE=2 \
+VLLM_DATA_PARALLEL_SIZE=2 \
+VLLM_MAX_MODEL_LEN=18000 \
+VLLM_MAX_NUM_SEQS=16 \
+NCCL_P2P_DISABLE=0 \
+NCCL_IB_DISABLE=0 \
+bash tools/rollout/rollout_hanabi_gym_simple.sh
 ```
 
-Advanced (manual control, optional): use `tools/train/train_grpo_msswift.sh` with explicit env vars.
+Terminal 2 (train on GPU 4-7):
+```bash
+until curl -sf http://127.0.0.1:8000/health/ >/dev/null; do sleep 2; done
+
+CUDA_VISIBLE_DEVICES=4,5,6,7 \
+NPROC_PER_NODE=4 \
+DATASET=data/hanabi.grpo.jsonl \
+VLLM_SERVER_HOST=127.0.0.1 \
+VLLM_SERVER_PORT=8000 \
+NUM_GENERATIONS=8 \
+GENERATION_BATCH_SIZE=32 \
+MAX_LENGTH=18000 \
+MAX_COMPLETION_LENGTH=18000 \
+MAX_STEPS=1000 \
+NCCL_P2P_DISABLE=0 \
+NCCL_IB_DISABLE=0 \
+bash tools/train/train_grpo_hanabi_server_simple.sh
+```
+
+`GENERATION_BATCH_SIZE` must be divisible by `NPROC_PER_NODE`.
+
+### W&B
+Online logging:
+```bash
+export WANDB_API_KEY=<your_key>
+export WANDB_ENTITY=<your_entity_or_team>
+export WANDB_PROJECT=mindgames
+export WANDB_MODE=online
+export REPORT_TO=wandb
+```
+
+Offline run + later sync:
+```bash
+export WANDB_MODE=offline
+# run training...
+wandb sync wandb/offline-run-*
+```
+
+### Robust wrappers (optional)
+If the target machine has networking/NCCL quirks, use:
+- `tools/rollout/rollout_hanabi_gym.sh`
+- `tools/train/train_grpo_hanabi_server_wandb.sh`
 
 Notes for the wrapper:
 - It uses `VLLM_MODE=server` (external rollout server), not colocated vLLM.
@@ -53,7 +84,7 @@ Notes for the wrapper:
 - For new repos, HF usually auto-creates `HF_REPO_ID` on first successful push if token has write permission.
 - To change account/key/repo, edit defaults in `tools/train/train_grpo_hanabi_server_wandb.sh`.
 
-To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_hanabi_gym.sh`.
+To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_hanabi_gym.sh` or `tools/rollout/rollout_hanabi_gym_simple.sh`.
 
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
