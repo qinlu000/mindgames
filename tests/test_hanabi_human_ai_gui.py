@@ -62,6 +62,45 @@ class TestHanabiHumanAIGUI(unittest.TestCase):
         self.assertTrue(state["is_human_turn"])
         self.assertFalse(state["done"])
 
+    def test_submit_reveal_rank_keeps_selected_target_card_index(self):
+        session = self._make_session()
+        state = session.start_new_game(seed=0)
+        self.assertTrue(state["is_human_turn"])
+
+        reveal_targets = (state.get("action_options") or {}).get("reveal_targets") or []
+        self.assertTrue(reveal_targets, "Expected at least one reveal target.")
+        target = reveal_targets[0]
+        cards = list(target.get("cards") or [])
+        self.assertTrue(cards, "Expected target player to have visible cards.")
+
+        # Prefer index 3 to match real GUI reports; fallback to the last visible card.
+        chosen = next((c for c in cards if int(c.get("index")) == 3), cards[-1])
+        chosen_idx = int(chosen.get("index"))
+        chosen_rank = int(chosen.get("rank"))
+        target_player = int(target.get("player_id"))
+
+        result = session.submit_action(
+            {
+                "type": "reveal_rank",
+                "target_player": target_player,
+                "card_index": chosen_idx,
+                "hint_value": str(chosen_rank),
+            }
+        )
+        self.assertTrue(result["ok"], msg=result.get("error"))
+
+        state_after = result["state"]
+        steps = list(state_after.get("recent_steps") or [])
+        self.assertTrue(steps, "Expected at least one recorded step after action submit.")
+        human_reveals = [
+            rec
+            for rec in steps
+            if int(rec.get("player_id")) == 0 and str(rec.get("normalized_action") or "").startswith("[Reveal]")
+        ]
+        self.assertTrue(human_reveals, "Expected a human reveal action in recent_steps.")
+        expected = f"[Reveal] player {target_player} card {chosen_idx} rank {chosen_rank}"
+        self.assertEqual(human_reveals[-1]["normalized_action"], expected)
+
     def test_observation_includes_previous_turn_hint_for_human(self):
         session = self._make_session()
         state = session.start_new_game(seed=0)

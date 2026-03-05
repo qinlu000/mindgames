@@ -187,6 +187,11 @@ HTML_PAGE = """<!doctype html>
     .line { padding: 3px 0; border-bottom: 1px dashed #d7cfbf; }
     .line:last-child { border-bottom: 0; }
     .full { grid-column: 1 / -1; }
+    .muted-hint {
+      margin-top: 4px;
+      color: #6f7a81;
+      font-size: 0.86rem;
+    }
     @media (max-width: 980px) {
       .wrap { grid-template-columns: 1fr; }
     }
@@ -222,8 +227,8 @@ HTML_PAGE = """<!doctype html>
           </select>
         </div>
 
-        <div>
-          <label for="cardIndex">Card Index</label>
+        <div id="cardIndexWrap">
+          <label for="cardIndex">Your Card Index (Play/Discard)</label>
           <select id="cardIndex"></select>
         </div>
         <div id="targetPlayerWrap">
@@ -239,6 +244,7 @@ HTML_PAGE = """<!doctype html>
           <label for="hintValue">Hint Value</label>
           <select id="hintValue"></select>
         </div>
+        <div id="actionHelp" class="full muted-hint"></div>
 
         <div class="full">
           <button id="submitBtn" type="button">Submit Action</button>
@@ -257,6 +263,12 @@ HTML_PAGE = """<!doctype html>
   <script>
     let latestState = null;
     let refreshTimer = null;
+    const manualSelection = {
+      cardIndex: null,
+      targetPlayer: null,
+      targetCardIndex: null,
+      hintValue: null,
+    };
 
     const statusEl = document.getElementById("status");
     const errorsEl = document.getElementById("errors");
@@ -272,9 +284,11 @@ HTML_PAGE = """<!doctype html>
     const newGameBtn = document.getElementById("newGameBtn");
     const refreshBtn = document.getElementById("refreshBtn");
     const quickActionsEl = document.getElementById("quickActions");
+    const cardIndexWrap = document.getElementById("cardIndexWrap");
     const targetPlayerWrap = document.getElementById("targetPlayerWrap");
     const targetCardWrap = document.getElementById("targetCardWrap");
     const hintWrap = document.getElementById("hintWrap");
+    const actionHelpEl = document.getElementById("actionHelp");
 
     function setError(msg) {
       errorsEl.textContent = msg || "";
@@ -289,6 +303,17 @@ HTML_PAGE = """<!doctype html>
 
     function clearOptions(selectEl) {
       while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+    }
+
+    function setSelectValueIfExists(selectEl, value) {
+      if (value === undefined || value === null) return;
+      const target = String(value);
+      for (const opt of Array.from(selectEl.options)) {
+        if (opt.value === target) {
+          selectEl.value = target;
+          return;
+        }
+      }
     }
 
     function renderStatus(state) {
@@ -323,6 +348,10 @@ HTML_PAGE = """<!doctype html>
       const discardIdx = opts.discard_indices || [];
       const revealTargets = getRevealTargets(state);
       const isHumanTurn = !!state.is_human_turn && !state.done;
+      const prevCardIndex = manualSelection.cardIndex ?? cardIndexEl.value;
+      const prevTargetPlayer = manualSelection.targetPlayer ?? targetPlayerEl.value;
+      const prevTargetCardIndex = manualSelection.targetCardIndex ?? targetCardIndexEl.value;
+      const prevHintValue = manualSelection.hintValue ?? hintValueEl.value;
 
       clearOptions(cardIndexEl);
       for (const idx of (currentActionType() === "discard" ? discardIdx : playIdx)) {
@@ -331,6 +360,8 @@ HTML_PAGE = """<!doctype html>
       if (!cardIndexEl.options.length) {
         addOption(cardIndexEl, "", "-");
       }
+      setSelectValueIfExists(cardIndexEl, prevCardIndex);
+      manualSelection.cardIndex = cardIndexEl.value;
 
       clearOptions(targetPlayerEl);
       for (const t of revealTargets) {
@@ -339,8 +370,10 @@ HTML_PAGE = """<!doctype html>
       if (!targetPlayerEl.options.length) {
         addOption(targetPlayerEl, "", "-");
       }
+      setSelectValueIfExists(targetPlayerEl, prevTargetPlayer);
+      manualSelection.targetPlayer = targetPlayerEl.value;
 
-      refreshRevealCardAndHintOptions();
+      refreshRevealCardAndHintOptions(prevTargetCardIndex, prevHintValue);
       refreshActionVisibility();
 
       submitBtn.disabled = !isHumanTurn;
@@ -354,18 +387,28 @@ HTML_PAGE = """<!doctype html>
     function refreshActionVisibility() {
       const t = currentActionType();
       const isReveal = t.startsWith("reveal_");
+      cardIndexWrap.style.display = isReveal ? "none" : "block";
       targetPlayerWrap.style.display = isReveal ? "block" : "none";
       targetCardWrap.style.display = isReveal ? "block" : "none";
       hintWrap.style.display = isReveal ? "block" : "none";
+      actionHelpEl.textContent = isReveal
+        ? "Reveal uses Target Player + Target Card Index + Hint Value."
+        : "Play/Discard uses Your Card Index.";
     }
 
-    function refreshRevealCardAndHintOptions() {
+    function refreshRevealCardAndHintOptions(preferredCardIndex = null, preferredHintValue = null) {
       if (!latestState) return;
       const t = currentActionType();
       const isReveal = t.startsWith("reveal_");
       const targets = getRevealTargets(latestState);
       const selectedPlayer = Number(targetPlayerEl.value);
       const targetObj = targets.find((x) => x.player_id === selectedPlayer) || targets[0];
+      const prevCardValue = preferredCardIndex !== null
+        ? String(preferredCardIndex)
+        : String((manualSelection.targetCardIndex ?? targetCardIndexEl.value) || "");
+      const prevHintValue = preferredHintValue !== null
+        ? String(preferredHintValue)
+        : String((manualSelection.hintValue ?? hintValueEl.value) || "");
 
       clearOptions(targetCardIndexEl);
       clearOptions(hintValueEl);
@@ -373,6 +416,8 @@ HTML_PAGE = """<!doctype html>
       if (!isReveal || !targetObj) {
         addOption(targetCardIndexEl, "", "-");
         addOption(hintValueEl, "", "-");
+        manualSelection.targetCardIndex = targetCardIndexEl.value;
+        manualSelection.hintValue = hintValueEl.value;
         return;
       }
 
@@ -382,13 +427,18 @@ HTML_PAGE = """<!doctype html>
       if (!targetCardIndexEl.options.length) {
         addOption(targetCardIndexEl, "", "-");
         addOption(hintValueEl, "", "-");
+        manualSelection.targetCardIndex = targetCardIndexEl.value;
+        manualSelection.hintValue = hintValueEl.value;
         return;
       }
+      setSelectValueIfExists(targetCardIndexEl, prevCardValue);
 
       const selectedCardIdx = Number(targetCardIndexEl.value || targetCardIndexEl.options[0].value);
       const cardObj = (targetObj.cards || []).find((c) => c.index === selectedCardIdx) || targetObj.cards[0];
       if (!cardObj) {
         addOption(hintValueEl, "", "-");
+        manualSelection.targetCardIndex = targetCardIndexEl.value;
+        manualSelection.hintValue = hintValueEl.value;
         return;
       }
 
@@ -397,6 +447,9 @@ HTML_PAGE = """<!doctype html>
       } else {
         addOption(hintValueEl, cardObj.rank, String(cardObj.rank));
       }
+      setSelectValueIfExists(hintValueEl, prevHintValue);
+      manualSelection.targetCardIndex = targetCardIndexEl.value;
+      manualSelection.hintValue = hintValueEl.value;
     }
 
     function renderQuickActions(state) {
@@ -516,8 +569,20 @@ HTML_PAGE = """<!doctype html>
       refreshActionVisibility();
       renderActionControls(latestState || {});
     });
-    targetPlayerEl.addEventListener("change", refreshRevealCardAndHintOptions);
-    targetCardIndexEl.addEventListener("change", refreshRevealCardAndHintOptions);
+    cardIndexEl.addEventListener("change", () => {
+      manualSelection.cardIndex = cardIndexEl.value;
+    });
+    targetPlayerEl.addEventListener("change", () => {
+      manualSelection.targetPlayer = targetPlayerEl.value;
+      refreshRevealCardAndHintOptions();
+    });
+    targetCardIndexEl.addEventListener("change", () => {
+      manualSelection.targetCardIndex = targetCardIndexEl.value;
+      refreshRevealCardAndHintOptions();
+    });
+    hintValueEl.addEventListener("change", () => {
+      manualSelection.hintValue = hintValueEl.value;
+    });
 
     submitBtn.addEventListener("click", async () => {
       const payload = buildActionPayload();
