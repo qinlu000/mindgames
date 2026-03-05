@@ -19,31 +19,42 @@ head -n 1 data/hanabi.grpo.jsonl
 ```
 
 ### Quick start (recommended for handoff, 8xH800)
-Use the simple scripts (no machine-specific workaround logic).
+Use the simple scripts (no machine-specific workaround logic), and keep rollout at `TP=1` for stability.
 
-Terminal 1 (rollout on GPU 0-3):
+Terminal 1 (start 4 rollout servers, one GPU per server):
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2,3 \
-VLLM_TENSOR_PARALLEL_SIZE=2 \
-VLLM_DATA_PARALLEL_SIZE=2 \
-VLLM_MAX_MODEL_LEN=18000 \
-VLLM_MAX_NUM_SEQS=16 \
-NCCL_P2P_DISABLE=0 \
-NCCL_IB_DISABLE=0 \
-bash tools/rollout/rollout_hanabi_gym_simple.sh
+mkdir -p logs
+for i in 0 1 2 3; do
+  port=$((8000 + i))
+  CUDA_VISIBLE_DEVICES=$i \
+  HOST=127.0.0.1 PORT=$port \
+  VLLM_TENSOR_PARALLEL_SIZE=1 \
+  VLLM_DATA_PARALLEL_SIZE=1 \
+  VLLM_MAX_MODEL_LEN=18000 \
+  VLLM_MAX_NUM_SEQS=16 \
+  NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+  bash tools/rollout/rollout_hanabi_gym_simple.sh \
+    > "logs/rollout_${port}.log" 2>&1 &
+done
+```
+
+Wait until all servers are healthy:
+```bash
+for port in 8000 8001 8002 8003; do
+  until curl -sf "http://127.0.0.1:${port}/health/" >/dev/null; do sleep 2; done
+done
 ```
 
 Terminal 2 (train on GPU 4-7):
 ```bash
-until curl -sf http://127.0.0.1:8000/health/ >/dev/null; do sleep 2; done
-
 CUDA_VISIBLE_DEVICES=4,5,6,7 \
 NPROC_PER_NODE=4 \
 DATASET=data/hanabi.grpo.jsonl \
-VLLM_SERVER_HOST=127.0.0.1 \
-VLLM_SERVER_PORT=8000 \
-NUM_GENERATIONS=8 \
-GENERATION_BATCH_SIZE=32 \
+VLLM_SERVER_HOST=127.0.0.1,127.0.0.1,127.0.0.1,127.0.0.1 \
+VLLM_SERVER_PORT=8000,8001,8002,8003 \
+VLLM_SERVER_GROUP_PORT=51216,51217,51218,51219 \
+NUM_GENERATIONS=16 \
+GENERATION_BATCH_SIZE=64 \
 MAX_LENGTH=18000 \
 MAX_COMPLETION_LENGTH=18000 \
 MAX_STEPS=1000 \
@@ -52,7 +63,10 @@ NCCL_IB_DISABLE=0 \
 bash tools/train/train_grpo_hanabi_server_simple.sh
 ```
 
-`GENERATION_BATCH_SIZE` must be divisible by `NPROC_PER_NODE`.
+Notes:
+- Recommended training group config on 4 train GPUs: `NUM_GENERATIONS=16`, `GENERATION_BATCH_SIZE=64`.
+- `GENERATION_BATCH_SIZE` must be divisible by both `NPROC_PER_NODE` and `NUM_GENERATIONS`.
+- For Qwen3-8B on H800 80GB, keep rollout `TP=1` unless single-card rollout clearly OOMs.
 
 ### W&B
 Online logging:

@@ -24,32 +24,45 @@ Terminal 2 (GRPO training):
 bash tools/train/train_grpo_hanabi_server_wandb.sh
 ```
 
-## 10x A100 40GB recommended profile
-For this machine shape, use a 5+5 split and group size 10:
+## 8x H800 80GB recommended profile
+Use a 4+4 split and disable tensor-parallel rollout (`TP=1`) for stability.
 
-Terminal 1:
+Terminal 1 (4 rollout servers, one GPU each):
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2,3,4 \
-VLLM_TENSOR_PARALLEL_SIZE=1 \
-VLLM_DATA_PARALLEL_SIZE=5 \
-VLLM_MAX_MODEL_LEN=16384 \
-VLLM_MAX_NUM_SEQS=16 \
-bash tools/rollout/rollout_hanabi_gym.sh
+for i in 0 1 2 3; do
+  port=$((8000 + i))
+  CUDA_VISIBLE_DEVICES=$i \
+  HOST=127.0.0.1 PORT=$port \
+  VLLM_TENSOR_PARALLEL_SIZE=1 \
+  VLLM_DATA_PARALLEL_SIZE=1 \
+  VLLM_MAX_MODEL_LEN=18000 \
+  VLLM_MAX_NUM_SEQS=16 \
+  NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
+  bash tools/rollout/rollout_hanabi_gym_simple.sh &
+done
 ```
 
 Terminal 2:
 ```bash
-CUDA_VISIBLE_DEVICES=5,6,7,8,9 \
-NPROC_PER_NODE=5 \
-NUM_GENERATIONS=10 \
-GENERATION_BATCH_SIZE=32 \
-MAX_LENGTH=16384 \
-MAX_COMPLETION_LENGTH=16384 \
-MAX_STEPS=500 \
-PUSH_TO_HUB=false \
-USE_HF=false \
-bash tools/train/train_grpo_hanabi_server_wandb.sh
+CUDA_VISIBLE_DEVICES=4,5,6,7 \
+NPROC_PER_NODE=4 \
+DATASET=data/hanabi.grpo.jsonl \
+VLLM_SERVER_HOST=127.0.0.1,127.0.0.1,127.0.0.1,127.0.0.1 \
+VLLM_SERVER_PORT=8000,8001,8002,8003 \
+VLLM_SERVER_GROUP_PORT=51216,51217,51218,51219 \
+NUM_GENERATIONS=16 \
+GENERATION_BATCH_SIZE=64 \
+MAX_LENGTH=18000 \
+MAX_COMPLETION_LENGTH=18000 \
+MAX_STEPS=1000 \
+NCCL_P2P_DISABLE=0 \
+NCCL_IB_DISABLE=0 \
+bash tools/train/train_grpo_hanabi_server_simple.sh
 ```
+
+Recommended group config on 4 train GPUs:
+- `NUM_GENERATIONS=16`
+- `GENERATION_BATCH_SIZE=64` (must be divisible by both `NPROC_PER_NODE` and `NUM_GENERATIONS`)
 
 To only inspect auto-resolved settings without launching jobs:
 ```bash
@@ -70,8 +83,8 @@ Useful env vars for the wrapper:
 - `CKPT_ARTIFACT_NAME` / `CKPT_ARTIFACT_ALIASES` (default aliases: `latest,end`)
 
 ## Adjusting the split
-- Rollout server: set `CUDA_VISIBLE_DEVICES` to the GPUs it owns, and set
-  `VLLM_TENSOR_PARALLEL_SIZE` to the same count.
+- Rollout server: set `CUDA_VISIBLE_DEVICES` to the GPUs it owns.
+  For Qwen3-8B on H800, prefer `VLLM_TENSOR_PARALLEL_SIZE=1` and scale with more servers.
 - Training: set `CUDA_VISIBLE_DEVICES` to the remaining GPUs and
   `NPROC_PER_NODE` to that count.
 

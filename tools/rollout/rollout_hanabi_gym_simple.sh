@@ -4,9 +4,10 @@ set -euo pipefail
 # Simple Hanabi GRPO rollout server launcher (no machine-specific workarounds).
 #
 # Usage:
-#   CUDA_VISIBLE_DEVICES=0,1,2,3 \
-#   VLLM_TENSOR_PARALLEL_SIZE=2 \
-#   VLLM_DATA_PARALLEL_SIZE=2 \
+#   CUDA_VISIBLE_DEVICES=0 \
+#   HOST=127.0.0.1 PORT=8000 \
+#   VLLM_TENSOR_PARALLEL_SIZE=1 \
+#   VLLM_DATA_PARALLEL_SIZE=1 \
 #   VLLM_MAX_MODEL_LEN=18000 \
 #   VLLM_MAX_NUM_SEQS=16 \
 #   bash tools/rollout/rollout_hanabi_gym_simple.sh
