@@ -22,12 +22,24 @@ Ensure `data/hanabi.grpo.jsonl` exists. If you want a custom max episode length,
 To control training length, set `NUM_TRAIN_EPOCHS` or `MAX_STEPS` in the train command.
 If both are set, `MAX_STEPS` wins. Defaults to `MAX_STEPS=500`. With the default Hanabi dataset (1 row), each epoch is ~1 optimizer step.
 
-4+4 GPU split example (8x H800, group size 16, recommended):
+Auto split quick start:
 ```bash
-# Terminal 1: rollout server (script uses built-in 0-3 GPU defaults)
+# Terminal 1: rollout server (first half GPUs by default)
 bash tools/rollout/rollout_hanabi_gym.sh
 
-# Terminal 2: GRPO training (script uses built-in 4-7 GPU defaults)
+# Terminal 2: GRPO training (second half GPUs by default)
+bash tools/train/train_grpo_hanabi_server_wandb.sh
+```
+
+For a thinking-heavy run on 10x A100, a good starting point is:
+```bash
+# Terminal 1
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 VLLM_TENSOR_PARALLEL_SIZE=1 VLLM_DATA_PARALLEL_SIZE=5 VLLM_MAX_MODEL_LEN=16384 VLLM_MAX_NUM_SEQS=16 \
+bash tools/rollout/rollout_hanabi_gym.sh
+
+# Terminal 2
+CUDA_VISIBLE_DEVICES=5,6,7,8,9 NPROC_PER_NODE=5 NUM_GENERATIONS=10 GENERATION_BATCH_SIZE=32 \
+MAX_LENGTH=16384 MAX_COMPLETION_LENGTH=16384 MAX_STEPS=500 PUSH_TO_HUB=false USE_HF=false \
 bash tools/train/train_grpo_hanabi_server_wandb.sh
 ```
 
@@ -36,7 +48,8 @@ Advanced (manual control, optional): use `tools/train/train_grpo_msswift.sh` wit
 Notes for the wrapper:
 - It uses `VLLM_MODE=server` (external rollout server), not colocated vLLM.
 - It logs training metrics to W&B and uploads `OUTPUT_DIR` as a W&B `model` artifact.
-- It pushes model outputs to Hugging Face Hub at the end (`hub_strategy=end`).
+- If `PUSH_TO_HUB=true`, it pushes model outputs to Hugging Face Hub at the end (`hub_strategy=end`).
+- If `/workspace/models/Qwen3-8B` exists, scripts use that local model path by default.
 - For new repos, HF usually auto-creates `HF_REPO_ID` on first successful push if token has write permission.
 - To change account/key/repo, edit defaults in `tools/train/train_grpo_hanabi_server_wandb.sh`.
 

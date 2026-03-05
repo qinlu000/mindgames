@@ -8,21 +8,56 @@ the reward is computed by the gym env, so `REWARD_FUNCS` is left empty.
   - `uv sync --extra serve` (or `uv add "ms-swift[all]"`)
 - Ensure `data/hanabi.grpo.jsonl` exists (used to pass `env_config` to the gym env).
 
-## 4+4 GPU split example (8x H800, group size 16, recommended)
-Run these two commands in two terminals.
+## Quick Start (auto split)
+Run these two commands in two terminals. By default:
+- rollout script uses the first half of GPUs
+- train script uses the second half of GPUs
+- if `/workspace/models/Qwen3-8B` exists, both scripts use it directly
 
-Terminal 1 (rollout server on GPUs 0-3):
+Terminal 1 (rollout server):
 ```bash
-# Uses built-in 8x H800 rollout defaults in the script.
 bash tools/rollout/rollout_hanabi_gym.sh
 ```
 
-Terminal 2 (GRPO training on GPUs 4-7):
+Terminal 2 (GRPO training):
 ```bash
 bash tools/train/train_grpo_hanabi_server_wandb.sh
 ```
 
-Advanced (optional): if you need full manual arg control, use `tools/train/train_grpo_msswift.sh` with explicit env vars.
+## 10x A100 40GB recommended profile
+For this machine shape, use a 5+5 split and group size 10:
+
+Terminal 1:
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 \
+VLLM_TENSOR_PARALLEL_SIZE=1 \
+VLLM_DATA_PARALLEL_SIZE=5 \
+VLLM_MAX_MODEL_LEN=16384 \
+VLLM_MAX_NUM_SEQS=16 \
+bash tools/rollout/rollout_hanabi_gym.sh
+```
+
+Terminal 2:
+```bash
+CUDA_VISIBLE_DEVICES=5,6,7,8,9 \
+NPROC_PER_NODE=5 \
+NUM_GENERATIONS=10 \
+GENERATION_BATCH_SIZE=32 \
+MAX_LENGTH=16384 \
+MAX_COMPLETION_LENGTH=16384 \
+MAX_STEPS=500 \
+PUSH_TO_HUB=false \
+USE_HF=false \
+bash tools/train/train_grpo_hanabi_server_wandb.sh
+```
+
+To only inspect auto-resolved settings without launching jobs:
+```bash
+DRY_RUN=true bash tools/rollout/rollout_hanabi_gym.sh
+DRY_RUN=true bash tools/train/train_grpo_hanabi_server_wandb.sh
+```
+
+Advanced: if you need full manual arg control, use `tools/train/train_grpo_msswift.sh` with explicit env vars.
 
 The W&B wrapper now does two things by default:
 - uploads training metrics/logs to W&B (`REPORT_TO=wandb`)
