@@ -66,7 +66,10 @@ class TestHanabiHumanAIGUI(unittest.TestCase):
         session = self._make_session()
         state = session.start_new_game(seed=0)
         self.assertTrue(state["is_human_turn"])
-        session._current_observation = (session._current_observation or "") + "\n\nRecent events:\nCard 2 from player 0 is white.\n"
+        session._current_observation = (
+            (session._current_observation or "")
+            + "\n\nRecent events (oldest -> newest):\nCard 2 from player 0 is white.\n"
+        )
 
         session.step_history.append(
             {

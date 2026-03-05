@@ -185,7 +185,7 @@ class GameMessagesAndCurrentBoardObservationWrapper(ObservationWrapper):
         if state_snapshot:
             parts.append(state_snapshot)
         if messages:
-            parts.append("Recent events:\n" + "\n".join(messages))
+            parts.append("Recent events (oldest -> newest):\n" + "\n".join(messages))
         parts.append(board_state)
         return "\n\n".join(parts)  # \n\nNext Action:"
 
