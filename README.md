@@ -55,8 +55,8 @@ VLLM_SERVER_PORT=8000,8001,8002,8003 \
 VLLM_SERVER_GROUP_PORT=51216,51217,51218,51219 \
 NUM_GENERATIONS=16 \
 GENERATION_BATCH_SIZE=64 \
-MAX_LENGTH=18000 \
-MAX_COMPLETION_LENGTH=18000 \
+MAX_LENGTH=4096 \
+MAX_COMPLETION_LENGTH=64 \
 MAX_STEPS=1000 \
 NCCL_P2P_DISABLE=0 \
 NCCL_IB_DISABLE=0 \
@@ -66,6 +66,8 @@ bash tools/train/train_grpo_hanabi_server_simple.sh
 Notes:
 - Recommended training group config on 4 train GPUs: `NUM_GENERATIONS=16`, `GENERATION_BATCH_SIZE=64`.
 - `GENERATION_BATCH_SIZE` must be divisible by both `NPROC_PER_NODE` and `NUM_GENERATIONS`.
+- `STEPS_PER_GENERATION` and `GENERATION_BATCH_SIZE` are mutually exclusive.
+- Hanabi is action-centric multi-turn RL; prefer shorter generation limits (`MAX_LENGTH=4096`, `MAX_COMPLETION_LENGTH=64`) unless you have a confirmed reason to increase.
 - For Qwen3-8B on H800 80GB, keep rollout `TP=1` unless single-card rollout clearly OOMs.
 
 ### W&B
@@ -92,15 +94,24 @@ If the target machine has networking/NCCL quirks, use:
 
 Notes for the wrapper:
 - It uses `VLLM_MODE=server` (external rollout server), not colocated vLLM.
-- It logs training metrics to W&B and uploads `OUTPUT_DIR` as a W&B `model` artifact.
-- If `PUSH_TO_HUB=true`, it pushes model outputs to Hugging Face Hub at the end (`hub_strategy=end`).
+- It sets W&B defaults for Hanabi GRPO (`REPORT_TO=wandb`, `WANDB_*` env pass-through).
 - If `/workspace/models/Qwen3-8B` exists, scripts use that local model path by default.
-- For new repos, HF usually auto-creates `HF_REPO_ID` on first successful push if token has write permission.
-- To change account/key/repo, edit defaults in `tools/train/train_grpo_hanabi_server_wandb.sh`.
+- To change account/project/mode, edit env vars before running `tools/train/train_grpo_hanabi_server_wandb.sh`.
 
 To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_hanabi_gym.sh` or `tools/rollout/rollout_hanabi_gym_simple.sh`.
 
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
+
+## Hanabi MARSHAL-style training
+To use MARSHAL's core ideas (turn-level reward signal + agent-specific normalization) in this repo:
+```bash
+# start rollout server(s) first
+bash tools/rollout/rollout_hanabi_gym.sh
+
+# then launch MARSHAL-style training wrapper
+bash tools/train/train_grpo_hanabi_marshal.sh
+```
+Details and all knobs are in `docs/hanabi_marshal.md`.
 
 ## Hanabi API batch self-play (OpenAI-compatible, e.g. OpenRouter)
 ```bash

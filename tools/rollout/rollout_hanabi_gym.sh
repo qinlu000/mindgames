@@ -8,6 +8,9 @@ set -euo pipefail
 #   HOST=127.0.0.1
 #   PORT=8000
 #   GYM_ENV=hanabi_env
+#   CONTEXT_MANAGER=hanabi_recent_turns
+#   HANABI_CTX_MAX_TURNS=1
+#   HANABI_CTX_KEEP_SYSTEM=true
 #   CUDA_VISIBLE_DEVICES=<auto: first half of visible GPUs, e.g. 0-4 on 10 GPUs>
 #   VLLM_TENSOR_PARALLEL_SIZE=1
 #   VLLM_DATA_PARALLEL_SIZE=<auto: visible_gpus / tp, e.g. 5>
@@ -23,6 +26,9 @@ set -euo pipefail
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8000}"
 GYM_ENV="${GYM_ENV:-hanabi_env}"
+CONTEXT_MANAGER="${CONTEXT_MANAGER:-hanabi_recent_turns}"
+HANABI_CTX_MAX_TURNS="${HANABI_CTX_MAX_TURNS:-1}"
+HANABI_CTX_KEEP_SYSTEM="${HANABI_CTX_KEEP_SYSTEM:-true}"
 
 VLLM_DATA_PARALLEL_SIZE="${VLLM_DATA_PARALLEL_SIZE:-}"
 VLLM_MAX_MODEL_LEN="${VLLM_MAX_MODEL_LEN:-16384}"
@@ -142,7 +148,7 @@ else
   exit 1
 fi
 
-echo "[hanabi-rollout] model=$MODEL host=$HOST port=$PORT cuda=$CUDA_VISIBLE_DEVICES tp=$VLLM_TENSOR_PARALLEL_SIZE dp=$VLLM_DATA_PARALLEL_SIZE max_model_len=$VLLM_MAX_MODEL_LEN max_num_seqs=$VLLM_MAX_NUM_SEQS"
+echo "[hanabi-rollout] model=$MODEL host=$HOST port=$PORT cuda=$CUDA_VISIBLE_DEVICES tp=$VLLM_TENSOR_PARALLEL_SIZE dp=$VLLM_DATA_PARALLEL_SIZE max_model_len=$VLLM_MAX_MODEL_LEN max_num_seqs=$VLLM_MAX_NUM_SEQS ctx=$CONTEXT_MANAGER ctx_max_turns=$HANABI_CTX_MAX_TURNS"
 
 if [ "$DRY_RUN" = "true" ]; then
   exit 0
@@ -151,11 +157,14 @@ fi
 CUDA_VISIBLE_DEVICES="$CUDA_VISIBLE_DEVICES" \
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}" \
 NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}" \
+HANABI_CTX_MAX_TURNS="$HANABI_CTX_MAX_TURNS" \
+HANABI_CTX_KEEP_SYSTEM="$HANABI_CTX_KEEP_SYSTEM" \
 "${SWIFT_CMD[@]}" rollout \
   --model "$MODEL" \
   --host "$HOST" --port "$PORT" \
   --use_gym_env true \
   --gym_env "$GYM_ENV" \
+  --context_manager "$CONTEXT_MANAGER" \
   --multi_turn_scheduler gym_scheduler \
   --external_plugins tools/rollout/hanabi_gym_plugin.py \
   --vllm_use_async_engine "$VLLM_USE_ASYNC_ENGINE" \

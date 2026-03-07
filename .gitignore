@@ -27,3 +27,7 @@ output/
 wandb/
 experiments/**/runs/
 logs
+
+# Local temporary clones/downloads
+marshal_main/
+marshal_main.zip

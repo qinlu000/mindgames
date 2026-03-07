@@ -15,6 +15,20 @@ _ensure_pkg_importable()
 
 
 class TestHanabiEnv(unittest.TestCase):
+    def test_marshal_dense_reward_toggle(self):
+        from mindgames.envs.Hanabi.env import HanabiEnv
+
+        env = HanabiEnv(marshal_dense_reward=False)
+        env.reset(num_players=2, seed=0)
+        _, info = env.step("[Discard] 0")
+        self.assertNotIn("step_reward", info)
+
+        env_dense = HanabiEnv(marshal_dense_reward=True, marshal_fuse_penalty=1.0)
+        env_dense.reset(num_players=2, seed=0)
+        _, info_dense = env_dense.step("[Discard] 0")
+        self.assertIn("step_reward", info_dense)
+        self.assertIsInstance(info_dense["step_reward"], float)
+
     def test_deck_exhaustion_final_round_2p(self):
         # For 2 players, initial hands use 5 cards each, so the deck has:
         # 50 - 2*5 = 40 cards remaining after dealing.

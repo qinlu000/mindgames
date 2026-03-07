@@ -34,13 +34,24 @@ class Card:
 
 
 class HanabiEnv(Env):
-    def __init__(self, info_tokens: int = 8, fuse_tokens: int = 4, max_steps: int = 300):
+    def __init__(
+        self,
+        info_tokens: int = 8,
+        fuse_tokens: int = 4,
+        max_steps: int = 300,
+        marshal_dense_reward: bool = False,
+        marshal_fuse_penalty: float = 0.0,
+        marshal_invalid_penalty: float = 0.0,
+    ):
 
         self.deck_size = 50
         self.max_info_tokens = 8
         self.info_tokens = info_tokens
         self.fuse_tokens = fuse_tokens
         self.max_steps = max_steps
+        self.marshal_dense_reward = bool(marshal_dense_reward)
+        self.marshal_fuse_penalty = float(marshal_fuse_penalty)
+        self.marshal_invalid_penalty = float(marshal_invalid_penalty)
 
     def reset(self, num_players: int, seed: Optional[int] = None):
         """
@@ -175,6 +186,8 @@ class HanabiEnv(Env):
             return self.state.step(rotate_player=False)
 
         acting_player_id = self.state.current_player_id
+        score_before = self._calculate_scores()
+        fuse_before = int(self.state.game_state.get("fuse_tokens", 0))
         self.state.game_state["step_count"] = int(self.state.game_state.get("step_count", 0)) + 1
         if self.max_steps is not None and self.state.game_state["step_count"] > self.max_steps:
             self.state.add_observation(
@@ -186,6 +199,7 @@ class HanabiEnv(Env):
             self.state.set_draw(reason="Step limit reached.")
             score = self._calculate_scores()
             self.state.rewards = {pid: float(score) for pid in range(self.num_players)}
+            self._set_step_info(acting_player_id, score_before, fuse_before)
             return self.state.step(rotate_player=False)
 
         self.state.add_observation(
@@ -216,6 +230,7 @@ class HanabiEnv(Env):
 
         # Check whether the game has ended
         self._check_game_end()
+        self._set_step_info(acting_player_id, score_before, fuse_before)
         if self.state.done:
             return self.state.step(rotate_player=False)
 
@@ -247,6 +262,25 @@ class HanabiEnv(Env):
         done, info = self.state.step(rotate_player=False)
         self._rotate_players()
         return done, info
+
+    def _set_step_info(self, acting_player_id: int, score_before: int, fuse_before: int) -> None:
+        self.state.step_info["acting_player_id"] = int(acting_player_id)
+        if not self.marshal_dense_reward:
+            return
+
+        score_after = self._calculate_scores()
+        fuse_after = int(self.state.game_state.get("fuse_tokens", 0))
+        lost_fuses = max(0, fuse_before - fuse_after)
+        invalid_move = bool(
+            self.state.made_invalid_move or self.state.game_info[acting_player_id].get("invalid_move", False)
+        )
+
+        reward = float(score_after - score_before)
+        reward -= float(lost_fuses) * self.marshal_fuse_penalty
+        if invalid_move:
+            reward += self.marshal_invalid_penalty
+
+        self.state.step_info["step_reward"] = reward
 
     def _handle_discard(self, action: str) -> None:
         """

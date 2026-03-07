@@ -1,40 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Convenience wrapper: GRPO training on GPU0 + external vLLM server + W&B.
-# Start a vLLM server separately (e.g., on GPU1) before running this script.
-#
-# Defaults (override via env vars):
-#   CUDA_VISIBLE_DEVICES=0
-#   DATASET=hf::Hi-ToM/Hi-ToM_Dataset
-#   OUTPUT_DIR=output/qwen3-8b-hitom-grpo
-#   NUM_GENERATIONS=16
-#   GENERATION_BATCH_SIZE=16
-#   NUM_TRAIN_EPOCHS=
-#   MAX_STEPS=500
-#   VLLM_SERVER_HOST=127.0.0.1
-#   VLLM_SERVER_PORT=8001
-#   REPORT_TO=wandb
-#   RUN_NAME=grpo-qwen3-hitom
-#   WANDB_PROJECT=mindgames
+# Compatibility wrapper.
+# Canonical Hanabi entrypoint: tools/train/train_grpo_hanabi_server_wandb.sh
 
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
-DATASET="${DATASET:-hf::Hi-ToM/Hi-ToM_Dataset}"
-OUTPUT_DIR="${OUTPUT_DIR:-output/qwen3-8b-hitom-grpo}"
-NUM_GENERATIONS="${NUM_GENERATIONS:-16}"
-GENERATION_BATCH_SIZE="${GENERATION_BATCH_SIZE:-$NUM_GENERATIONS}"
-NUM_TRAIN_EPOCHS="${NUM_TRAIN_EPOCHS:-}"
-MAX_STEPS="${MAX_STEPS:-500}"
-VLLM_SERVER_HOST="${VLLM_SERVER_HOST:-127.0.0.1}"
-VLLM_SERVER_PORT="${VLLM_SERVER_PORT:-8001}"
-REPORT_TO="${REPORT_TO:-wandb}"
-RUN_NAME="${RUN_NAME:-grpo-qwen3-hitom}"
-WANDB_PROJECT="${WANDB_PROJECT:-mindgames}"
-
-REPORT_TO="$REPORT_TO" RUN_NAME="$RUN_NAME" WANDB_PROJECT="$WANDB_PROJECT" \
-CUDA_VISIBLE_DEVICES="$CUDA_VISIBLE_DEVICES" VLLM_MODE=server \
-VLLM_SERVER_HOST="$VLLM_SERVER_HOST" VLLM_SERVER_PORT="$VLLM_SERVER_PORT" \
-DATASET="$DATASET" OUTPUT_DIR="$OUTPUT_DIR" \
-NUM_GENERATIONS="$NUM_GENERATIONS" GENERATION_BATCH_SIZE="$GENERATION_BATCH_SIZE" \
-NUM_TRAIN_EPOCHS="$NUM_TRAIN_EPOCHS" MAX_STEPS="$MAX_STEPS" \
-bash tools/train/train_grpo_msswift.sh
+exec bash tools/train/train_grpo_hanabi_server_wandb.sh "$@"

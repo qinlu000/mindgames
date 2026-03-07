@@ -23,10 +23,13 @@ This doc summarizes the scripts under `tools/`. Files are grouped into subfolder
 - `tools/data/view_jsonl.py`: pretty-print JSONL for terminal viewing.
 
 ## Training
-- `tools/train/train_grpo_msswift.sh`: GRPO training entrypoint (ms-swift).
-- `tools/train/train_grpo_msswift_server_wandb.sh`: GRPO training with external vLLM server + W&B.
+- `tools/train/train_grpo_base.sh`: GRPO base entrypoint (ms-swift, minimal surface).
+- `tools/train/train_grpo_msswift.sh`: compatibility alias to `train_grpo_base.sh`.
+- `tools/train/train_grpo_hanabi_server_simple.sh`: Hanabi GRPO wrapper (external rollout server).
+- `tools/train/train_grpo_hanabi_server_wandb.sh`: Hanabi GRPO wrapper with W&B defaults.
+- `tools/train/train_grpo_hanabi_marshal.sh`: Hanabi MARSHAL-style wrapper.
+- `tools/train/train_grpo_msswift_server_wandb.sh`: compatibility alias to Hanabi W&B wrapper.
 - `tools/train/train_sft_msswift.sh`: SFT training entrypoint (ms-swift).
-- `tools/train/train_sft_trl.py`: SFT training (TRL, python).
 
 ## Serving
 - `tools/serve/serve_qwen3_8b.sh`: launch a local vLLM server for Qwen3-8B.
