@@ -34,24 +34,6 @@ Default behavior of this wrapper:
 - token limits: `MAX_LENGTH=16384`, `MAX_COMPLETION_LENGTH=13000`
 - trainer: `vllm_mode=server` + ZeRO-3 (`tools/train/deepspeed_zero3_bf16.json`)
 
-Common overrides:
-```bash
-# Safer fallback if you see OOM on your machine:
-MAX_LENGTH=8192 MAX_COMPLETION_LENGTH=4096 \
-NUM_GENERATIONS=8 GENERATION_BATCH_SIZE=32 \
-bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
-
-# If machine has NCCL/IB issues:
-NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1 \
-bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
-```
-
-Notes:
-- `GENERATION_BATCH_SIZE` must be divisible by both `NPROC_PER_NODE` and `NUM_GENERATIONS`.
-- `STEPS_PER_GENERATION` and `GENERATION_BATCH_SIZE` are mutually exclusive.
-- The default is configured for long-trajectory Hanabi (`16384/13000`); if unstable, reduce lengths first.
-- rollout uses `TP=1` by default (one vLLM server per GPU), which is typically the most stable choice on 8xH800.
-
 ### W&B
 Online logging:
 ```bash
