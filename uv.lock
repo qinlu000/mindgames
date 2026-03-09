@@ -550,6 +550,25 @@ wheels = [
 ]
 
 [[package]]
+name = "deepspeed"
+version = "0.18.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "einops", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "hjson", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "msgpack", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "ninja", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "numpy", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "packaging", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "psutil", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "py-cpuinfo", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "pydantic", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "torch", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "tqdm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/30/00/ad310cf94e0e397c416087e6c4dc782429292206b2b1a3ffbd388ac95a67/deepspeed-0.18.7.tar.gz", hash = "sha256:3763530196f8e7df8fc56d028a8c64409200695213920dc6cf0045d50c884079", size = 1646894, upload-time = "2026-03-05T20:44:56.579Z" }
+
+[[package]]
 name = "depyf"
 version = "0.20.0"
 source = { registry = "https://pypi.org/simple" }
@@ -981,6 +1000,15 @@ wheels = [
 ]
 
 [[package]]
+name = "hjson"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/e5/0b56d723a76ca67abadbf7fb71609fb0ea7e6926e94fcca6c65a85b36a0e/hjson-3.1.0.tar.gz", hash = "sha256:55af475a27cf83a7969c808399d7bccdec8fb836a07ddbd574587593b9cdcf75", size = 40541, upload-time = "2022-08-13T02:53:01.919Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/7f/13cd798d180af4bf4c0ceddeefba2b864a63c71645abc0308b768d67bb81/hjson-3.1.0-py3-none-any.whl", hash = "sha256:65713cdcf13214fb554eb8b4ef803419733f4f5e551047c9b711098ab7186b89", size = 54018, upload-time = "2022-08-13T02:52:59.899Z" },
+]
+
+[[package]]
 name = "httpcore"
 version = "1.0.9"
 source = { registry = "https://pypi.org/simple" }
@@ -1367,6 +1395,7 @@ serve = [
     { name = "vllm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
 ]
 train = [
+    { name = "deepspeed", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "ms-swift", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
 ]
 
@@ -1379,6 +1408,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "deepspeed", marker = "extra == 'train'", specifier = ">=0.18.7" },
     { name = "ms-swift", marker = "extra == 'train'", specifier = ">=4.0.0,<4.1" },
     { name = "msgspec", specifier = ">=0.20.0" },
     { name = "openai", marker = "extra == 'agents'" },

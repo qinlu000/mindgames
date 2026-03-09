@@ -5,7 +5,8 @@ the reward is computed by the gym env, so `REWARD_FUNCS` is left empty.
 
 ## Prereqs
 - Install deps (one-time):
-  - `uv sync --extra serve` (or `uv add "ms-swift[all]"`)
+  - `uv sync --extra train --extra serve`
+  - If you only need the missing package for an existing env, run `uv add deepspeed --optional train`
 - Ensure `data/hanabi.grpo.jsonl` exists (used to pass `env_config` to the gym env).
 
 ## Quick Start (auto split)

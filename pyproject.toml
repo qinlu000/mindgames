@@ -26,6 +26,7 @@ serve = [
     "vllm>=0.15.1,<0.16",
 ]
 train = [
+    "deepspeed>=0.18.7",
     "ms-swift>=4.0.0,<4.1",
 ]
 

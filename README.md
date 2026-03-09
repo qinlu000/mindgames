@@ -6,6 +6,8 @@ cd mindgames
 uv sync --frozen --extra train --extra serve --extra agents
 ```
 
+The `train` extra now includes `deepspeed`, which is required for runs that pass `--deepspeed` (for example the ZeRO-3 config in `tools/train/deepspeed_zero3_bf16.json`).
+
 ## GRPO Hanabi (gym env, 2 players)
 This uses ms-swift + a vLLM rollout server. The reward comes from the Hanabi env, so keep `REWARD_FUNCS` empty.
 
@@ -19,56 +21,36 @@ head -n 1 data/hanabi.grpo.jsonl
 ```
 
 ### Quick start (recommended for handoff, 8xH800)
-Use the simple scripts (no machine-specific workaround logic), and keep rollout at `TP=1` for stability.
+Use the H800 wrapper (tmux + health checks + server-mode GRPO):
 
-Terminal 1 (start 4 rollout servers, one GPU per server):
 ```bash
-mkdir -p logs
-for i in 0 1 2 3; do
-  port=$((8000 + i))
-  CUDA_VISIBLE_DEVICES=$i \
-  HOST=127.0.0.1 PORT=$port \
-  VLLM_TENSOR_PARALLEL_SIZE=1 \
-  VLLM_DATA_PARALLEL_SIZE=1 \
-  VLLM_MAX_MODEL_LEN=18000 \
-  VLLM_MAX_NUM_SEQS=16 \
-  NCCL_P2P_DISABLE=0 NCCL_IB_DISABLE=0 \
-  bash tools/rollout/rollout_hanabi_gym_simple.sh \
-    > "logs/rollout_${port}.log" 2>&1 &
-done
+bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
 ```
 
-Wait until all servers are healthy:
-```bash
-for port in 8000 8001 8002 8003; do
-  until curl -sf "http://127.0.0.1:${port}/health/" >/dev/null; do sleep 2; done
-done
-```
+Default behavior of this wrapper:
+- rollout: `GPU 0,1,2,3` (`PORTS=8100,8101,8102,8103`)
+- train: `GPU 4,5,6,7` (`NPROC_PER_NODE=4`)
+- GRPO group: `NUM_GENERATIONS=10`, `GENERATION_BATCH_SIZE=40`
+- token limits: `MAX_LENGTH=16384`, `MAX_COMPLETION_LENGTH=13000`
+- trainer: `vllm_mode=server` + ZeRO-3 (`tools/train/deepspeed_zero3_bf16.json`)
 
-Terminal 2 (train on GPU 4-7):
+Common overrides:
 ```bash
-CUDA_VISIBLE_DEVICES=4,5,6,7 \
-NPROC_PER_NODE=4 \
-DATASET=data/hanabi.grpo.jsonl \
-VLLM_SERVER_HOST=127.0.0.1,127.0.0.1,127.0.0.1,127.0.0.1 \
-VLLM_SERVER_PORT=8000,8001,8002,8003 \
-VLLM_SERVER_GROUP_PORT=51216,51217,51218,51219 \
-NUM_GENERATIONS=16 \
-GENERATION_BATCH_SIZE=64 \
-MAX_LENGTH=4096 \
-MAX_COMPLETION_LENGTH=64 \
-MAX_STEPS=1000 \
-NCCL_P2P_DISABLE=0 \
-NCCL_IB_DISABLE=0 \
-bash tools/train/train_grpo_hanabi_server_simple.sh
+# Safer fallback if you see OOM on your machine:
+MAX_LENGTH=8192 MAX_COMPLETION_LENGTH=4096 \
+NUM_GENERATIONS=8 GENERATION_BATCH_SIZE=32 \
+bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
+
+# If machine has NCCL/IB issues:
+NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1 \
+bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
 ```
 
 Notes:
-- Recommended training group config on 4 train GPUs: `NUM_GENERATIONS=16`, `GENERATION_BATCH_SIZE=64`.
 - `GENERATION_BATCH_SIZE` must be divisible by both `NPROC_PER_NODE` and `NUM_GENERATIONS`.
 - `STEPS_PER_GENERATION` and `GENERATION_BATCH_SIZE` are mutually exclusive.
-- Hanabi is action-centric multi-turn RL; prefer shorter generation limits (`MAX_LENGTH=4096`, `MAX_COMPLETION_LENGTH=64`) unless you have a confirmed reason to increase.
-- For Qwen3-8B on H800 80GB, keep rollout `TP=1` unless single-card rollout clearly OOMs.
+- The default is configured for long-trajectory Hanabi (`16384/13000`); if unstable, reduce lengths first.
+- rollout uses `TP=1` by default (one vLLM server per GPU), which is typically the most stable choice on 8xH800.
 
 ### W&B
 Online logging:

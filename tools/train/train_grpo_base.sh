@@ -23,8 +23,9 @@ set -euo pipefail
 #   MAX_COMPLETION_LENGTH=64
 #   NUM_TRAIN_EPOCHS=
 #   MAX_STEPS=500
+#   SAVE_STEPS=500
 #   MAX_TURNS=
-#   REPORT_TO=tensorboard
+#   REPORT_TO=wandb
 #   RUN_NAME=
 #   REWARD_FUNCS=                    # comma or space separated
 #   EXTERNAL_PLUGINS=                # comma or space separated
@@ -34,6 +35,7 @@ set -euo pipefail
 #   NPROC_PER_NODE=1
 #   NCCL_P2P_DISABLE=1
 #   NCCL_IB_DISABLE=1
+#   TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=3600
 #   DRY_RUN=false
 
 if [ -z "${MODEL:-}" ]; then
@@ -56,6 +58,8 @@ VLLM_SERVER_GROUP_PORT="${VLLM_SERVER_GROUP_PORT:-}"
 VLLM_SERVER_TIMEOUT="${VLLM_SERVER_TIMEOUT:-}"
 VLLM_GPU_MEMORY_UTILIZATION="${VLLM_GPU_MEMORY_UTILIZATION:-}"
 VLLM_TENSOR_PARALLEL_SIZE="${VLLM_TENSOR_PARALLEL_SIZE:-}"
+NO_PROXY="${NO_PROXY:-}"
+no_proxy="${no_proxy:-}"
 
 NUM_GENERATIONS="${NUM_GENERATIONS:-8}"
 GENERATION_BATCH_SIZE="${GENERATION_BATCH_SIZE:-}"
@@ -65,9 +69,10 @@ MAX_LENGTH="${MAX_LENGTH:-4096}"
 MAX_COMPLETION_LENGTH="${MAX_COMPLETION_LENGTH:-64}"
 NUM_TRAIN_EPOCHS="${NUM_TRAIN_EPOCHS:-}"
 MAX_STEPS="${MAX_STEPS:-500}"
+SAVE_STEPS="${SAVE_STEPS:-500}"
 MAX_TURNS="${MAX_TURNS:-}"
 
-REPORT_TO="${REPORT_TO:-tensorboard}"
+REPORT_TO="${REPORT_TO:-wandb}"
 RUN_NAME="${RUN_NAME:-}"
 REWARD_FUNCS="${REWARD_FUNCS:-}"
 EXTERNAL_PLUGINS="${EXTERNAL_PLUGINS:-}"
@@ -77,6 +82,7 @@ EXTRA_SWIFT_ARGS="${EXTRA_SWIFT_ARGS:-}"
 NPROC_PER_NODE="${NPROC_PER_NODE:-1}"
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}"
 NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}"
+TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC="${TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC:-3600}"
 DRY_RUN="${DRY_RUN:-false}"
 
 if command -v uv >/dev/null 2>&1; then
@@ -160,6 +166,22 @@ if is_true "$USE_VLLM" && [ "$VLLM_MODE" = "server" ]; then
     echo "VLLM_SERVER_GROUP_PORT count (${#VLLM_SERVER_GROUP_PORT_ARR[@]}) must match server count (${#VLLM_SERVER_HOST_ARR[@]})." >&2
     exit 1
   fi
+
+  # Avoid proxying local/internal rollout server traffic (requests honors NO_PROXY/no_proxy).
+  NO_PROXY_EXTRAS="127.0.0.1,localhost,::1"
+  for host in "${VLLM_SERVER_HOST_ARR[@]}"; do
+    NO_PROXY_EXTRAS="${NO_PROXY_EXTRAS},${host}"
+  done
+  if [ -n "$NO_PROXY" ]; then
+    NO_PROXY="${NO_PROXY},${NO_PROXY_EXTRAS}"
+  else
+    NO_PROXY="${NO_PROXY_EXTRAS}"
+  fi
+  if [ -n "$no_proxy" ]; then
+    no_proxy="${no_proxy},${NO_PROXY_EXTRAS}"
+  else
+    no_proxy="${NO_PROXY_EXTRAS}"
+  fi
 fi
 
 CMD=(
@@ -174,6 +196,8 @@ CMD=(
   --max_length "$MAX_LENGTH"
   --max_completion_length "$MAX_COMPLETION_LENGTH"
   --max_steps "$MAX_STEPS"
+  --save_strategy steps
+  --save_steps "$SAVE_STEPS"
 )
 
 if [ -n "$NUM_TRAIN_EPOCHS" ]; then
@@ -246,4 +270,7 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}" \
 NPROC_PER_NODE="$NPROC_PER_NODE" \
 NCCL_P2P_DISABLE="$NCCL_P2P_DISABLE" \
 NCCL_IB_DISABLE="$NCCL_IB_DISABLE" \
+TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC="$TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC" \
+NO_PROXY="$NO_PROXY" \
+no_proxy="$no_proxy" \
 "${CMD[@]}"
