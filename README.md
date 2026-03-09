@@ -32,7 +32,13 @@ Default behavior of this wrapper:
 - train: `GPU 4,5,6,7` (`NPROC_PER_NODE=4`)
 - GRPO group: `NUM_GENERATIONS=10`, `GENERATION_BATCH_SIZE=40`
 - token limits: `MAX_LENGTH=16384`, `MAX_COMPLETION_LENGTH=13000`
-- trainer: `vllm_mode=server` + ZeRO-3 (`tools/train/deepspeed_zero3_bf16.json`)
+- trainer: `vllm_mode=server` (default without deepspeed)
+
+Enable ZeRO-3 only when needed:
+```bash
+USE_DEEPSPEED=true \
+bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
+```
 
 ### W&B
 Online logging:

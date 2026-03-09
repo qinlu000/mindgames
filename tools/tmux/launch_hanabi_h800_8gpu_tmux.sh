@@ -35,12 +35,21 @@ VLLM_SERVER_TIMEOUT="${VLLM_SERVER_TIMEOUT:-1800}"
 TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC="${TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC:-3600}"
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-0}"
 NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-0}"
+USE_DEEPSPEED="${USE_DEEPSPEED:-false}"
+DEEPSPEED_CONFIG="${DEEPSPEED_CONFIG:-$ROOT_DIR/tools/train/deepspeed_zero3_bf16.json}"
 
 HEALTH_RETRIES="${HEALTH_RETRIES:-180}"
 HEALTH_SLEEP_SEC="${HEALTH_SLEEP_SEC:-2}"
 FORCE_RESTART="${FORCE_RESTART:-true}"
 
-EXTRA_SWIFT_ARGS="${EXTRA_SWIFT_ARGS:---vllm_server_pass_dataset true --deepspeed $ROOT_DIR/tools/train/deepspeed_zero3_bf16.json}"
+EXTRA_SWIFT_ARGS="${EXTRA_SWIFT_ARGS:---vllm_server_pass_dataset true}"
+
+is_true() {
+  case "${1:-}" in
+    1|true|TRUE|yes|YES|on|ON) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
 parse_csv() {
   local raw="$1"
@@ -65,6 +74,12 @@ join_by_comma() {
 
 if [ ! -d "$MODEL" ]; then
   MODEL="Qwen/Qwen3-8B"
+fi
+
+if is_true "$USE_DEEPSPEED"; then
+  if [[ " $EXTRA_SWIFT_ARGS " != *" --deepspeed "* ]]; then
+    EXTRA_SWIFT_ARGS="$EXTRA_SWIFT_ARGS --deepspeed $DEEPSPEED_CONFIG"
+  fi
 fi
 
 cd "$ROOT_DIR"
