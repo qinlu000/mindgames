@@ -3,15 +3,22 @@ from __future__ import annotations
 
 import math
 import os
+from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple
 
 import mindgames as mg
 try:
     # ms-swift >= 4.0
-    from swift.rollout import ContextManager, Env, context_managers, envs
+    from swift.infer_engine.protocol import RolloutOutput
+    from swift.rollout import ContextManager, Env, context_managers, envs, multi_turns
+    from swift.rollout.multi_turn import GYMScheduler
+    from swift.utils import remove_response
 except ImportError:
     # ms-swift < 4.0
     from swift.plugin import ContextManager, Env, context_managers, envs
+    GYMScheduler = None
+    RolloutOutput = None
+    multi_turns = None
 
 
 def _as_int(value: Any, default: int) -> int:
@@ -239,3 +246,107 @@ class HanabiGymEnv(Env):
 
 
 envs["hanabi_env"] = HanabiGymEnv
+
+
+if GYMScheduler is not None and RolloutOutput is not None and multi_turns is not None:
+
+    class HanabiTokenizedGYMScheduler(GYMScheduler):
+        """Return per-turn token ids so training can avoid re-tokenizing rollout text."""
+
+        @staticmethod
+        def _extract_logprobs(response_choice: Any) -> List[float]:
+            if response_choice.logprobs is None:
+                return []
+            if "content" in response_choice.logprobs:
+                return [item["logprob"] for item in response_choice.logprobs["content"]]
+            return []
+
+        async def run(self, infer_request, request_config, **kwargs):
+            env_config = infer_request.data_dict.get("env_config", {})
+            ctx_config = infer_request.data_dict.get("ctx_config", {})
+
+            env = None
+            context_manager = None
+            try:
+                env = await self._create_env(env_config)
+                context_manager = await self._create_context_manager(ctx_config)
+
+                observation, info, system_message = await env.reset(infer_request)
+
+                messages: List[Dict[str, Any]] = []
+                if system_message:
+                    messages.append({"role": "system", "content": system_message})
+                messages.append({"role": "user", "content": observation})
+
+                current_request = deepcopy(infer_request)
+                current_turn = 1
+                done = False
+                total_reward = 0.0
+                step_rewards: List[float] = []
+                trajectory_id = infer_request.uuid
+                trajectory_info = [info]
+                total_response_ids: List[List[int]] = []
+                total_response_loss_mask: List[List[int]] = []
+                total_rollout_logprobs: List[List[float]] = []
+                response = None
+
+                while not done and current_turn <= (self.max_turns or float("inf")):
+                    messages = context_manager.manage_context(messages, trajectory_id)
+                    current_request.messages = messages
+                    remove_response(current_request.messages)
+
+                    response = await self.infer_engine.infer_async(current_request, request_config, **kwargs)
+                    response_choice = response.choices[0]
+                    completion = response_choice.message.content
+                    messages.append({"role": "assistant", "content": completion})
+
+                    response_token_ids = list(response_choice.token_ids) if response_choice.token_ids else []
+                    if response_token_ids:
+                        total_response_ids.append(response_token_ids)
+                        total_response_loss_mask.append([1] * len(response_token_ids))
+
+                    current_logprobs = self._extract_logprobs(response_choice)
+                    if current_logprobs:
+                        total_rollout_logprobs.append(current_logprobs)
+
+                    next_obs, reward, done, step_info = await env.step(deepcopy(messages))
+
+                    total_reward += reward
+                    step_rewards.append(reward)
+                    trajectory_info.append(step_info)
+
+                    if not done:
+                        messages.append({"role": "user", "content": next_obs})
+                        current_request.messages = messages
+                        current_turn += 1
+
+                if response is None:
+                    raise RuntimeError("Hanabi gym rollout finished without producing a response.")
+
+                final_rollout_logprobs = total_rollout_logprobs
+                if total_rollout_logprobs:
+                    total_logprob_count = sum(len(turn_lps) for turn_lps in total_rollout_logprobs)
+                    total_loss_mask_1_count = sum(sum(mask) for mask in total_response_loss_mask)
+                    if total_logprob_count != total_loss_mask_1_count:
+                        final_rollout_logprobs = []
+
+                return RolloutOutput(
+                    response=response,
+                    messages=messages,
+                    response_token_ids=total_response_ids,
+                    response_loss_mask=total_response_loss_mask,
+                    rollout_infos={
+                        "num_turns": current_turn,
+                        "trajectory_id": trajectory_id,
+                        "total_reward": total_reward,
+                        "step_rewards": step_rewards,
+                        "trajectory_info": trajectory_info,
+                    },
+                    rollout_logprobs=final_rollout_logprobs,
+                )
+            finally:
+                if env is not None:
+                    await self._close_env_async(env)
+
+
+    multi_turns["hanabi_gym_scheduler"] = HanabiTokenizedGYMScheduler

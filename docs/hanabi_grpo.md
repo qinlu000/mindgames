@@ -109,3 +109,50 @@ Useful env vars for the wrapper:
 - NCCL issues: for H800, keep `NCCL_P2P_DISABLE=0` and `NCCL_IB_DISABLE=0`.
 - If prompt tokens keep growing / `negative max_tokens` appears:
   set `CONTEXT_MANAGER=hanabi_recent_turns` and keep `HANABI_CTX_MAX_TURNS=1`.
+
+## Field notes: 10x A100-PCIE-40GB mixed-topology host
+
+Observed on March 10, 2026 on the current single-node A100 PCIe machine:
+
+- `2 rollout + 8 train` with `NCCL_P2P_DISABLE=0` and `NCCL_IB_DISABLE=0`
+  repeatedly stalled before the first generation.
+- The failure signature was:
+  - train log printed `Start connecting to vLLM server`
+  - train log never printed `Connected to vLLM server`
+  - rollout logs only showed `/close_communicator/`, `/get_world_size/`,
+    `/init_communicator/`
+  - rollout logs never showed `/infer/`
+- This points to the external vLLM weight-sync communicator path hanging during
+  `init_communicator`, not to dataset quality, reward logic, or missing NVLink.
+
+What worked better on the same host:
+
+- `4 rollout + 4 train`
+- `NCCL_P2P_DISABLE=1`
+- `NCCL_IB_DISABLE=1`
+- one rollout server per GPU (`TP=1`, `DP=1`)
+
+With that profile, the run was able to:
+
+- print `Connected to vLLM server`
+- enter `Train: 0/...`
+- push repeated `/update_flattened_params/` requests to all rollout servers
+
+Practical recommendation for this machine:
+
+- Start from `4 rollout + 4 train`, not `2 rollout + 8 train`.
+- Keep `NCCL_P2P_DISABLE=1` and `NCCL_IB_DISABLE=1` unless a new smoke run
+  proves `0/0` is stable on the same topology.
+- Treat repeated `/update_flattened_params/` before the first `/infer/` as
+  normal first-step LoRA weight sync, not an immediate hang.
+
+If you need to distinguish the two failure modes quickly:
+
+- Communicator-init hang:
+  - only `Start connecting to vLLM server`
+  - no `Connected to vLLM server`
+  - no `/infer/`
+- Slow but progressing startup:
+  - `Connected to vLLM server` appears
+  - rollout logs show many `/update_flattened_params/`
+  - train eventually reaches `Train: 0/...`

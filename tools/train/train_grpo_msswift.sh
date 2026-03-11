@@ -12,5 +12,9 @@ if [ -n "${SWIFT_EXTRA_ARGS:-}" ] && [ -z "${EXTRA_SWIFT_ARGS:-}" ]; then
   EXTRA_SWIFT_ARGS="$SWIFT_EXTRA_ARGS"
   export EXTRA_SWIFT_ARGS
 fi
+if [ -n "${GRPO_SWIFT_BIN:-}" ] && [ -z "${SWIFT_BIN:-}" ]; then
+  SWIFT_BIN="$GRPO_SWIFT_BIN"
+  export SWIFT_BIN
+fi
 
 exec bash tools/train/train_grpo_base.sh "$@"

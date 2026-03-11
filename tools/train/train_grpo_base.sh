@@ -4,7 +4,10 @@ set -euo pipefail
 # ms-swift GRPO base launcher (minimal surface, no historical branches).
 #
 # Defaults (override via env vars):
+#   SWIFT_BIN=                        # explicit swift binary, e.g. /workspace/mindgames/.venv-grpo/bin/swift
 #   MODEL=/workspace/models/Qwen3-8B (if exists), otherwise Qwen/Qwen3-8B
+#   ADAPTERS=                         # comma or space separated SFT LoRA adapters for the train model
+#   REF_ADAPTERS=                     # comma or space separated SFT LoRA adapters for the reference model
 #   DATASET=data/hanabi.grpo.jsonl
 #   OUTPUT_DIR=output/qwen3-8b-hanabi-grpo
 #   TUNER_TYPE=lora
@@ -21,6 +24,14 @@ set -euo pipefail
 #   STEPS_PER_GENERATION=
 #   MAX_LENGTH=4096
 #   MAX_COMPLETION_LENGTH=64
+#   ENABLE_THINKING=
+#   LEARNING_RATE=
+#   BETA=
+#   ASYNC_GENERATE=false
+#   COMPLETION_LENGTH_LIMIT_SCOPE=   # total | per_round
+#   VLLM_SERVER_PASS_DATASET=
+#   SOFT_MAX_LENGTH=
+#   OVERLONG_FILTER=
 #   NUM_TRAIN_EPOCHS=
 #   MAX_STEPS=500
 #   SAVE_STEPS=500
@@ -46,6 +57,9 @@ if [ -z "${MODEL:-}" ]; then
   fi
 fi
 
+SWIFT_BIN="${SWIFT_BIN:-}"
+ADAPTERS="${ADAPTERS:-}"
+REF_ADAPTERS="${REF_ADAPTERS:-}"
 DATASET="${DATASET:-data/hanabi.grpo.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-output/qwen3-8b-hanabi-grpo}"
 TUNER_TYPE="${TUNER_TYPE:-lora}"
@@ -67,6 +81,14 @@ STEPS_PER_GENERATION="${STEPS_PER_GENERATION:-}"
 
 MAX_LENGTH="${MAX_LENGTH:-4096}"
 MAX_COMPLETION_LENGTH="${MAX_COMPLETION_LENGTH:-64}"
+ENABLE_THINKING="${ENABLE_THINKING:-}"
+LEARNING_RATE="${LEARNING_RATE:-}"
+BETA="${BETA:-}"
+ASYNC_GENERATE="${ASYNC_GENERATE:-false}"
+COMPLETION_LENGTH_LIMIT_SCOPE="${COMPLETION_LENGTH_LIMIT_SCOPE:-}"
+VLLM_SERVER_PASS_DATASET="${VLLM_SERVER_PASS_DATASET:-}"
+SOFT_MAX_LENGTH="${SOFT_MAX_LENGTH:-}"
+OVERLONG_FILTER="${OVERLONG_FILTER:-}"
 NUM_TRAIN_EPOCHS="${NUM_TRAIN_EPOCHS:-}"
 MAX_STEPS="${MAX_STEPS:-500}"
 SAVE_STEPS="${SAVE_STEPS:-500}"
@@ -78,6 +100,7 @@ REWARD_FUNCS="${REWARD_FUNCS:-}"
 EXTERNAL_PLUGINS="${EXTERNAL_PLUGINS:-}"
 LOG_COMPLETIONS="${LOG_COMPLETIONS:-true}"
 EXTRA_SWIFT_ARGS="${EXTRA_SWIFT_ARGS:-}"
+PYTHONPATH="${PYTHONPATH:-$(pwd)}"
 
 NPROC_PER_NODE="${NPROC_PER_NODE:-1}"
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-1}"
@@ -85,10 +108,14 @@ NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}"
 TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC="${TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC:-3600}"
 DRY_RUN="${DRY_RUN:-false}"
 
-if command -v uv >/dev/null 2>&1; then
-  SWIFT_CMD=(uv run swift)
+if [ -n "$SWIFT_BIN" ]; then
+  SWIFT_CMD=("$SWIFT_BIN")
+elif [ -x ".venv-grpo/bin/swift" ]; then
+  SWIFT_CMD=(".venv-grpo/bin/swift")
 elif [ -x ".venv/bin/swift" ]; then
   SWIFT_CMD=(.venv/bin/swift)
+elif command -v uv >/dev/null 2>&1; then
+  SWIFT_CMD=(uv run swift)
 elif command -v swift >/dev/null 2>&1; then
   SWIFT_CMD=(swift)
 else
@@ -153,6 +180,8 @@ fi
 
 parse_list "$REWARD_FUNCS" REWARD_FUNCS_ARR
 parse_list "$EXTERNAL_PLUGINS" EXTERNAL_PLUGINS_ARR
+parse_list "$ADAPTERS" ADAPTERS_ARR
+parse_list "$REF_ADAPTERS" REF_ADAPTERS_ARR
 parse_list "$VLLM_SERVER_HOST" VLLM_SERVER_HOST_ARR
 parse_list "$VLLM_SERVER_PORT" VLLM_SERVER_PORT_ARR
 parse_list "$VLLM_SERVER_GROUP_PORT" VLLM_SERVER_GROUP_PORT_ARR
@@ -203,11 +232,41 @@ CMD=(
 if [ -n "$NUM_TRAIN_EPOCHS" ]; then
   CMD+=(--num_train_epochs "$NUM_TRAIN_EPOCHS")
 fi
+if [ "${#ADAPTERS_ARR[@]}" -gt 0 ]; then
+  CMD+=(--adapters "${ADAPTERS_ARR[@]}")
+fi
+if [ "${#REF_ADAPTERS_ARR[@]}" -gt 0 ]; then
+  CMD+=(--ref_adapters "${REF_ADAPTERS_ARR[@]}")
+fi
 if [ -n "$REPORT_TO" ]; then
   CMD+=(--report_to "$REPORT_TO")
 fi
 if [ -n "$RUN_NAME" ]; then
   CMD+=(--run_name "$RUN_NAME")
+fi
+if [ -n "$ENABLE_THINKING" ]; then
+  CMD+=(--enable_thinking "$ENABLE_THINKING")
+fi
+if [ -n "$LEARNING_RATE" ]; then
+  CMD+=(--learning_rate "$LEARNING_RATE")
+fi
+if [ -n "$BETA" ]; then
+  CMD+=(--beta "$BETA")
+fi
+if [ -n "$ASYNC_GENERATE" ]; then
+  CMD+=(--async_generate "$ASYNC_GENERATE")
+fi
+if [ -n "$COMPLETION_LENGTH_LIMIT_SCOPE" ]; then
+  CMD+=(--completion_length_limit_scope "$COMPLETION_LENGTH_LIMIT_SCOPE")
+fi
+if [ -n "$VLLM_SERVER_PASS_DATASET" ]; then
+  CMD+=(--vllm_server_pass_dataset "$VLLM_SERVER_PASS_DATASET")
+fi
+if [ -n "$SOFT_MAX_LENGTH" ]; then
+  CMD+=(--soft_max_length "$SOFT_MAX_LENGTH")
+fi
+if [ -n "$OVERLONG_FILTER" ]; then
+  CMD+=(--overlong_filter "$OVERLONG_FILTER")
 fi
 if [ -n "$MAX_TURNS" ]; then
   CMD+=(--max_turns "$MAX_TURNS")
@@ -273,4 +332,5 @@ NCCL_IB_DISABLE="$NCCL_IB_DISABLE" \
 TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC="$TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC" \
 NO_PROXY="$NO_PROXY" \
 no_proxy="$no_proxy" \
+PYTHONPATH="$PYTHONPATH" \
 "${CMD[@]}"

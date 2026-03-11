@@ -27,6 +27,7 @@ HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8000}"
 GYM_ENV="${GYM_ENV:-hanabi_env}"
 CONTEXT_MANAGER="${CONTEXT_MANAGER:-hanabi_recent_turns}"
+MULTI_TURN_SCHEDULER="${MULTI_TURN_SCHEDULER:-hanabi_gym_scheduler}"
 HANABI_CTX_MAX_TURNS="${HANABI_CTX_MAX_TURNS:-1}"
 HANABI_CTX_KEEP_SYSTEM="${HANABI_CTX_KEEP_SYSTEM:-true}"
 
@@ -165,7 +166,7 @@ HANABI_CTX_KEEP_SYSTEM="$HANABI_CTX_KEEP_SYSTEM" \
   --use_gym_env true \
   --gym_env "$GYM_ENV" \
   --context_manager "$CONTEXT_MANAGER" \
-  --multi_turn_scheduler gym_scheduler \
+  --multi_turn_scheduler "$MULTI_TURN_SCHEDULER" \
   --external_plugins tools/rollout/hanabi_gym_plugin.py \
   --vllm_use_async_engine "$VLLM_USE_ASYNC_ENGINE" \
   --vllm_tensor_parallel_size "$VLLM_TENSOR_PARALLEL_SIZE" \

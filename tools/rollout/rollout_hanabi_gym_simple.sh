@@ -6,6 +6,8 @@ set -euo pipefail
 # Usage:
 #   CUDA_VISIBLE_DEVICES=0 \
 #   HOST=127.0.0.1 PORT=8000 \
+#   ENABLE_THINKING=false \
+#   MAX_TURNS=64 \
 #   CONTEXT_MANAGER=hanabi_recent_turns \
 #   HANABI_CTX_MAX_TURNS=1 \
 #   HANABI_CTX_KEEP_SYSTEM=true \
@@ -13,6 +15,7 @@ set -euo pipefail
 #   VLLM_DATA_PARALLEL_SIZE=1 \
 #   VLLM_MAX_MODEL_LEN=18000 \
 #   VLLM_MAX_NUM_SEQS=16 \
+#   SWIFT_BIN=/workspace/mindgames/.venv-grpo/bin/swift \
 #   bash tools/rollout/rollout_hanabi_gym_simple.sh
 
 if [ -z "${MODEL:-}" ]; then
@@ -29,8 +32,15 @@ HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8000}"
 GYM_ENV="${GYM_ENV:-hanabi_env}"
 CONTEXT_MANAGER="${CONTEXT_MANAGER:-hanabi_recent_turns}"
+MULTI_TURN_SCHEDULER="${MULTI_TURN_SCHEDULER:-hanabi_gym_scheduler}"
+ENABLE_THINKING="${ENABLE_THINKING:-}"
+MAX_TURNS="${MAX_TURNS:-}"
 HANABI_CTX_MAX_TURNS="${HANABI_CTX_MAX_TURNS:-1}"
 HANABI_CTX_KEEP_SYSTEM="${HANABI_CTX_KEEP_SYSTEM:-true}"
+SWIFT_BIN="${SWIFT_BIN:-}"
+PYTHONPATH="${PYTHONPATH:-$(pwd)}"
+NO_PROXY="${NO_PROXY:-}"
+no_proxy="${no_proxy:-}"
 
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 VLLM_TENSOR_PARALLEL_SIZE="${VLLM_TENSOR_PARALLEL_SIZE:-1}"
@@ -40,14 +50,19 @@ VLLM_MAX_NUM_SEQS="${VLLM_MAX_NUM_SEQS:-16}"
 VLLM_ENABLE_LORA="${VLLM_ENABLE_LORA:-true}"
 VLLM_MAX_LORA_RANK="${VLLM_MAX_LORA_RANK:-8}"
 VLLM_USE_ASYNC_ENGINE="${VLLM_USE_ASYNC_ENGINE:-true}"
+DRY_RUN="${DRY_RUN:-false}"
 
 NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-0}"
 NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-0}"
 
-if command -v uv >/dev/null 2>&1; then
-  SWIFT_CMD=(uv run swift)
+if [ -n "$SWIFT_BIN" ]; then
+  SWIFT_CMD=("$SWIFT_BIN")
+elif [ -x ".venv-grpo/bin/swift" ]; then
+  SWIFT_CMD=(".venv-grpo/bin/swift")
 elif [ -x ".venv/bin/swift" ]; then
   SWIFT_CMD=(.venv/bin/swift)
+elif command -v uv >/dev/null 2>&1; then
+  SWIFT_CMD=(uv run swift)
 elif command -v swift >/dev/null 2>&1; then
   SWIFT_CMD=(swift)
 else
@@ -57,23 +72,57 @@ fi
 
 echo "[hanabi-rollout-simple] model=$MODEL host=$HOST port=$PORT cuda=$CUDA_VISIBLE_DEVICES tp=$VLLM_TENSOR_PARALLEL_SIZE dp=$VLLM_DATA_PARALLEL_SIZE max_model_len=$VLLM_MAX_MODEL_LEN max_num_seqs=$VLLM_MAX_NUM_SEQS ctx=$CONTEXT_MANAGER ctx_max_turns=$HANABI_CTX_MAX_TURNS"
 
+CMD=(
+  "${SWIFT_CMD[@]}" rollout
+  --model "$MODEL"
+  --host "$HOST" --port "$PORT"
+  --use_gym_env true
+  --gym_env "$GYM_ENV"
+  --context_manager "$CONTEXT_MANAGER"
+  --multi_turn_scheduler "$MULTI_TURN_SCHEDULER"
+  --external_plugins tools/rollout/hanabi_gym_plugin.py
+  --vllm_use_async_engine "$VLLM_USE_ASYNC_ENGINE"
+  --vllm_tensor_parallel_size "$VLLM_TENSOR_PARALLEL_SIZE"
+  --vllm_data_parallel_size "$VLLM_DATA_PARALLEL_SIZE"
+  --vllm_max_model_len "$VLLM_MAX_MODEL_LEN"
+  --vllm_max_num_seqs "$VLLM_MAX_NUM_SEQS"
+  --vllm_enable_lora "$VLLM_ENABLE_LORA"
+  --vllm_max_lora_rank "$VLLM_MAX_LORA_RANK"
+)
+
+if [ -n "$ENABLE_THINKING" ]; then
+  CMD+=(--enable_thinking "$ENABLE_THINKING")
+fi
+if [ -n "$MAX_TURNS" ]; then
+  CMD+=(--max_turns "$MAX_TURNS")
+fi
+
+if [ "$DRY_RUN" = "true" ]; then
+  printf '[hanabi-rollout-simple] ' >&2
+  printf '%q ' "${CMD[@]}" >&2
+  printf '\n' >&2
+  exit 0
+fi
+
+# Avoid proxying local rollout traffic or any callbacks targeting this host.
+NO_PROXY_EXTRAS="127.0.0.1,localhost,::1,${HOST}"
+if [ -n "$NO_PROXY" ]; then
+  NO_PROXY="${NO_PROXY},${NO_PROXY_EXTRAS}"
+else
+  NO_PROXY="${NO_PROXY_EXTRAS}"
+fi
+if [ -n "$no_proxy" ]; then
+  no_proxy="${no_proxy},${NO_PROXY_EXTRAS}"
+else
+  no_proxy="${NO_PROXY_EXTRAS}"
+fi
+
 CUDA_VISIBLE_DEVICES="$CUDA_VISIBLE_DEVICES" \
 NCCL_P2P_DISABLE="$NCCL_P2P_DISABLE" \
 NCCL_IB_DISABLE="$NCCL_IB_DISABLE" \
 HANABI_CTX_MAX_TURNS="$HANABI_CTX_MAX_TURNS" \
 HANABI_CTX_KEEP_SYSTEM="$HANABI_CTX_KEEP_SYSTEM" \
-"${SWIFT_CMD[@]}" rollout \
-  --model "$MODEL" \
-  --host "$HOST" --port "$PORT" \
-  --use_gym_env true \
-  --gym_env "$GYM_ENV" \
-  --context_manager "$CONTEXT_MANAGER" \
-  --multi_turn_scheduler gym_scheduler \
-  --external_plugins tools/rollout/hanabi_gym_plugin.py \
-  --vllm_use_async_engine "$VLLM_USE_ASYNC_ENGINE" \
-  --vllm_tensor_parallel_size "$VLLM_TENSOR_PARALLEL_SIZE" \
-  --vllm_data_parallel_size "$VLLM_DATA_PARALLEL_SIZE" \
-  --vllm_max_model_len "$VLLM_MAX_MODEL_LEN" \
-  --vllm_max_num_seqs "$VLLM_MAX_NUM_SEQS" \
-  --vllm_enable_lora "$VLLM_ENABLE_LORA" \
-  --vllm_max_lora_rank "$VLLM_MAX_LORA_RANK"
+PYTHONPATH="$PYTHONPATH" \
+NO_PROXY="$NO_PROXY" \
+no_proxy="$no_proxy" \
+"${CMD[@]}"

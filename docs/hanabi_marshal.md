@@ -100,7 +100,7 @@ bash tools/train/train_grpo_hanabi_marshal.sh
   - 关键参数：`marshal_agent_norm`, `marshal_agent_norm_method`, `marshal_agent_norm_warmup`, `marshal_agent_norm_clip`
   - 行为：维护每个玩家独立的 running mean/std，对 reward 做玩家级归一化
 
-- rollout 上下文裁剪（防止 gym_scheduler token 叠加）：
+- rollout 上下文裁剪（防止 Hanabi scheduler 轨迹上下文叠加）：
   - `tools/rollout/hanabi_gym_plugin.py`
   - 关键参数：`CONTEXT_MANAGER=hanabi_recent_turns`, `HANABI_CTX_MAX_TURNS`
   - 行为：每轮仅保留最近 N 个 user turn（默认 1），避免 observation 历史在 scheduler 中二次累积
