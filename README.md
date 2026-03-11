@@ -3,85 +3,49 @@
 ## Install environment
 ```bash
 cd mindgames
-uv sync --frozen --extra train --extra serve --extra agents
+uv sync --extra agents --extra agent-lightning
 ```
 
-The `train` extra now includes `deepspeed`, which is required for runs that pass `--deepspeed` (for example the ZeRO-3 config in `tools/train/deepspeed_zero3_bf16.json`).
+This branch has been simplified to a clean Agent Lightning stack. The older `ms-swift` / GRPO / DeepSpeed training path has been removed from this branch.
 
-## GRPO Hanabi (gym env, 2 players)
-This uses ms-swift + a vLLM rollout server. The reward comes from the Hanabi env, so keep `REWARD_FUNCS` empty.
-
-Dataset note:
-- `data/hanabi.grpo.template.jsonl` is a template, not for training.
-- `data/hanabi.grpo.jsonl` must contain non-empty `messages` rows (already prepared in this repo).
-- Quick check:
+## Fresh isolated environment
+To create a brand new virtualenv for this branch without reusing the previous `.venv-grpo` setup:
 ```bash
-wc -l data/hanabi.grpo.jsonl
-head -n 1 data/hanabi.grpo.jsonl
+bash tools/envs/create_agent_lightning_env.sh
 ```
 
-### Quick start (recommended for handoff, 8xH800)
-Use the H800 wrapper (tmux + health checks + server-mode GRPO):
+Default target env:
+- `.venv-agent-lightning`
 
+Override example:
 ```bash
-bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
+ENV_DIR=/workspace/mindgames/.venv-agent-lightning-qwen \
+bash tools/envs/create_agent_lightning_env.sh
 ```
 
-Default behavior of this wrapper:
-- rollout: `GPU 0,1,2,3` (`PORTS=8100,8101,8102,8103`)
-- train: `GPU 4,5,6,7` (`NPROC_PER_NODE=4`)
-- GRPO group: `NUM_GENERATIONS=10`, `GENERATION_BATCH_SIZE=40`
-- token limits: `MAX_LENGTH=16384`, `MAX_COMPLETION_LENGTH=13000`
-- trainer: `vllm_mode=server` (default without deepspeed)
+## Agent Lightning Hanabi training
+This entrypoint uses Agent Lightning APO to optimize the Hanabi system prompt from episode reward using the existing OpenAI-compatible agent interface.
 
-Enable ZeRO-3 only when needed:
+Typical local vLLM launch:
 ```bash
-USE_DEEPSPEED=true \
-bash tools/tmux/launch_hanabi_h800_8gpu_tmux.sh
+export OPENAI_BASE_URL=http://127.0.0.1:8000/v1
+export OPENAI_API_KEY=EMPTY
+MODEL=/workspace/models/Qwen3-8B \
+bash tools/train/train_agent_lightning_hanabi.sh
 ```
 
-### W&B
-Online logging:
-```bash
-export WANDB_API_KEY=<your_key>
-export WANDB_ENTITY=<your_entity_or_team>
-export WANDB_PROJECT=mindgames
-export WANDB_MODE=online
-export REPORT_TO=wandb
+Useful knobs:
+- `AGENT_KIND=qwen|openai`
+- `TRAIN_EPISODES=...` / `VAL_EPISODES=...`
+- `TRAIN_TASK_FILE=...jsonl` / `VAL_TASK_FILE=...jsonl`
+- `PROMPT_TEMPLATE_FILE=...txt`
+- `ENV_KWARGS='{"marshal_dense_reward": true}'`
+- `MAX_TRIALS=...`
+
+The task JSONL format is one object per line, for example:
+```json
+{"id":"train-000001","seed":1,"env_id":"Hanabi-v0-train","num_players":2}
 ```
-
-Offline run + later sync:
-```bash
-export WANDB_MODE=offline
-# run training...
-wandb sync wandb/offline-run-*
-```
-
-### Robust wrappers (optional)
-If the target machine has networking/NCCL quirks, use:
-- `tools/rollout/rollout_hanabi_gym.sh`
-- `tools/train/train_grpo_hanabi_server_wandb.sh`
-
-Notes for the wrapper:
-- It uses `VLLM_MODE=server` (external rollout server), not colocated vLLM.
-- It sets W&B defaults for Hanabi GRPO (`REPORT_TO=wandb`, `WANDB_*` env pass-through).
-- If `/workspace/models/Qwen3-8B` exists, scripts use that local model path by default.
-- To change account/project/mode, edit env vars before running `tools/train/train_grpo_hanabi_server_wandb.sh`.
-
-To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_hanabi_gym.sh` or `tools/rollout/rollout_hanabi_gym_simple.sh`.
-
-More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
-
-## Hanabi MARSHAL-style training
-To use MARSHAL's core ideas (turn-level reward signal + agent-specific normalization) in this repo:
-```bash
-# start rollout server(s) first
-bash tools/rollout/rollout_hanabi_gym.sh
-
-# then launch MARSHAL-style training wrapper
-bash tools/train/train_grpo_hanabi_marshal.sh
-```
-Details and all knobs are in `docs/hanabi_marshal.md`.
 
 ## Hanabi API batch self-play (OpenAI-compatible, e.g. OpenRouter)
 ```bash
