@@ -2,6 +2,10 @@
 
 This project runs GRPO with ms-swift and a vLLM rollout server. For Hanabi,
 the reward is computed by the gym env, so `REWARD_FUNCS` is left empty.
+In the default Hanabi multi-turn rollout path, credit assignment now uses
+score-gain rewards: when a move increases the cooperative score, that turn
+receives positive reward equal to the score delta instead of waiting for only
+the terminal episode score.
 
 ## Prereqs
 - Install deps (one-time):

@@ -39,6 +39,7 @@ class HanabiEnv(Env):
         info_tokens: int = 8,
         fuse_tokens: int = 4,
         max_steps: int = 300,
+        reward_on_score_gain: Optional[bool] = None,
         marshal_dense_reward: bool = False,
         marshal_fuse_penalty: float = 0.0,
         marshal_invalid_penalty: float = 0.0,
@@ -49,6 +50,9 @@ class HanabiEnv(Env):
         self.info_tokens = info_tokens
         self.fuse_tokens = fuse_tokens
         self.max_steps = max_steps
+        if reward_on_score_gain is None:
+            reward_on_score_gain = bool(marshal_dense_reward)
+        self.reward_on_score_gain = bool(reward_on_score_gain)
         self.marshal_dense_reward = bool(marshal_dense_reward)
         self.marshal_fuse_penalty = float(marshal_fuse_penalty)
         self.marshal_invalid_penalty = float(marshal_invalid_penalty)
@@ -265,17 +269,22 @@ class HanabiEnv(Env):
 
     def _set_step_info(self, acting_player_id: int, score_before: int, fuse_before: int) -> None:
         self.state.step_info["acting_player_id"] = int(acting_player_id)
-        if not self.marshal_dense_reward:
+        score_after = self._calculate_scores()
+        score_delta = int(score_after - score_before)
+        self.state.step_info["score_before"] = int(score_before)
+        self.state.step_info["score_after"] = int(score_after)
+        self.state.step_info["score_delta"] = score_delta
+
+        if not (self.reward_on_score_gain or self.marshal_dense_reward):
             return
 
-        score_after = self._calculate_scores()
         fuse_after = int(self.state.game_state.get("fuse_tokens", 0))
         lost_fuses = max(0, fuse_before - fuse_after)
         invalid_move = bool(
             self.state.made_invalid_move or self.state.game_info[acting_player_id].get("invalid_move", False)
         )
 
-        reward = float(score_after - score_before)
+        reward = float(score_delta)
         reward -= float(lost_fuses) * self.marshal_fuse_penalty
         if invalid_move:
             reward += self.marshal_invalid_penalty

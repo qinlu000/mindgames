@@ -129,6 +129,8 @@ class HanabiGymEnv(Env):
         }
         env_id = env_config.get("env_id", "Hanabi-v0-train")
         kwargs = {k: v for k, v in env_config.items() if k not in plugin_only_keys}
+        if "reward_on_score_gain" not in kwargs and "marshal_dense_reward" not in kwargs:
+            kwargs["reward_on_score_gain"] = True
         if "max_steps" in kwargs and kwargs["max_steps"] is not None:
             kwargs["max_steps"] = int(kwargs["max_steps"])
         return env_id, mg.make(env_id, **kwargs)

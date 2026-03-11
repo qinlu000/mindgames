@@ -8,6 +8,7 @@ set -euo pipefail
 #   MODEL=/workspace/models/Qwen3-8B (if exists), otherwise Qwen/Qwen3-8B
 #   ADAPTERS=                         # comma or space separated SFT LoRA adapters for the train model
 #   REF_ADAPTERS=                     # comma or space separated SFT LoRA adapters for the reference model
+#                                      # defaults to ADAPTERS when omitted
 #   DATASET=data/hanabi.grpo.jsonl
 #   OUTPUT_DIR=output/qwen3-8b-hanabi-grpo
 #   TUNER_TYPE=lora
@@ -59,7 +60,7 @@ fi
 
 SWIFT_BIN="${SWIFT_BIN:-}"
 ADAPTERS="${ADAPTERS:-}"
-REF_ADAPTERS="${REF_ADAPTERS:-}"
+REF_ADAPTERS="${REF_ADAPTERS:-$ADAPTERS}"
 DATASET="${DATASET:-data/hanabi.grpo.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-output/qwen3-8b-hanabi-grpo}"
 TUNER_TYPE="${TUNER_TYPE:-lora}"
