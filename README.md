@@ -17,13 +17,28 @@ bash tools/envs/create_agent_lightning_env.sh
 Default target env:
 - `.venv-agent-lightning`
 
+The Hanabi Agent Lightning training wrapper uses `.venv-agent-lightning` by default so it does not fall back to the project's main `.venv`.
+Override it with `AGENT_LIGHTNING_ENV_DIR=/path/to/venv` if you want a different isolated env.
+
 Override example:
 ```bash
 ENV_DIR=/workspace/mindgames/.venv-agent-lightning-qwen \
 bash tools/envs/create_agent_lightning_env.sh
 ```
 
-## Agent Lightning Hanabi training
+## Agent Lightning weight-training environment
+For model-weight training with Agent Lightning's VERL backend, use a separate env so it does not conflict with the APO/vLLM serving setup in this repo:
+
+```bash
+bash tools/envs/create_agent_lightning_verl_env.sh
+```
+
+Default target env:
+- `.venv-agent-lightning-verl`
+
+This follows the official Agent Lightning GPU install order for weight training: PyTorch, `flash-attn`, `vllm`, `verl`, then `agentlightning[verl]`.
+
+## Agent Lightning Hanabi prompt training
 This entrypoint uses Agent Lightning APO to optimize the Hanabi system prompt from episode reward using the existing OpenAI-compatible agent interface.
 
 Typical local vLLM launch:
@@ -34,6 +49,8 @@ MODEL=/workspace/models/Qwen3-8B \
 bash tools/train/train_agent_lightning_hanabi.sh
 ```
 
+The wrapper will fail fast if the dedicated Agent Lightning env does not exist yet.
+
 Useful knobs:
 - `AGENT_KIND=qwen|openai`
 - `TRAIN_EPISODES=...` / `VAL_EPISODES=...`
@@ -43,6 +60,38 @@ Useful knobs:
 - `MAX_TRIALS=...`
 
 The task JSONL format is one object per line, for example:
+```json
+{"id":"train-000001","seed":1,"env_id":"Hanabi-v0-train","num_players":2}
+```
+
+## Agent Lightning Hanabi weight training
+This entrypoint uses Agent Lightning's VERL backend to optimize model weights from Hanabi self-play. It does not require an external OpenAI/vLLM server; VERL launches the async rollout server internally and Agent Lightning records token-level traces through `LLMProxy`.
+
+Quick config check:
+```bash
+MODEL=/workspace/models/Qwen3-8B \
+TRAIN_EPISODES=8 VAL_EPISODES=4 TRAIN_BATCH_SIZE=4 ROLLOUT_N=4 \
+bash tools/train/train_agent_lightning_hanabi_verl.sh --dry-run --print-config
+```
+
+Minimal launch:
+```bash
+CUDA_VISIBLE_DEVICES=0 \
+MODEL=/workspace/models/Qwen3-8B \
+TRAIN_EPISODES=32 VAL_EPISODES=8 TRAIN_BATCH_SIZE=8 ROLLOUT_N=4 \
+N_GPUS_PER_NODE=1 TENSOR_MODEL_PARALLEL_SIZE=1 \
+bash tools/train/train_agent_lightning_hanabi_verl.sh
+```
+
+Useful knobs:
+- `ENV_KWARGS='{"marshal_dense_reward": true, "marshal_fuse_penalty": 0.25}'`
+- `REWARD_MODE=auto|score|episode_return`
+- `LORA_RANK=64` for lighter-weight adaptation
+- `PARAM_OFFLOAD=true OPTIMIZER_OFFLOAD=true` if full-weight runs are tight on memory
+- `LOGGER=console,tensorboard`
+- `OUTPUT_DIR=/workspace/mindgames/checkpoints/agent_lightning_hanabi/<run>`
+
+The VERL Hanabi task format is the same JSONL format used above:
 ```json
 {"id":"train-000001","seed":1,"env_id":"Hanabi-v0-train","num_players":2}
 ```

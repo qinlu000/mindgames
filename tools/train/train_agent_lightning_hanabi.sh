@@ -4,6 +4,14 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
+ENV_DIR="${AGENT_LIGHTNING_ENV_DIR:-${UV_PROJECT_ENVIRONMENT:-$ROOT_DIR/.venv-agent-lightning}}"
+
+if [[ ! -x "$ENV_DIR/bin/python" ]]; then
+  echo "[agent-lightning-env] missing environment: $ENV_DIR" >&2
+  echo "[agent-lightning-env] create it first with: ENV_DIR=\"$ENV_DIR\" bash tools/envs/create_agent_lightning_env.sh" >&2
+  exit 1
+fi
+
 MODEL="${MODEL:-/workspace/models/Qwen3-8B}"
 AGENT_KIND="${AGENT_KIND:-qwen}"
 ENV_ID="${ENV_ID:-Hanabi-v0-train}"
@@ -20,7 +28,7 @@ RETRY_DELAY_S="${RETRY_DELAY_S:-0.5}"
 ENABLE_THINKING="${ENABLE_THINKING:-false}"
 REWARD_SCALE="${REWARD_SCALE:-25}"
 
-uv run --extra agent-lightning --extra agents \
+UV_PROJECT_ENVIRONMENT="$ENV_DIR" uv run --extra agent-lightning --extra agents \
   python tools/train/train_agent_lightning_hanabi.py \
   --model "$MODEL" \
   --agent-kind "$AGENT_KIND" \

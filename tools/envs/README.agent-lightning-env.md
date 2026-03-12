@@ -16,3 +16,6 @@ bash tools/envs/create_agent_lightning_env.sh
 This environment installs only the extras required by the new training path:
 - `agents`
 - `agent-lightning`
+
+`tools/train/train_agent_lightning_hanabi.sh` uses `.venv-agent-lightning` by default.
+To point training at a different isolated env, set `AGENT_LIGHTNING_ENV_DIR=/path/to/venv`.
