@@ -101,7 +101,7 @@ Useful env vars for the wrapper:
 - `VLLM_SERVER_TIMEOUT`: timeout for rollout server RPC (useful on slower networks or heavy rollout loads).
 - `CONTEXT_MANAGER`: rollout-side context manager. Default is `hanabi_recent_turns`.
 - `HANABI_CTX_MAX_TURNS`: how many recent user turns the rollout server keeps in context (default `1`).
-- `REWARD_FUNCS=`: empty for Hanabi gym rewards (do not set a reward model).
+- `REWARD_FUNCS=`: empty for Hanabi gym rewards (do not add any extra reward source).
 - `GENERATION_BATCH_SIZE`: if set, must be divisible by `NUM_GENERATIONS` and `NPROC_PER_NODE`.
 - `STEPS_PER_GENERATION`: optional alternative to `GENERATION_BATCH_SIZE` (do not set both).
 - `NUM_TRAIN_EPOCHS`/`MAX_STEPS`: control training length (epochs or optimizer steps).

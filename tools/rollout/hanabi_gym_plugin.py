@@ -108,11 +108,11 @@ class HanabiGymEnv(Env):
         self.env_id = None
         self.num_players = 2
         self._player_reward_stats: Dict[int, Dict[str, float]] = {}
-        self._marshal_agent_norm = False
-        self._marshal_agent_norm_method = "mean_std"
-        self._marshal_agent_norm_clip: Optional[float] = None
-        self._marshal_agent_norm_warmup = 8
-        self._marshal_agent_norm_eps = 1e-6
+        self._player_reward_norm = False
+        self._player_reward_norm_method = "mean_std"
+        self._player_reward_norm_clip: Optional[float] = None
+        self._player_reward_norm_warmup = 8
+        self._player_reward_norm_eps = 1e-6
 
     def _build_env(self, env_config: Dict[str, Any]):
         plugin_only_keys = {
@@ -120,36 +120,35 @@ class HanabiGymEnv(Env):
             "env_id",
             "num_players",
             "seed",
-            "marshal_agent_norm",
-            "marshal_agent_norm_method",
-            "marshal_agent_norm_clip",
-            "marshal_agent_norm_warmup",
-            "marshal_agent_norm_eps",
-            "marshal_agent_norm_reset_stats",
+            "player_reward_norm",
+            "player_reward_norm_method",
+            "player_reward_norm_clip",
+            "player_reward_norm_warmup",
+            "player_reward_norm_eps",
+            "player_reward_norm_reset_stats",
         }
         env_id = env_config.get("env_id", "Hanabi-v0-train")
         kwargs = {k: v for k, v in env_config.items() if k not in plugin_only_keys}
-        if "reward_on_score_gain" not in kwargs and "marshal_dense_reward" not in kwargs:
-            kwargs["reward_on_score_gain"] = True
+        kwargs.setdefault("step_reward", True)
         if "max_steps" in kwargs and kwargs["max_steps"] is not None:
             kwargs["max_steps"] = int(kwargs["max_steps"])
         return env_id, mg.make(env_id, **kwargs)
 
-    def _setup_agent_norm(self, env_config: Dict[str, Any]) -> None:
-        self._marshal_agent_norm = bool(env_config.get("marshal_agent_norm", False))
-        self._marshal_agent_norm_method = str(env_config.get("marshal_agent_norm_method", "mean_std")).lower()
-        self._marshal_agent_norm_warmup = int(env_config.get("marshal_agent_norm_warmup", 8))
-        self._marshal_agent_norm_eps = float(env_config.get("marshal_agent_norm_eps", 1e-6))
-        clip_val = env_config.get("marshal_agent_norm_clip")
-        self._marshal_agent_norm_clip = None if clip_val is None else float(clip_val)
+    def _setup_player_reward_norm(self, env_config: Dict[str, Any]) -> None:
+        self._player_reward_norm = bool(env_config.get("player_reward_norm", False))
+        self._player_reward_norm_method = str(env_config.get("player_reward_norm_method", "mean_std")).lower()
+        self._player_reward_norm_warmup = int(env_config.get("player_reward_norm_warmup", 8))
+        self._player_reward_norm_eps = float(env_config.get("player_reward_norm_eps", 1e-6))
+        clip_val = env_config.get("player_reward_norm_clip")
+        self._player_reward_norm_clip = None if clip_val is None else float(clip_val)
 
-        if self._marshal_agent_norm_method not in {"mean", "mean_std"}:
+        if self._player_reward_norm_method not in {"mean", "mean_std"}:
             raise ValueError(
-                f"Unsupported marshal_agent_norm_method='{self._marshal_agent_norm_method}'. "
+                f"Unsupported player_reward_norm_method='{self._player_reward_norm_method}'. "
                 "Use 'mean' or 'mean_std'."
             )
 
-        if bool(env_config.get("marshal_agent_norm_reset_stats", False)):
+        if bool(env_config.get("player_reward_norm_reset_stats", False)):
             self._player_reward_stats = {}
 
     def _update_reward_stats(self, player_id: int, reward: float) -> None:
@@ -164,24 +163,24 @@ class HanabiGymEnv(Env):
     def _normalize_reward_by_player(self, raw_reward: float, player_id: int) -> float:
         stats = self._player_reward_stats.setdefault(player_id, {"count": 0.0, "mean": 0.0, "m2": 0.0})
         count = int(stats["count"])
-        warmup_ok = count >= self._marshal_agent_norm_warmup
+        warmup_ok = count >= self._player_reward_norm_warmup
 
         if not warmup_ok:
             reward = raw_reward
-        elif self._marshal_agent_norm_method == "mean":
+        elif self._player_reward_norm_method == "mean":
             reward = raw_reward - stats["mean"]
         else:
             variance = 0.0
             if count > 1:
                 variance = max(stats["m2"] / (count - 1), 0.0)
             std = math.sqrt(variance)
-            if std <= self._marshal_agent_norm_eps:
+            if std <= self._player_reward_norm_eps:
                 reward = 0.0
             else:
-                reward = (raw_reward - stats["mean"]) / (std + self._marshal_agent_norm_eps)
+                reward = (raw_reward - stats["mean"]) / (std + self._player_reward_norm_eps)
 
-        if self._marshal_agent_norm_clip is not None:
-            reward = max(-self._marshal_agent_norm_clip, min(self._marshal_agent_norm_clip, reward))
+        if self._player_reward_norm_clip is not None:
+            reward = max(-self._player_reward_norm_clip, min(self._player_reward_norm_clip, reward))
 
         self._update_reward_stats(player_id, raw_reward)
         return float(reward)
@@ -191,7 +190,7 @@ class HanabiGymEnv(Env):
         if getattr(config, "data_dict", None) and config.data_dict.get("env_config"):
             env_config.update(config.data_dict["env_config"])
 
-        self._setup_agent_norm(env_config)
+        self._setup_player_reward_norm(env_config)
         self.env_id, self.env = self._build_env(env_config)
         self.num_players = int(env_config.get("num_players", 2))
         seed = env_config.get("seed")
@@ -232,11 +231,11 @@ class HanabiGymEnv(Env):
                 reward = float(rewards.get(acting_player_id, 0.0))
 
         raw_reward = reward
-        if self._marshal_agent_norm:
+        if self._player_reward_norm:
             reward = self._normalize_reward_by_player(raw_reward, acting_player_id)
             info.setdefault("raw_reward", raw_reward)
-            info.setdefault("reward_norm_method", self._marshal_agent_norm_method)
-            info.setdefault("reward_norm_player", acting_player_id)
+            info.setdefault("player_reward_norm_method", self._player_reward_norm_method)
+            info.setdefault("player_reward_norm_player", acting_player_id)
 
         info.setdefault("acting_player_id", acting_player_id)
         info.setdefault("current_player_id", self.env.state.current_player_id)

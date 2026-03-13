@@ -19,8 +19,8 @@ def _parse_bool(value: str) -> bool:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Prepare a Hanabi GRPO dataset with MARSHAL-style env_config keys "
-            "(turn-level dense reward + per-player reward normalization)."
+            "Prepare a Hanabi GRPO dataset with step reward and player reward normalization "
+            "env_config keys for MARSHAL-style training."
         )
     )
     parser.add_argument("--input", required=True, help="Input JSONL dataset path.")
@@ -28,43 +28,43 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--env-id", default="Hanabi-v0-train", help="Hanabi env id.")
     parser.add_argument("--num-players", type=int, default=2, help="Number of Hanabi players.")
     parser.add_argument(
-        "--marshal-dense-reward",
+        "--step-reward",
         type=_parse_bool,
         default=True,
-        help="Enable per-turn dense rewards in Hanabi env. (default: true)",
+        help="Enable per-step rewards in the Hanabi env. (default: true)",
     )
     parser.add_argument(
-        "--marshal-fuse-penalty",
+        "--step-reward-fuse-penalty",
         type=float,
         default=0.0,
-        help="Penalty coefficient for fuse loss in dense rewards. (default: 0.0)",
+        help="Penalty coefficient for fuse loss in step rewards. (default: 0.0)",
     )
     parser.add_argument(
-        "--marshal-invalid-penalty",
+        "--step-reward-invalid-penalty",
         type=float,
         default=0.0,
-        help="Penalty added on invalid moves in dense rewards. (default: 0.0)",
+        help="Penalty added on invalid moves in step rewards. (default: 0.0)",
     )
     parser.add_argument(
-        "--marshal-agent-norm",
+        "--player-reward-norm",
         type=_parse_bool,
         default=True,
-        help="Enable per-player online reward normalization in rollout plugin. (default: true)",
+        help="Enable per-player online reward normalization in the rollout plugin. (default: true)",
     )
     parser.add_argument(
-        "--marshal-agent-norm-method",
+        "--player-reward-norm-method",
         choices=["mean", "mean_std"],
         default="mean_std",
         help="Per-player normalization method. (default: mean_std)",
     )
     parser.add_argument(
-        "--marshal-agent-norm-warmup",
+        "--player-reward-norm-warmup",
         type=int,
         default=8,
         help="Warmup samples per player before normalization is applied. (default: 8)",
     )
     parser.add_argument(
-        "--marshal-agent-norm-clip",
+        "--player-reward-norm-clip",
         type=float,
         default=None,
         help="Optional clip value for normalized rewards.",
@@ -77,14 +77,14 @@ def _patch_env_config(env_config: Dict[str, Any], args: argparse.Namespace) -> D
     patched.setdefault("name", "hanabi_env")
     patched["env_id"] = args.env_id
     patched["num_players"] = int(args.num_players)
-    patched["marshal_dense_reward"] = bool(args.marshal_dense_reward)
-    patched["marshal_fuse_penalty"] = float(args.marshal_fuse_penalty)
-    patched["marshal_invalid_penalty"] = float(args.marshal_invalid_penalty)
-    patched["marshal_agent_norm"] = bool(args.marshal_agent_norm)
-    patched["marshal_agent_norm_method"] = args.marshal_agent_norm_method
-    patched["marshal_agent_norm_warmup"] = int(args.marshal_agent_norm_warmup)
-    if args.marshal_agent_norm_clip is not None:
-        patched["marshal_agent_norm_clip"] = float(args.marshal_agent_norm_clip)
+    patched["step_reward"] = bool(args.step_reward)
+    patched["step_reward_fuse_penalty"] = float(args.step_reward_fuse_penalty)
+    patched["step_reward_invalid_penalty"] = float(args.step_reward_invalid_penalty)
+    patched["player_reward_norm"] = bool(args.player_reward_norm)
+    patched["player_reward_norm_method"] = args.player_reward_norm_method
+    patched["player_reward_norm_warmup"] = int(args.player_reward_norm_warmup)
+    if args.player_reward_norm_clip is not None:
+        patched["player_reward_norm_clip"] = float(args.player_reward_norm_clip)
     return patched
 
 

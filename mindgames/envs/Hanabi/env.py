@@ -39,10 +39,9 @@ class HanabiEnv(Env):
         info_tokens: int = 8,
         fuse_tokens: int = 4,
         max_steps: int = 300,
-        reward_on_score_gain: Optional[bool] = None,
-        marshal_dense_reward: bool = False,
-        marshal_fuse_penalty: float = 0.0,
-        marshal_invalid_penalty: float = 0.0,
+        step_reward: bool = False,
+        step_reward_fuse_penalty: float = 0.0,
+        step_reward_invalid_penalty: float = 0.0,
     ):
 
         self.deck_size = 50
@@ -50,12 +49,9 @@ class HanabiEnv(Env):
         self.info_tokens = info_tokens
         self.fuse_tokens = fuse_tokens
         self.max_steps = max_steps
-        if reward_on_score_gain is None:
-            reward_on_score_gain = bool(marshal_dense_reward)
-        self.reward_on_score_gain = bool(reward_on_score_gain)
-        self.marshal_dense_reward = bool(marshal_dense_reward)
-        self.marshal_fuse_penalty = float(marshal_fuse_penalty)
-        self.marshal_invalid_penalty = float(marshal_invalid_penalty)
+        self.use_step_reward = bool(step_reward)
+        self.step_reward_fuse_penalty = float(step_reward_fuse_penalty)
+        self.step_reward_invalid_penalty = float(step_reward_invalid_penalty)
 
     def reset(self, num_players: int, seed: Optional[int] = None):
         """
@@ -275,7 +271,7 @@ class HanabiEnv(Env):
         self.state.step_info["score_after"] = int(score_after)
         self.state.step_info["score_delta"] = score_delta
 
-        if not (self.reward_on_score_gain or self.marshal_dense_reward):
+        if not self.use_step_reward:
             return
 
         fuse_after = int(self.state.game_state.get("fuse_tokens", 0))
@@ -285,9 +281,9 @@ class HanabiEnv(Env):
         )
 
         reward = float(score_delta)
-        reward -= float(lost_fuses) * self.marshal_fuse_penalty
+        reward -= float(lost_fuses) * self.step_reward_fuse_penalty
         if invalid_move:
-            reward += self.marshal_invalid_penalty
+            reward += self.step_reward_invalid_penalty
 
         self.state.step_info["step_reward"] = reward
 

@@ -11,8 +11,8 @@
 
 本仓库当前已接入的 MARSHAL 核心机制：
 
-- Turn-level reward signal（逐回合奖励信号）。
-- Agent-specific normalization（按玩家分开的奖励归一化）。
+- Step reward（按环境 step 发放的奖励信号）。
+- Player reward normalization（按玩家分开的奖励归一化）。
 
 本仓库当前未做的事情：
 
@@ -90,14 +90,14 @@ bash tools/train/train_grpo_hanabi_marshal.sh
 
 ## 4. 代码映射（MARSHAL 思想 -> 本仓库实现）
 
-- 逐回合奖励信号：
+- Step reward：
   - `mindgames/envs/Hanabi/env.py`
-  - 关键参数：`marshal_dense_reward`, `marshal_fuse_penalty`, `marshal_invalid_penalty`
+  - 关键参数：`step_reward`, `step_reward_fuse_penalty`, `step_reward_invalid_penalty`
   - 行为：每一步计算 `step_reward` 并通过 `step_info` 传给 rollout 插件
 
-- 按玩家归一化：
+- Player reward normalization：
   - `tools/rollout/hanabi_gym_plugin.py`
-  - 关键参数：`marshal_agent_norm`, `marshal_agent_norm_method`, `marshal_agent_norm_warmup`, `marshal_agent_norm_clip`
+  - 关键参数：`player_reward_norm`, `player_reward_norm_method`, `player_reward_norm_warmup`, `player_reward_norm_clip`
   - 行为：维护每个玩家独立的 running mean/std，对 reward 做玩家级归一化
 
 - rollout 上下文裁剪（防止 Hanabi scheduler 轨迹上下文叠加）：
@@ -121,13 +121,13 @@ bash tools/train/train_grpo_hanabi_marshal.sh
 
 由 `tools/data/prepare_hanabi_marshal_dataset.py` 注入：
 
-- `marshal_dense_reward`：是否启用逐回合 dense reward。
-- `marshal_fuse_penalty`：每次损失 fuse token 的额外惩罚系数。
-- `marshal_invalid_penalty`：非法动作的额外惩罚。
-- `marshal_agent_norm`：是否启用按玩家分开的归一化。
-- `marshal_agent_norm_method`：`mean` 或 `mean_std`。
-- `marshal_agent_norm_warmup`：每个玩家归一化 warmup 样本数。
-- `marshal_agent_norm_clip`：归一化后 reward 的裁剪阈值。
+- `step_reward`：是否启用按 step 发放的环境 reward。
+- `step_reward_fuse_penalty`：每次损失 fuse token 的额外惩罚系数。
+- `step_reward_invalid_penalty`：非法动作的额外惩罚。
+- `player_reward_norm`：是否启用按玩家分开的归一化。
+- `player_reward_norm_method`：`mean` 或 `mean_std`。
+- `player_reward_norm_warmup`：每个玩家归一化 warmup 样本数。
+- `player_reward_norm_clip`：归一化后 reward 的裁剪阈值。
 
 ### 5.2 训练参数（ms-swift rlhf）
 
@@ -161,12 +161,13 @@ bash tools/train/train_grpo_hanabi_marshal.sh
 python tools/data/prepare_hanabi_marshal_dataset.py \
   --input data/hanabi.grpo.jsonl \
   --output data/hanabi.grpo.marshal.jsonl \
-  --marshal-dense-reward true \
-  --marshal-fuse-penalty 1.0 \
-  --marshal-agent-norm true \
-  --marshal-agent-norm-method mean_std \
-  --marshal-agent-norm-warmup 16 \
-  --marshal-agent-norm-clip 4.0
+  --step-reward true \
+  --step-reward-fuse-penalty 1.0 \
+  --step-reward-invalid-penalty 0.0 \
+  --player-reward-norm true \
+  --player-reward-norm-method mean_std \
+  --player-reward-norm-warmup 16 \
+  --player-reward-norm-clip 4.0
 ```
 
 ## 7. 训练后验证清单
@@ -175,10 +176,10 @@ python tools/data/prepare_hanabi_marshal_dataset.py \
   - `data/hanabi.grpo.marshal.jsonl` 每一行都应包含新增 `env_config` 字段。
 
 - rollout 插件侧检查：
-  - 当启用归一化时，`info` 中应出现 `raw_reward`, `reward_norm_method`, `reward_norm_player`。
+  - 当启用归一化时，`info` 中应出现 `raw_reward`, `player_reward_norm_method`, `player_reward_norm_player`。
 
 - 环境侧检查：
-  - 当启用 `marshal_dense_reward=true` 时，`step_info` 中应出现 `step_reward`。
+  - 当启用 `step_reward=true` 时，`step_info` 中应出现 `step_reward`。
 
 - 训练侧检查：
   - 确认脚本实际传入了 `ADVANTAGE_ESTIMATOR/SCALE_REWARDS` 等参数。
@@ -186,13 +187,13 @@ python tools/data/prepare_hanabi_marshal_dataset.py \
 ## 8. 常见问题
 
 - 问题：奖励几乎全是 0
-  - 检查 `marshal_dense_reward` 是否开启
-  - 检查 `marshal_agent_norm_warmup` 是否过大
-  - 检查 `marshal_agent_norm_method` 是否与当前 reward 分布匹配
+  - 检查 `step_reward` 是否开启
+  - 检查 `player_reward_norm_warmup` 是否过大
+  - 检查 `player_reward_norm_method` 是否与当前 reward 分布匹配
 
 - 问题：训练波动大
-  - 先关闭 clip 或调小 `marshal_fuse_penalty`
-  - 增大 `marshal_agent_norm_warmup`
+  - 先关闭 clip 或调小 `step_reward_fuse_penalty`
+  - 增大 `player_reward_norm_warmup`
   - 尝试 `SCALE_REWARDS=batch`
 
 - 问题：rollout 看不到 env_config
@@ -207,8 +208,8 @@ python tools/data/prepare_hanabi_marshal_dataset.py \
 
 建议先跑以下三组，观察稳定性和最终得分：
 
-1. 基线组：`marshal_dense_reward=false`, `marshal_agent_norm=false`
-2. 单机制组：`marshal_dense_reward=true`, `marshal_agent_norm=false`
-3. 完整组：`marshal_dense_reward=true`, `marshal_agent_norm=true`
+1. 基线组：`step_reward=false`, `player_reward_norm=false`
+2. 单机制组：`step_reward=true`, `player_reward_norm=false`
+3. 完整组：`step_reward=true`, `player_reward_norm=true`
 
 这样可以直接看出 MARSHAL 两个核心机制的独立贡献和组合收益。

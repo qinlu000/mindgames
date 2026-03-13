@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Compatibility wrapper: forwards to train_grpo_base.sh.
-# Canonical entrypoint is tools/train/train_grpo_base.sh.
+# Compatibility wrapper: forwards to the canonical RLHF base launcher.
+# Canonical entrypoint is tools/train/train_rlhf_base.sh.
 
 if [ -n "${TRAIN_TYPE:-}" ] && [ -z "${TUNER_TYPE:-}" ]; then
   TUNER_TYPE="$TRAIN_TYPE"
@@ -17,4 +17,5 @@ if [ -n "${GRPO_SWIFT_BIN:-}" ] && [ -z "${SWIFT_BIN:-}" ]; then
   export SWIFT_BIN
 fi
 
-exec bash tools/train/train_grpo_base.sh "$@"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec bash "$SCRIPT_DIR/train_rlhf_base.sh" "$@"

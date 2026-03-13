@@ -73,7 +73,7 @@ To change rollout-side GPU/TP settings, edit defaults in `tools/rollout/rollout_
 More single-node multi-GPU notes are in `docs/hanabi_grpo.md`.
 
 ## Hanabi MARSHAL-style training
-To use MARSHAL's core ideas (turn-level reward signal + agent-specific normalization) in this repo:
+To use MARSHAL's core ideas (step reward + player reward normalization) in this repo:
 ```bash
 # start rollout server(s) first
 bash tools/rollout/rollout_hanabi_gym.sh

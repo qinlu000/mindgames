@@ -4,20 +4,20 @@ set -euo pipefail
 # MARSHAL-style Hanabi training wrapper.
 #
 # What this script does:
-# 1) Prepare marshal dataset.
+# 1) Prepare MARSHAL-style dataset with step reward + player reward normalization.
 # 2) Launch Hanabi wrapper with marshal-oriented GRPO knobs via EXTRA_SWIFT_ARGS.
 
 BASE_DATASET="${BASE_DATASET:-data/hanabi.grpo.jsonl}"
 DATASET="${DATASET:-data/hanabi.grpo.marshal.jsonl}"
 REBUILD_DATASET="${REBUILD_DATASET:-false}"
 
-MARSHAL_DENSE_REWARD="${MARSHAL_DENSE_REWARD:-true}"
-MARSHAL_FUSE_PENALTY="${MARSHAL_FUSE_PENALTY:-0.0}"
-MARSHAL_INVALID_PENALTY="${MARSHAL_INVALID_PENALTY:-0.0}"
-MARSHAL_AGENT_NORM="${MARSHAL_AGENT_NORM:-true}"
-MARSHAL_AGENT_NORM_METHOD="${MARSHAL_AGENT_NORM_METHOD:-mean_std}"
-MARSHAL_AGENT_NORM_WARMUP="${MARSHAL_AGENT_NORM_WARMUP:-8}"
-MARSHAL_AGENT_NORM_CLIP="${MARSHAL_AGENT_NORM_CLIP:-}"
+STEP_REWARD="${STEP_REWARD:-true}"
+STEP_REWARD_FUSE_PENALTY="${STEP_REWARD_FUSE_PENALTY:-0.0}"
+STEP_REWARD_INVALID_PENALTY="${STEP_REWARD_INVALID_PENALTY:-0.0}"
+PLAYER_REWARD_NORM="${PLAYER_REWARD_NORM:-true}"
+PLAYER_REWARD_NORM_METHOD="${PLAYER_REWARD_NORM_METHOD:-mean_std}"
+PLAYER_REWARD_NORM_WARMUP="${PLAYER_REWARD_NORM_WARMUP:-8}"
+PLAYER_REWARD_NORM_CLIP="${PLAYER_REWARD_NORM_CLIP:-}"
 
 if [ ! -f "$DATASET" ] || [ "$REBUILD_DATASET" = "true" ]; then
   if command -v uv >/dev/null 2>&1; then
@@ -29,15 +29,15 @@ if [ ! -f "$DATASET" ] || [ "$REBUILD_DATASET" = "true" ]; then
   PREP_ARGS=(
     --input "$BASE_DATASET"
     --output "$DATASET"
-    --marshal-dense-reward "$MARSHAL_DENSE_REWARD"
-    --marshal-fuse-penalty "$MARSHAL_FUSE_PENALTY"
-    --marshal-invalid-penalty "$MARSHAL_INVALID_PENALTY"
-    --marshal-agent-norm "$MARSHAL_AGENT_NORM"
-    --marshal-agent-norm-method "$MARSHAL_AGENT_NORM_METHOD"
-    --marshal-agent-norm-warmup "$MARSHAL_AGENT_NORM_WARMUP"
+    --step-reward "$STEP_REWARD"
+    --step-reward-fuse-penalty "$STEP_REWARD_FUSE_PENALTY"
+    --step-reward-invalid-penalty "$STEP_REWARD_INVALID_PENALTY"
+    --player-reward-norm "$PLAYER_REWARD_NORM"
+    --player-reward-norm-method "$PLAYER_REWARD_NORM_METHOD"
+    --player-reward-norm-warmup "$PLAYER_REWARD_NORM_WARMUP"
   )
-  if [ -n "$MARSHAL_AGENT_NORM_CLIP" ]; then
-    PREP_ARGS+=(--marshal-agent-norm-clip "$MARSHAL_AGENT_NORM_CLIP")
+  if [ -n "$PLAYER_REWARD_NORM_CLIP" ]; then
+    PREP_ARGS+=(--player-reward-norm-clip "$PLAYER_REWARD_NORM_CLIP")
   fi
 
   "${PREP_CMD[@]}" "${PREP_ARGS[@]}"
