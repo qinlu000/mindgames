@@ -97,6 +97,16 @@ register_with_versions(
     hardcore=True,
 )
 
+# Colonel Blotto (2-player simultaneous allocation)
+register_with_versions(
+    id="ColonelBlotto-v0",
+    entry_point="mindgames.envs.ColonelBlotto.env:ColonelBlottoEnv",
+    wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS},
+    num_fields=3,
+    num_total_units=20,
+    num_rounds=10,
+)
+
 # Iterated Two-Thirds Average (2-player)
 register_with_versions(
     id="IteratedTwoThirdsAverage-v0",

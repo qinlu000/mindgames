@@ -61,6 +61,25 @@ class TestTrainWrappers(unittest.TestCase):
         self.assertIn("--num_generations 8", proc.stderr)
         self.assertNotIn("--reward_model", proc.stderr)
 
+    def test_hanabi_dapo_wrapper_injects_dapo_flags(self):
+        out_dir = tempfile.mkdtemp(prefix="mindgames_dapo_hanabi_")
+        proc = self._run_script(
+            "tools/train/train_dapo_hanabi_server_simple.sh",
+            env={
+                "MODEL": "Qwen/Qwen3-8B",
+                "DATASET": "data/hanabi.grpo.jsonl",
+                "OUTPUT_DIR": out_dir,
+                "USE_VLLM": "false",
+                "DRY_RUN": "true",
+            },
+        )
+
+        self.assertEqual(proc.returncode, 0, msg=f"stderr:\n{proc.stderr}\nstdout:\n{proc.stdout}")
+        self.assertIn("--rlhf_type grpo", proc.stderr)
+        self.assertIn("--loss_type dapo", proc.stderr)
+        self.assertIn("--beta 0", proc.stderr)
+        self.assertNotIn("--use_valid_tokens_only", proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

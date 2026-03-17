@@ -3,22 +3,33 @@ from __future__ import annotations
 
 import math
 import os
+from inspect import isawaitable
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple
 
 import mindgames as mg
 try:
     # ms-swift >= 4.0
+    from swift.infer_engine import AdapterRequest
     from swift.infer_engine.protocol import RolloutOutput
     from swift.rollout import ContextManager, Env, context_managers, envs, multi_turns
     from swift.rollout.multi_turn import GYMScheduler
     from swift.utils import remove_response
 except ImportError:
     # ms-swift < 4.0
+    from swift import AdapterRequest
     from swift.plugin import ContextManager, Env, context_managers, envs
     GYMScheduler = None
     RolloutOutput = None
     multi_turns = None
+
+try:
+    from vllm.lora.request import LoRARequest
+except Exception:
+    LoRARequest = None
+
+
+_HANABI_FIXED_ADAPTER_INT_ID = 1900000000
 
 
 def _as_int(value: Any, default: int) -> int:
@@ -53,6 +64,29 @@ def _as_bool(value: Any, default: bool) -> bool:
         if text in {"0", "false", "no", "n", "off"}:
             return False
     return default
+
+
+def _as_str(value: Any, default: str = "") -> str:
+    if value is None:
+        return default
+    return str(value).strip() or default
+
+
+def _get_fixed_opponent_config(env_config: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    cfg = dict(env_config or {})
+    fixed_path = _as_str(cfg.get("fixed_adapter_path") or os.getenv("HANABI_FIXED_ADAPTER_PATH"))
+    fixed_name = _as_str(
+        cfg.get("fixed_adapter_name") or os.getenv("HANABI_FIXED_ADAPTER_NAME"),
+        "hanabi_fixed_opponent",
+    )
+    fixed_player_id = _as_int(cfg.get("fixed_player_id") or os.getenv("HANABI_FIXED_PLAYER_ID"), 1)
+    enabled = bool(fixed_path)
+    return {
+        "enabled": enabled,
+        "player_id": fixed_player_id,
+        "adapter_path": fixed_path,
+        "adapter_name": fixed_name,
+    }
 
 
 class HanabiRecentTurnsContextManager(ContextManager):
@@ -262,9 +296,69 @@ if GYMScheduler is not None and RolloutOutput is not None and multi_turns is not
                 return [item["logprob"] for item in response_choice.logprobs["content"]]
             return []
 
+        def _align_token_ids_to_content(
+            self,
+            token_ids: List[int],
+            content: str,
+            logprobs: Optional[List[float]] = None,
+        ) -> Tuple[List[int], Optional[List[float]]]:
+            if not token_ids or self.tokenizer is None or not isinstance(content, str):
+                return token_ids, logprobs
+
+            truncate_idx = len(token_ids)
+            stripped_content = content.rstrip()
+            for i in range(1, len(token_ids) + 1):
+                decoded = self.tokenizer.decode(token_ids[:i], skip_special_tokens=True)
+                if decoded == content or decoded.rstrip() == stripped_content:
+                    truncate_idx = i
+                    break
+
+            if truncate_idx < len(token_ids):
+                token_ids = token_ids[:truncate_idx]
+                if logprobs is not None:
+                    logprobs = logprobs[:truncate_idx]
+            return token_ids, logprobs
+
+        @staticmethod
+        def _get_env_player_id(env: Any, default: int = 0) -> int:
+            state = getattr(getattr(env, "env", None), "state", None)
+            return _as_int(getattr(state, "current_player_id", None), default)
+
+        async def _get_trainable_adapter_request(self, fixed_lora_int_id: Optional[int]) -> Optional[Any]:
+            engine = getattr(self.infer_engine, "engine", None)
+            if engine is not None and hasattr(engine, "list_loras") and LoRARequest is not None:
+                lora_ids = engine.list_loras()
+                if isawaitable(lora_ids):
+                    lora_ids = await lora_ids
+                if isinstance(lora_ids, dict):
+                    lora_ids = lora_ids.keys()
+                lora_ids = sorted(int(lora_id) for lora_id in (lora_ids or []))
+                if fixed_lora_int_id is not None:
+                    lora_ids = [lora_id for lora_id in lora_ids if lora_id != fixed_lora_int_id]
+                if lora_ids:
+                    trainable_lora_id = lora_ids[-1]
+                    return LoRARequest(
+                        lora_name=f"{trainable_lora_id}",
+                        lora_int_id=trainable_lora_id,
+                        lora_path="dummy_lora_path",
+                    )
+
+            return getattr(self.infer_engine, "default_adapter_request", None)
+
+        @staticmethod
+        def _build_fixed_adapter_request(config: Dict[str, Any]) -> Any:
+            if LoRARequest is None:
+                return AdapterRequest(config["adapter_name"], config["adapter_path"])
+            return LoRARequest(
+                lora_name=config["adapter_name"],
+                lora_int_id=_HANABI_FIXED_ADAPTER_INT_ID,
+                lora_path=config["adapter_path"],
+            )
+
         async def run(self, infer_request, request_config, **kwargs):
             env_config = infer_request.data_dict.get("env_config", {})
             ctx_config = infer_request.data_dict.get("ctx_config", {})
+            fixed_opponent = _get_fixed_opponent_config(env_config)
 
             env = None
             context_manager = None
@@ -272,7 +366,16 @@ if GYMScheduler is not None and RolloutOutput is not None and multi_turns is not
                 env = await self._create_env(env_config)
                 context_manager = await self._create_context_manager(ctx_config)
 
+                if fixed_opponent["enabled"] and not os.path.exists(fixed_opponent["adapter_path"]):
+                    raise FileNotFoundError(
+                        f"Fixed Hanabi adapter not found: {fixed_opponent['adapter_path']}"
+                    )
+
                 observation, info, system_message = await env.reset(infer_request)
+                info.setdefault("fixed_opponent", fixed_opponent["enabled"])
+                if fixed_opponent["enabled"]:
+                    info.setdefault("fixed_player_id", fixed_opponent["player_id"])
+                    info.setdefault("fixed_adapter_name", fixed_opponent["adapter_name"])
 
                 messages: List[Dict[str, Any]] = []
                 if system_message:
@@ -290,27 +393,54 @@ if GYMScheduler is not None and RolloutOutput is not None and multi_turns is not
                 total_response_loss_mask: List[List[int]] = []
                 total_rollout_logprobs: List[List[float]] = []
                 response = None
+                fixed_adapter_request = None
+                fixed_lora_int_id = _HANABI_FIXED_ADAPTER_INT_ID if fixed_opponent["enabled"] else None
 
                 while not done and current_turn <= (self.max_turns or float("inf")):
                     messages = context_manager.manage_context(messages, trajectory_id)
                     current_request.messages = messages
                     remove_response(current_request.messages)
+                    acting_player_id = self._get_env_player_id(env, default=0)
+                    is_fixed_turn = fixed_opponent["enabled"] and acting_player_id == fixed_opponent["player_id"]
 
-                    response = await self.infer_engine.infer_async(current_request, request_config, **kwargs)
+                    adapter_request = None
+                    if is_fixed_turn:
+                        if fixed_adapter_request is None:
+                            fixed_adapter_request = self._build_fixed_adapter_request(fixed_opponent)
+                        adapter_request = fixed_adapter_request
+                    elif getattr(self.infer_engine, "enable_lora", False):
+                        # On the first synced step, ms-swift may only push merged full weights.
+                        # Fall back to base inference until the trainable LoRA appears on the server.
+                        adapter_request = await self._get_trainable_adapter_request(fixed_lora_int_id)
+
+                    response = await self.infer_engine.infer_async(
+                        current_request,
+                        request_config,
+                        adapter_request=adapter_request,
+                        **kwargs,
+                    )
                     response_choice = response.choices[0]
                     completion = response_choice.message.content
                     messages.append({"role": "assistant", "content": completion})
 
+                    current_logprobs = self._extract_logprobs(response_choice)
                     response_token_ids = list(response_choice.token_ids) if response_choice.token_ids else []
+                    response_token_ids, current_logprobs = self._align_token_ids_to_content(
+                        response_token_ids,
+                        completion,
+                        current_logprobs,
+                    )
                     if response_token_ids:
                         total_response_ids.append(response_token_ids)
-                        total_response_loss_mask.append([1] * len(response_token_ids))
+                        loss_mask_value = 0 if is_fixed_turn else 1
+                        total_response_loss_mask.append([loss_mask_value] * len(response_token_ids))
 
-                    current_logprobs = self._extract_logprobs(response_choice)
-                    if current_logprobs:
+                    if current_logprobs and not is_fixed_turn:
                         total_rollout_logprobs.append(current_logprobs)
 
                     next_obs, reward, done, step_info = await env.step(deepcopy(messages))
+                    step_info.setdefault("acting_player_id", acting_player_id)
+                    step_info.setdefault("is_fixed_player_turn", is_fixed_turn)
 
                     total_reward += reward
                     step_rewards.append(reward)

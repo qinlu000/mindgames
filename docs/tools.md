@@ -23,12 +23,14 @@ This doc summarizes the scripts under `tools/`. Files are grouped into subfolder
 - `tools/data/view_jsonl.py`: pretty-print JSONL for terminal viewing.
 
 ## Training
-- `tools/train/train_rlhf_base.sh`: canonical GRPO base entrypoint for ms-swift wrappers.
+- `tools/train/train_rlhf_base.sh`: canonical RLHF base entrypoint for ms-swift wrappers.
 - `tools/train/train_grpo_base.sh`: compatibility alias to `train_rlhf_base.sh`.
 - `tools/train/train_grpo_msswift.sh`: compatibility alias to `train_grpo_base.sh`.
 - `tools/train/train_hanabi_rlhf_simple.sh`: canonical Hanabi GRPO wrapper.
 - `tools/train/train_grpo_hanabi_server_simple.sh`: compatibility alias to Hanabi GRPO mode.
 - `tools/train/train_grpo_hanabi_server_wandb.sh`: Hanabi GRPO wrapper with W&B defaults.
+- `tools/train/train_dapo_hanabi_server_simple.sh`: Hanabi DAPO wrapper for explicit server-mode launches.
+- `tools/train/train_dapo_hanabi_server_wandb.sh`: Hanabi DAPO wrapper with auto GPU split and W&B defaults.
 - `tools/train/train_grpo_hanabi_marshal.sh`: Hanabi MARSHAL-style wrapper.
 - `tools/train/train_grpo_msswift_server_wandb.sh`: compatibility alias to Hanabi W&B wrapper.
 - `tools/train/train_sft_msswift.sh`: SFT training entrypoint (ms-swift).
