@@ -10,10 +10,12 @@ class StubAgent(mg.Agent):
         self.responses = list(responses)
         self.system_prompt = system_prompt
         self.last_message = None
+        self.last_system_prompt = None
 
     def __call__(self, observation: str) -> str:
         if not self.responses:
             raise AssertionError(f"No stub responses left for observation: {observation}")
+        self.last_system_prompt = self.system_prompt
         response = self.responses.pop(0)
         self.last_message = {"role": "assistant", "content": response}
         return response
@@ -114,6 +116,27 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
         self.assertEqual(goals["safe_self_slot0"]["status"], "completed")
         self.assertEqual(goals["play_self_slot2"]["status"], "active")
         self.assertEqual(goals["play_self_slot2"]["target"]["slot"], 1)
+
+    def test_goal_memory_prompt_rewrites_action_only_contract(self):
+        payload = {"selected_goal_id": None, "goal_ops": [], "action": "[Discard] 0"}
+        wrapper = mg.agents.GoalMemoryAgentWrapper(StubAgent([json.dumps(payload)]))
+        wrapper.reset_episode(episode_id=21, player_id=0)
+        wrapper.set_turn_context(episode_id=21, turn_id=0, player_id=0)
+
+        observation = (
+            "You are Player 0 in a 2-player Hanabi game.\n"
+            "You have 3 action types: Play, Discard, Reveal. Output EXACTLY ONE action, nothing else.\n"
+            "Current state..."
+        )
+        wrapper(observation)
+
+        prompt = wrapper.get_last_goal_prompt()
+        self.assertIsNotNone(prompt)
+        self.assertIn("Return EXACTLY ONE JSON object", prompt)
+        self.assertNotIn("Output EXACTLY ONE action, nothing else.", prompt)
+        self.assertIn("The `action` field must contain exactly one legal Hanabi action.", prompt)
+        self.assertIn("JSON object and nothing else", wrapper.agent.last_system_prompt)
+        self.assertNotIn("Output EXACTLY ONE valid action", wrapper.agent.last_system_prompt)
 
     def test_plain_action_falls_back_without_goal_ops(self):
         wrapper = mg.agents.GoalMemoryAgentWrapper(StubAgent(["[Discard] 0"]))

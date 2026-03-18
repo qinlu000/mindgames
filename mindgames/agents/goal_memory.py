@@ -474,6 +474,7 @@ class GoalMemoryAgentWrapper(AgentWrapper):
             self.last_goal_turn_output["done"] = bool(done)
 
     def _build_prompt(self, observation: str) -> str:
+        observation = _adapt_text_to_goal_memory_mode(observation, kind="observation")
         return (
             "Goal memory is enabled. Maintain a small typed working agenda across your turns.\n"
             "If you change, complete, invalidate, or reprioritize a goal, do it through goal_ops explicitly.\n"
@@ -511,10 +512,7 @@ class GoalMemoryAgentWrapper(AgentWrapper):
     def _call_wrapped_agent(self, prompt: str) -> str:
         original_system_prompt = getattr(self.agent, "system_prompt", None)
         if original_system_prompt is not None:
-            self.agent.system_prompt = (
-                f"{original_system_prompt}\n\n"
-                "When goal memory is enabled, do not return free-form text. Return exactly one JSON object."
-            )
+            self.agent.system_prompt = _adapt_text_to_goal_memory_mode(original_system_prompt, kind="system")
         try:
             return self.agent(prompt)
         finally:
@@ -581,6 +579,46 @@ def _extract_fenced_json(text: str) -> Optional[str]:
     if not match:
         return None
     return match.group(1).strip()
+
+
+def _adapt_text_to_goal_memory_mode(text: Optional[str], *, kind: str) -> str:
+    content = (text or "").strip()
+    if not content:
+        return _goal_memory_contract_prefix(kind)
+
+    replacements = [
+        (
+            "Output EXACTLY ONE valid action and nothing else (no reasoning).",
+            "Return EXACTLY ONE JSON object and nothing else. The `action` field must contain exactly one valid Hanabi action. Do not include free-form reasoning outside the JSON object.",
+        ),
+        (
+            "Output EXACTLY ONE action, nothing else.",
+            "Return EXACTLY ONE JSON object, nothing else. The `action` field must contain exactly one legal Hanabi action.",
+        ),
+    ]
+    updated = content
+    replaced = False
+    for before, after in replacements:
+        if before in updated:
+            updated = updated.replace(before, after)
+            replaced = True
+    if replaced:
+        return updated
+
+    return _goal_memory_contract_prefix(kind) + "\n\n" + content
+
+
+def _goal_memory_contract_prefix(kind: str) -> str:
+    if kind == "system":
+        return (
+            "You are an expert Hanabi teammate with typed goal memory. "
+            "Return EXACTLY ONE JSON object and nothing else. "
+            "The JSON must contain selected_goal_id, goal_ops, and action."
+        )
+    return (
+        "Goal-memory response mode: return EXACTLY ONE JSON object and nothing else. "
+        "The `action` field must contain exactly one legal Hanabi action."
+    )
 
 
 def _extract_action_from_text(text: str) -> Optional[str]:
