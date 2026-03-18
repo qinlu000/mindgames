@@ -358,12 +358,20 @@ def _game_loop(
     env = _make_env(env_id=env_id, env_kwargs=env_kwargs)
     env.reset(num_players=num_players, seed=seed)
 
+    for pid, agent in agents.items():
+        reset_episode = getattr(agent, "reset_episode", None)
+        if callable(reset_episode):
+            reset_episode(episode_id=episode_id, player_id=pid)
+
     done = False
     step_idx = 0
     episode_steps: list[Dict[str, Any]] = []
 
     while not done:
         player_id, observation = env.get_observation()
+        set_turn_context = getattr(agents[player_id], "set_turn_context", None)
+        if callable(set_turn_context):
+            set_turn_context(episode_id=episode_id, turn_id=step_idx, player_id=player_id)
         t0 = time.time()
         action = agents[player_id](observation)
         infer_ms = int((time.time() - t0) * 1000)
@@ -371,6 +379,9 @@ def _game_loop(
         _, raw_reasoning = agents[player_id].get_last_content_reasoning()
 
         done, step_info = env.step(action=action)
+        record_step_result = getattr(agents[player_id], "record_step_result", None)
+        if callable(record_step_result):
+            record_step_result(action=action, normalized_action=normalized_action, step_info=step_info, done=done)
 
         step_rec = {
             "type": "step",
@@ -390,6 +401,25 @@ def _game_loop(
             "done": done,
             "step_info": step_info,
         }
+
+        goal_memory_fn = getattr(agents[player_id], "get_goal_memory_snapshot", None)
+        if callable(goal_memory_fn):
+            goal_memory = goal_memory_fn()
+            if goal_memory is not None:
+                step_rec["goal_memory"] = goal_memory
+
+        goal_turn_output_fn = getattr(agents[player_id], "get_last_goal_turn_output", None)
+        if callable(goal_turn_output_fn):
+            goal_turn_output = goal_turn_output_fn()
+            if goal_turn_output is not None:
+                step_rec["goal_turn_output"] = goal_turn_output
+
+        goal_events_fn = getattr(agents[player_id], "get_last_goal_events", None)
+        if callable(goal_events_fn):
+            goal_events = goal_events_fn()
+            if goal_events:
+                step_rec["goal_events"] = goal_events
+
         _jsonl_write(out_fp, step_rec)
         if episode_json_dir is not None:
             episode_steps.append(_compact_step_rec(step_rec, max_obs_chars=episode_json_max_obs_chars))
@@ -518,6 +548,19 @@ def main() -> int:
             "4) Avoid repeating the same Reveal on the same card unless it adds new info."
         ),
     )
+    ap.add_argument(
+        "--goal-memory-enabled",
+        action="store_true",
+        help=(
+            "Wrap non-human Hanabi agents with a typed goal-memory controller that asks the model to return "
+            "a JSON object containing goal_ops plus the final action."
+        ),
+    )
+    ap.add_argument("--goal-memory-max-active", type=int, default=3, help="Max active goals kept in working memory.")
+    ap.add_argument("--goal-memory-render-topk", type=int, default=2, help="How many active goals to render back into the prompt.")
+    ap.add_argument("--goal-memory-default-ttl", type=int, default=2, help="Default goal TTL in agent turns.")
+    ap.add_argument("--goal-memory-max-ops-per-turn", type=int, default=4, help="Max goal-memory ops accepted from one model turn.")
+
     ap.add_argument("--openai-base-url", default=None, help="Override OPENAI_BASE_URL (for OpenAI/vLLM-compatible servers)")
     ap.add_argument("--openai-api-key", default=None, help="Override OPENAI_API_KEY (for OpenAI/vLLM-compatible servers)")
     ap.add_argument(
@@ -734,6 +777,29 @@ def main() -> int:
             request_timeout_s=request_timeout_s,
             retry_kwargs=retry_kwargs,
         )
+
+    if args.goal_memory_enabled:
+        if "hanabi" not in str(args.env_id).lower():
+            raise SystemExit("--goal-memory-enabled is currently only supported for Hanabi envs.")
+        if int(args.goal_memory_max_active) < 1:
+            raise SystemExit("--goal-memory-max-active must be >= 1")
+        if int(args.goal_memory_render_topk) < 1:
+            raise SystemExit("--goal-memory-render-topk must be >= 1")
+        if int(args.goal_memory_max_ops_per_turn) < 1:
+            raise SystemExit("--goal-memory-max-ops-per-turn must be >= 1")
+
+        for i in range(args.num_players):
+            if specs[i].kind == "human":
+                continue
+            agents[i] = mg.agents.GoalMemoryAgentWrapper(
+                agents[i],
+                config=mg.agents.GoalMemoryConfig(
+                    max_active_goals=int(args.goal_memory_max_active),
+                    render_topk=int(args.goal_memory_render_topk),
+                    default_ttl=max(0, int(args.goal_memory_default_ttl)),
+                    max_ops_per_turn=int(args.goal_memory_max_ops_per_turn),
+                ),
+            )
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

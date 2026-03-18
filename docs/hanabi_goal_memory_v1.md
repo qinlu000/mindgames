@@ -2,6 +2,11 @@
 
 Date: 2026-03-17
 
+Related note:
+
+- For the broader 2025+ agent literature review and the next-step roadmap
+  beyond goal memory, see `docs/hanabi_agent_research_2025plus.md`.
+
 This branch focuses on single-episode goal memory for the Hanabi agent.
 It does not attempt cross-game memory, partner-profile persistence, or
 long-term belief storage yet.
