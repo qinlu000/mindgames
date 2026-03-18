@@ -37,6 +37,30 @@ In short:
 - the LLM owns setting and removing goals
 - the system owns validation, TTL expiry, slot rebasing, and event logging
 
+## Task adapter seam
+
+To make this portable beyond Hanabi, the wrapper now has an explicit task
+adapter seam:
+
+- `GoalMemoryTaskAdapter`
+  - minimal interface for prompt wording, target normalization, player-id
+    inference, and post-action maintenance
+- `GenericGoalMemoryTaskAdapter`
+  - no domain-specific action semantics; useful as a starting point for other
+    tasks
+- `HanabiGoalMemoryTaskAdapter`
+  - current Hanabi-specific implementation for action matching and self-slot
+    rebasing
+
+The wrapper can be constructed as:
+
+```python
+wrapper = GoalMemoryAgentWrapper(agent, adapter=MyTaskAdapter())
+```
+
+So the core goal schema stays task-light, while target parsing and action-result
+logic live in a replaceable adapter.
+
 ## Design principles
 
 - Keep goal memory minimal.
@@ -82,6 +106,7 @@ Fields owned by the system:
 - `status`
 - `created_turn`
 - `last_updated_turn`
+- `task_adapter` in the snapshot/logging layer
 
 Priority is intentionally coarse:
 
@@ -186,7 +211,8 @@ goal memory is persistent intent, not a serialized chain of thought.
 ## Current implementation status
 
 The current branch implements this minimal design in `mindgames/agents/goal_memory.py`.
-It is wired into `tools/rollout/run_rollouts.py` behind feature flags:
+For the Hanabi rollout path, `tools/rollout/run_rollouts.py` now wires it
+through `HanabiGoalMemoryTaskAdapter()` behind feature flags:
 
 - `--goal-memory-enabled`
 - `--goal-memory-max-active`

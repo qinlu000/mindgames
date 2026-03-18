@@ -10,7 +10,13 @@ from mindgames.agents.basic_agents import (
     OllamaAgent,
     LlamaCppAgent,
 )
-from mindgames.agents.goal_memory import GoalMemoryAgentWrapper, GoalMemoryConfig
+from mindgames.agents.goal_memory import (
+    GoalMemoryAgentWrapper,
+    GoalMemoryConfig,
+    GoalMemoryTaskAdapter,
+    GenericGoalMemoryTaskAdapter,
+    HanabiGoalMemoryTaskAdapter,
+)
 from mindgames.agents.openai_agent import OpenAIAgent
 from mindgames.agents.qwen_agent import QwenAgent
 from mindgames.agents.wrappers import AnswerTokenAgentWrapper, ThoughtAgentWrapper
@@ -30,6 +36,9 @@ __all__ = [
     "LlamaCppAgent",
     "GoalMemoryAgentWrapper",
     "GoalMemoryConfig",
+    "GoalMemoryTaskAdapter",
+    "GenericGoalMemoryTaskAdapter",
+    "HanabiGoalMemoryTaskAdapter",
     "AnswerTokenAgentWrapper",
     "ThoughtAgentWrapper",
 ]

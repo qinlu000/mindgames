@@ -21,6 +21,39 @@ class StubAgent(mg.Agent):
         return response
 
 
+class EchoTaskAdapter(mg.agents.GenericGoalMemoryTaskAdapter):
+    name = "echo-task"
+
+    def system_role_description(self) -> str:
+        return "a compact test-task agent"
+
+    def observation_label(self) -> str:
+        return "Task observation:"
+
+    def target_schema_hint(self) -> str:
+        return "target handle like work_item_1"
+
+    def action_schema_hint(self) -> str:
+        return "DO_TASK"
+
+    def action_field_requirement(self) -> str:
+        return "The `action` field must contain exactly one valid task command."
+
+    def record_action_result(self, state, action: str, *, selected_goal_id):
+        selected = state.goals.get(selected_goal_id) if selected_goal_id else None
+        if selected is None or selected.status != "active":
+            return []
+        if action.strip() != "DO_TASK":
+            return []
+        event = state.set_goal_status(
+            selected,
+            "completed",
+            reason="selected goal matched task command",
+            source="system",
+        )
+        return [event] if event is not None else []
+
+
 class TestGoalMemoryAgentWrapper(unittest.TestCase):
     def test_selected_reveal_goal_is_completed_after_matching_action(self):
         payload = {
@@ -54,6 +87,7 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
 
         turn_output = wrapper.get_last_goal_turn_output()
         self.assertEqual(turn_output["selected_goal_id"], "save_p1_slot4")
+        self.assertEqual(turn_output["task_adapter"], "hanabi")
         self.assertIn("goal_events", turn_output)
 
     def test_self_slot_goals_rebase_after_discard(self):
@@ -92,6 +126,7 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
         self.assertEqual(goals["safe_self_slot0"]["status"], "completed")
         self.assertEqual(goals["play_self_slot2"]["status"], "active")
         self.assertEqual(goals["play_self_slot2"]["target"], "self_slot1")
+        self.assertEqual(snapshot["task_adapter"], "hanabi")
 
     def test_goal_memory_prompt_rewrites_action_only_contract(self):
         payload = {"selected_goal_id": None, "goal_ops": [], "action": "[Discard] 0"}
@@ -129,6 +164,41 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
         self.assertEqual(turn_output["parse_error"], "json_not_found")
         self.assertEqual(turn_output["goal_ops"], [])
         self.assertEqual(wrapper.get_goal_memory_snapshot()["goals"], [])
+
+    def test_custom_task_adapter_can_define_domain_specific_completion(self):
+        payload = {
+            "selected_goal_id": "work_item_1",
+            "goal_ops": [
+                {
+                    "op": "set",
+                    "goal_id": "work_item_1",
+                    "goal": "finish the queued work item",
+                    "target": "work_item_1",
+                    "priority": "high",
+                    "ttl": 2,
+                }
+            ],
+            "action": "DO_TASK",
+        }
+        wrapper = mg.agents.GoalMemoryAgentWrapper(
+            StubAgent([json.dumps(payload)]),
+            adapter=EchoTaskAdapter(),
+        )
+        wrapper.reset_episode(episode_id=30, player_id=None)
+        wrapper.set_turn_context(episode_id=30, turn_id=0, player_id=None)
+
+        action = wrapper("Task: complete the current work item. Output EXACTLY ONE action, nothing else.")
+        self.assertEqual(action, "DO_TASK")
+        wrapper.record_step_result(action=action, normalized_action=action, step_info={}, done=False)
+
+        snapshot = wrapper.get_goal_memory_snapshot()
+        goal = next(item for item in snapshot["goals"] if item["goal_id"] == "work_item_1")
+        self.assertEqual(snapshot["task_adapter"], "echo-task")
+        self.assertEqual(goal["status"], "completed")
+
+        prompt = wrapper.get_last_goal_prompt()
+        self.assertIn('"action": "DO_TASK"', prompt)
+        self.assertIn("Task observation:", prompt)
 
 
 if __name__ == "__main__":

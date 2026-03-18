@@ -510,7 +510,8 @@ reflection 的用途有两类：
 对应当前分支：
 
 - 小型 typed goal memory
-- 单次 completion 里同时产出 `memory_ops + action`
+- 单次 completion 里同时产出 `goal_ops + action`
+- task adapter 把 Hanabi 逻辑留在系统侧，goal schema 仍保持可迁移
 - 不引入 belief memory
 
 这是一个很好的“agent 化最小闭环”。
@@ -733,4 +734,3 @@ reflection 的用途有两类：
 如果你要把这件事做成一条更完整研究线，那就是：
 
 - goal -> belief -> uncertainty -> verifier -> summary -> partner memory -> RL workflow
-

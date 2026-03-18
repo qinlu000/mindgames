@@ -552,8 +552,8 @@ def main() -> int:
         "--goal-memory-enabled",
         action="store_true",
         help=(
-            "Wrap non-human Hanabi agents with a minimal goal-memory controller that asks the model to return "
-            "a JSON object containing small goal_ops plus the final action."
+            "Wrap non-human Hanabi agents with a minimal goal-memory controller that uses a Hanabi task adapter "
+            "and asks the model to return a JSON object containing small goal_ops plus the final action."
         ),
     )
     ap.add_argument("--goal-memory-max-active", type=int, default=3, help="Max active goals kept in working memory.")
@@ -799,6 +799,7 @@ def main() -> int:
                     default_ttl=max(0, int(args.goal_memory_default_ttl)),
                     max_ops_per_turn=int(args.goal_memory_max_ops_per_turn),
                 ),
+                adapter=mg.agents.HanabiGoalMemoryTaskAdapter(),
             )
 
     out_path = Path(args.out)

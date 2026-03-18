@@ -7,11 +7,20 @@ from typing import Any, Dict, List, Optional
 
 from mindgames.core import Agent, AgentWrapper
 
-__all__ = ["GoalMemoryConfig", "GoalMemoryAgentWrapper"]
+__all__ = [
+    "GoalMemoryConfig",
+    "GoalMemoryTaskAdapter",
+    "GenericGoalMemoryTaskAdapter",
+    "HanabiGoalMemoryTaskAdapter",
+    "GoalMemoryAgentWrapper",
+]
 
 _ALLOWED_GOAL_STATUSES = {"active", "completed", "invalidated", "expired", "removed"}
 _ALLOWED_OPS = {"set", "remove"}
 _PRIORITY_ORDER = {"high": 2, "medium": 1, "low": 0}
+
+_ACTION_LINE_RE = re.compile(r"^\s*(play|discard|reveal)\s*[:\-]?\s+(.+?)\s*$", re.IGNORECASE)
+_FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.IGNORECASE | re.DOTALL)
 
 _PLAY_RE = re.compile(r"\[\s*play\s*\]\s*(\d+)\b", re.IGNORECASE)
 _DISCARD_RE = re.compile(r"\[\s*discard\s*\]\s*(\d+)\b", re.IGNORECASE)
@@ -19,8 +28,6 @@ _REVEAL_RE = re.compile(
     r"\[\s*reveal\s*\]\s*player\s+(\d+)\s+card\s+(\d+)\s+(?:color\s+([a-z]+)|rank\s+(\d+))",
     re.IGNORECASE,
 )
-_ACTION_LINE_RE = re.compile(r"^\s*(play|discard|reveal)\s*[:\-]?\s+(.+?)\s*$", re.IGNORECASE)
-_FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.IGNORECASE | re.DOTALL)
 _PLAYER_ID_RE = re.compile(r"You are player\s+(\d+)\b|You are Player\s+(\d+)\b")
 _SLOT_TARGET_RE = re.compile(r"^(?:player\s*)?(\d+)[_\s]*slot\s*(\d+)$", re.IGNORECASE)
 _SELF_SLOT_TARGET_RE = re.compile(r"^self[_\s]*slot\s*(\d+)$", re.IGNORECASE)
@@ -63,9 +70,207 @@ class GoalRecord:
         }
 
 
+class GoalMemoryTaskAdapter:
+    name = "generic"
+
+    def system_role_description(self) -> str:
+        return "an expert task-solving agent"
+
+    def observation_label(self) -> str:
+        return "Task observation:"
+
+    def target_schema_hint(self) -> str:
+        return "short target ref"
+
+    def action_schema_hint(self) -> str:
+        return "task-specific action string"
+
+    def action_field_requirement(self) -> str:
+        return "The `action` field must contain exactly one valid task action."
+
+    def build_prompt(self, *, state: "GoalMemoryState", config: GoalMemoryConfig, observation: str) -> str:
+        adapted_observation = self.adapt_text_to_goal_memory_mode(observation, kind="observation")
+        return (
+            "Goal memory is enabled. Keep only a tiny cross-turn goal list.\n"
+            "The rendered goals below are goals you explicitly set in previous turns and that the system carried into this turn after validation and state updates.\n"
+            "Treat them as your current working commitments unless you explicitly change or remove them through goal_ops.\n"
+            f"Keep at most {config.max_active_goals} active goals and at most {config.max_ops_per_turn} goal_ops this turn.\n"
+            "Return EXACTLY ONE JSON object with this schema:\n"
+            "{\n"
+            '  "selected_goal_id": "string or null",\n'
+            '  "goal_ops": [\n'
+            "    {\n"
+            '      "op": "set|remove",\n'
+            '      "goal_id": "string",\n'
+            '      "goal": "short goal text",\n'
+            f'      "target": "{self.target_schema_hint()}",\n'
+            '      "priority": "high|medium|low",\n'
+            '      "ttl": 2\n'
+            "    }\n"
+            "  ],\n"
+            f'  "action": "{self.action_schema_hint()}"\n'
+            "}\n"
+            "For `remove`, provide only `op` and `goal_id`.\n"
+            "Return JSON only; do not add any prose.\n\n"
+            f"{state.render()}\n\n"
+            f"{self.observation_label()}\n"
+            f"{adapted_observation}"
+        )
+
+    def goal_memory_contract_prefix(self, kind: str) -> str:
+        if kind == "system":
+            return (
+                f"You are {self.system_role_description()} with goal memory. "
+                "Return EXACTLY ONE JSON object and nothing else. "
+                "The JSON must contain selected_goal_id, goal_ops, and action."
+            )
+        return (
+            "Goal-memory response mode: return EXACTLY ONE JSON object and nothing else. "
+            f"{self.action_field_requirement()}"
+        )
+
+    def adapt_text_to_goal_memory_mode(self, text: Optional[str], *, kind: str) -> str:
+        content = (text or "").strip()
+        if not content:
+            return self.goal_memory_contract_prefix(kind)
+
+        replacements = [
+            (
+                "Output EXACTLY ONE valid action and nothing else (no reasoning).",
+                "Return EXACTLY ONE JSON object and nothing else. "
+                f"{self.action_field_requirement()} Do not include free-form reasoning outside the JSON object.",
+            ),
+            (
+                "Output EXACTLY ONE action, nothing else.",
+                "Return EXACTLY ONE JSON object, nothing else. "
+                f"{self.action_field_requirement()}",
+            ),
+        ]
+        updated = content
+        replaced = False
+        for before, after in replacements:
+            if before in updated:
+                updated = updated.replace(before, after)
+                replaced = True
+        if replaced:
+            return updated
+        return self.goal_memory_contract_prefix(kind) + "\n\n" + content
+
+    def infer_player_id(self, observation: str) -> Optional[int]:
+        del observation
+        return None
+
+    def normalize_target_ref(self, value: Any, *, agent_player_id: Optional[int]) -> str:
+        return _coerce_target_ref(value, agent_player_id=agent_player_id)
+
+    def record_action_result(
+        self,
+        state: "GoalMemoryState",
+        action: str,
+        *,
+        selected_goal_id: Optional[str],
+    ) -> List[Dict[str, Any]]:
+        del state, action, selected_goal_id
+        return []
+
+
+class GenericGoalMemoryTaskAdapter(GoalMemoryTaskAdapter):
+    pass
+
+
+class HanabiGoalMemoryTaskAdapter(GoalMemoryTaskAdapter):
+    name = "hanabi"
+
+    def system_role_description(self) -> str:
+        return "an expert Hanabi teammate"
+
+    def observation_label(self) -> str:
+        return "Game observation:"
+
+    def target_schema_hint(self) -> str:
+        return "short target ref like self_slot2 or player1_slot4"
+
+    def action_schema_hint(self) -> str:
+        return "[Play] X | [Discard] X | [Reveal] player N card X color C | [Reveal] player N card X rank R"
+
+    def action_field_requirement(self) -> str:
+        return "The `action` field must contain exactly one legal Hanabi action."
+
+    def infer_player_id(self, observation: str) -> Optional[int]:
+        match = _PLAYER_ID_RE.search(observation or "")
+        if not match:
+            return None
+        value = match.group(1) or match.group(2)
+        return _coerce_optional_int(value)
+
+    def normalize_target_ref(self, value: Any, *, agent_player_id: Optional[int]) -> str:
+        return _coerce_target_ref(value, agent_player_id=agent_player_id)
+
+    def record_action_result(
+        self,
+        state: "GoalMemoryState",
+        action: str,
+        *,
+        selected_goal_id: Optional[str],
+    ) -> List[Dict[str, Any]]:
+        parsed = _parse_hanabi_action(action)
+        if not parsed:
+            return []
+
+        events: List[Dict[str, Any]] = []
+        matched_goal_id: Optional[str] = None
+        selected = state.goals.get(selected_goal_id) if selected_goal_id else None
+        if selected and selected.status == "active":
+            if _hanabi_selected_goal_matches_action(selected, parsed, agent_player_id=state.agent_player_id):
+                matched_goal_id = selected.goal_id
+                event = state.set_goal_status(
+                    selected,
+                    "completed",
+                    reason=f"selected goal matched action via {parsed['kind']}",
+                    source="system",
+                )
+                if event is not None:
+                    events.append(event)
+
+        if parsed["kind"] in {"play", "discard"} and state.agent_player_id is not None:
+            affected_slot = int(parsed["slot"])
+            for goal in state.active_goals():
+                if goal.goal_id == matched_goal_id:
+                    continue
+                target = _parse_hanabi_target_ref(goal.target, state.agent_player_id)
+                if not target or target["kind"] != "slot":
+                    continue
+                if target["player"] != state.agent_player_id or target["slot"] is None:
+                    continue
+                if target["slot"] == affected_slot:
+                    event = state.set_goal_status(
+                        goal,
+                        "invalidated",
+                        reason=f"target {goal.target} was consumed by {parsed['kind']}",
+                        source="system",
+                    )
+                    if event is not None:
+                        events.append(event)
+                elif target["slot"] > affected_slot:
+                    old_target = goal.target
+                    goal.target = _slot_target_ref(target["player"], target["slot"] - 1, state.agent_player_id)
+                    events.append(
+                        state.record_event(
+                            goal.goal_id,
+                            "rebase_goal",
+                            "system",
+                            before_status=goal.status,
+                            after_status=goal.status,
+                            reason=f"shifted target from {old_target} to {goal.target} after {parsed['kind']} {affected_slot}",
+                        )
+                    )
+        return events
+
+
 class GoalMemoryState:
-    def __init__(self, config: GoalMemoryConfig):
+    def __init__(self, config: GoalMemoryConfig, adapter: GoalMemoryTaskAdapter):
         self.config = config
+        self.adapter = adapter
         self.reset()
 
     def reset(self, *, episode_id: Optional[int] = None, agent_player_id: Optional[int] = None) -> None:
@@ -89,6 +294,7 @@ class GoalMemoryState:
     def snapshot(self) -> Dict[str, Any]:
         return {
             "schema_version": "goal_memory.v2_minimal",
+            "task_adapter": self.adapter.name,
             "episode_id": self.episode_id,
             "agent_player_id": self.agent_player_id,
             "current_turn": self.current_turn,
@@ -143,52 +349,29 @@ class GoalMemoryState:
         return applied
 
     def record_action_result(self, action: str, *, selected_goal_id: Optional[str]) -> List[Dict[str, Any]]:
-        parsed = _parse_hanabi_action(action)
-        if not parsed:
-            return []
+        return self.adapter.record_action_result(self, action, selected_goal_id=selected_goal_id)
 
-        events: List[Dict[str, Any]] = []
-        matched_goal_id: Optional[str] = None
-        selected = self.goals.get(selected_goal_id) if selected_goal_id else None
-        if selected and selected.status == "active" and _selected_goal_matches_action(selected, parsed, self.agent_player_id):
-            matched_goal_id = selected.goal_id
-            event = self._set_goal_status(selected, "completed", reason=f"selected goal matched action via {parsed['kind']}", source="system")
-            if event is not None:
-                events.append(event)
+    def set_goal_status(self, goal: GoalRecord, status: str, *, reason: str, source: str) -> Optional[Dict[str, Any]]:
+        return self._set_goal_status(goal, status, reason=reason, source=source)
 
-        if parsed["kind"] in {"play", "discard"} and self.agent_player_id is not None:
-            affected_slot = int(parsed["slot"])
-            for goal in self.active_goals():
-                if goal.goal_id == matched_goal_id:
-                    continue
-                target = _parse_target_ref(goal.target, self.agent_player_id)
-                if not target or target["kind"] != "slot":
-                    continue
-                if target["player"] != self.agent_player_id or target["slot"] is None:
-                    continue
-                if target["slot"] == affected_slot:
-                    event = self._set_goal_status(
-                        goal,
-                        "invalidated",
-                        reason=f"target {goal.target} was consumed by {parsed['kind']}",
-                        source="system",
-                    )
-                    if event is not None:
-                        events.append(event)
-                elif target["slot"] > affected_slot:
-                    old_target = goal.target
-                    goal.target = _slot_target_ref(target["player"], target["slot"] - 1, self.agent_player_id)
-                    event = self._record_event(
-                        goal.goal_id,
-                        "rebase_goal",
-                        "system",
-                        before_status=goal.status,
-                        after_status=goal.status,
-                        reason=f"shifted target from {old_target} to {goal.target} after {parsed['kind']} {affected_slot}",
-                    )
-                    events.append(event)
-
-        return events
+    def record_event(
+        self,
+        goal_id: str,
+        op: str,
+        actor: str,
+        *,
+        before_status: Optional[str],
+        after_status: Optional[str],
+        reason: str,
+    ) -> Dict[str, Any]:
+        return self._record_event(
+            goal_id,
+            op,
+            actor,
+            before_status=before_status,
+            after_status=after_status,
+            reason=reason,
+        )
 
     def _expire_stale_goals(self) -> None:
         for goal in list(self.goals.values()):
@@ -206,7 +389,7 @@ class GoalMemoryState:
             goal = GoalRecord(
                 goal_id=goal_id,
                 goal=goal_text,
-                target=_coerce_target_ref(raw_op.get("target")),
+                target=self.adapter.normalize_target_ref(raw_op.get("target"), agent_player_id=self.agent_player_id),
                 priority=_normalize_priority(raw_op.get("priority"), default="medium"),
                 ttl=_coerce_positive_int(raw_op.get("ttl"), default=self.config.default_ttl),
                 status="active",
@@ -219,7 +402,7 @@ class GoalMemoryState:
         before_status = existing.status
         existing.goal = goal_text or existing.goal
         if raw_op.get("target") is not None:
-            existing.target = _coerce_target_ref(raw_op.get("target"))
+            existing.target = self.adapter.normalize_target_ref(raw_op.get("target"), agent_player_id=self.agent_player_id)
         existing.priority = _normalize_priority(raw_op.get("priority"), default=existing.priority)
         existing.ttl = _coerce_positive_int(raw_op.get("ttl"), default=existing.ttl)
         existing.status = "active"
@@ -274,10 +457,16 @@ class GoalMemoryState:
 
 
 class GoalMemoryAgentWrapper(AgentWrapper):
-    def __init__(self, agent: Agent, config: Optional[GoalMemoryConfig] = None):
+    def __init__(
+        self,
+        agent: Agent,
+        config: Optional[GoalMemoryConfig] = None,
+        adapter: Optional[GoalMemoryTaskAdapter] = None,
+    ):
         super().__init__(agent)
         self.config = config or GoalMemoryConfig()
-        self.state = GoalMemoryState(self.config)
+        self.adapter = adapter or HanabiGoalMemoryTaskAdapter()
+        self.state = GoalMemoryState(self.config, adapter=self.adapter)
         self.last_goal_turn_output: Optional[Dict[str, Any]] = None
         self.last_goal_events: List[Dict[str, Any]] = []
         self.last_goal_prompt: Optional[str] = None
@@ -312,12 +501,12 @@ class GoalMemoryAgentWrapper(AgentWrapper):
             raise ValueError(f"Observation must be a string. Received type: {type(observation)}")
 
         if self.state.agent_player_id is None:
-            player_id = _infer_player_id(observation)
+            player_id = self.adapter.infer_player_id(observation)
             if player_id is not None:
                 self.state.agent_player_id = player_id
 
         self._last_pre_turn_active_ids = [goal.goal_id for goal in self.state.active_goals()]
-        prompt = self._build_prompt(observation)
+        prompt = self.adapter.build_prompt(state=self.state, config=self.config, observation=observation)
         self.last_goal_prompt = prompt
 
         raw_output = self._call_wrapped_agent(prompt)
@@ -331,6 +520,7 @@ class GoalMemoryAgentWrapper(AgentWrapper):
 
         events = self.state.apply_goal_ops(turn_output.get("goal_ops") or [], source="llm")
         self.last_goal_events = list(events)
+        turn_output["task_adapter"] = self.adapter.name
         turn_output["active_goal_ids_before_turn"] = list(self._last_pre_turn_active_ids)
         turn_output["active_goal_ids_after_ops"] = [goal.goal_id for goal in self.state.active_goals()]
         turn_output["goal_memory"] = self.state.snapshot()
@@ -346,7 +536,10 @@ class GoalMemoryAgentWrapper(AgentWrapper):
         done: bool = False,
     ) -> None:
         del step_info
-        applied = self.state.record_action_result(normalized_action or action, selected_goal_id=(self.last_goal_turn_output or {}).get("selected_goal_id"))
+        applied = self.state.record_action_result(
+            normalized_action or action,
+            selected_goal_id=(self.last_goal_turn_output or {}).get("selected_goal_id"),
+        )
         if applied:
             self.last_goal_events.extend(applied)
         if self.last_goal_turn_output is not None:
@@ -354,39 +547,10 @@ class GoalMemoryAgentWrapper(AgentWrapper):
             self.last_goal_turn_output["goal_events"] = self.get_last_goal_events()
             self.last_goal_turn_output["done"] = bool(done)
 
-    def _build_prompt(self, observation: str) -> str:
-        observation = _adapt_text_to_goal_memory_mode(observation, kind="observation")
-        return (
-            "Goal memory is enabled. Keep only a tiny cross-turn goal list.\n"
-            "The rendered goals below are goals you explicitly set in previous turns and that the system carried into this turn after validation and state updates.\n"
-            "Treat them as your current working commitments unless you explicitly change or remove them through goal_ops.\n"
-            f"Keep at most {self.config.max_active_goals} active goals and at most {self.config.max_ops_per_turn} goal_ops this turn.\n"
-            "Return EXACTLY ONE JSON object with this schema:\n"
-            "{\n"
-            '  "selected_goal_id": "string or null",\n'
-            '  "goal_ops": [\n'
-            "    {\n"
-            '      "op": "set|remove",\n'
-            '      "goal_id": "string",\n'
-            '      "goal": "short goal text",\n'
-            '      "target": "short target ref like self_slot2 or player1_slot4",\n'
-            '      "priority": "high|medium|low",\n'
-            '      "ttl": 2\n'
-            "    }\n"
-            "  ],\n"
-            '  "action": "[Play] X | [Discard] X | [Reveal] player N card X color C | [Reveal] player N card X rank R"\n'
-            "}\n"
-            "For `remove`, provide only `op` and `goal_id`.\n"
-            "Return JSON only; do not add any prose.\n\n"
-            f"{self.state.render()}\n\n"
-            "Game observation:\n"
-            f"{observation}"
-        )
-
     def _call_wrapped_agent(self, prompt: str) -> str:
         original_system_prompt = getattr(self.agent, "system_prompt", None)
         if original_system_prompt is not None:
-            self.agent.system_prompt = _adapt_text_to_goal_memory_mode(original_system_prompt, kind="system")
+            self.agent.system_prompt = self.adapter.adapt_text_to_goal_memory_mode(original_system_prompt, kind="system")
         try:
             return self.agent(prompt)
         finally:
@@ -397,7 +561,13 @@ class GoalMemoryAgentWrapper(AgentWrapper):
 def _parse_turn_output(text: str) -> Dict[str, Any]:
     payload = _extract_json_object(text)
     if payload is None:
-        return {"selected_goal_id": None, "goal_ops": [], "action": None, "raw_response": text, "parse_error": "json_not_found"}
+        return {
+            "selected_goal_id": None,
+            "goal_ops": [],
+            "action": None,
+            "raw_response": text,
+            "parse_error": "json_not_found",
+        }
 
     goal_ops = payload.get("goal_ops")
     if not isinstance(goal_ops, list):
@@ -455,46 +625,6 @@ def _extract_fenced_json(text: str) -> Optional[str]:
     return match.group(1).strip()
 
 
-def _adapt_text_to_goal_memory_mode(text: Optional[str], *, kind: str) -> str:
-    content = (text or "").strip()
-    if not content:
-        return _goal_memory_contract_prefix(kind)
-
-    replacements = [
-        (
-            "Output EXACTLY ONE valid action and nothing else (no reasoning).",
-            "Return EXACTLY ONE JSON object and nothing else. The `action` field must contain exactly one valid Hanabi action. Do not include free-form reasoning outside the JSON object.",
-        ),
-        (
-            "Output EXACTLY ONE action, nothing else.",
-            "Return EXACTLY ONE JSON object, nothing else. The `action` field must contain exactly one legal Hanabi action.",
-        ),
-    ]
-    updated = content
-    replaced = False
-    for before, after in replacements:
-        if before in updated:
-            updated = updated.replace(before, after)
-            replaced = True
-    if replaced:
-        return updated
-
-    return _goal_memory_contract_prefix(kind) + "\n\n" + content
-
-
-def _goal_memory_contract_prefix(kind: str) -> str:
-    if kind == "system":
-        return (
-            "You are an expert Hanabi teammate with goal memory. "
-            "Return EXACTLY ONE JSON object and nothing else. "
-            "The JSON must contain selected_goal_id, goal_ops, and action."
-        )
-    return (
-        "Goal-memory response mode: return EXACTLY ONE JSON object and nothing else. "
-        "The `action` field must contain exactly one legal Hanabi action."
-    )
-
-
 def _extract_action_from_text(text: str) -> Optional[str]:
     lines = [line.strip() for line in (text or "").splitlines() if line.strip()]
     if not lines:
@@ -531,10 +661,15 @@ def _parse_hanabi_action(action: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _selected_goal_matches_action(goal: GoalRecord, parsed_action: Dict[str, Any], agent_player_id: Optional[int]) -> bool:
+def _hanabi_selected_goal_matches_action(
+    goal: GoalRecord,
+    parsed_action: Dict[str, Any],
+    *,
+    agent_player_id: Optional[int],
+) -> bool:
     if goal.status != "active":
         return False
-    target = _parse_target_ref(goal.target, agent_player_id)
+    target = _parse_hanabi_target_ref(goal.target, agent_player_id)
     if not target:
         return False
     if target["kind"] == "slot":
@@ -550,7 +685,7 @@ def _selected_goal_matches_action(goal: GoalRecord, parsed_action: Dict[str, Any
     return False
 
 
-def _parse_target_ref(target: str, agent_player_id: Optional[int]) -> Optional[Dict[str, Any]]:
+def _parse_hanabi_target_ref(target: str, agent_player_id: Optional[int]) -> Optional[Dict[str, Any]]:
     text = (target or "").strip()
     if not text or text.lower() == "none":
         return {"kind": "none"}
@@ -590,18 +725,21 @@ def _slot_target_ref(player: Optional[int], slot: Optional[int], agent_player_id
     return f"player{player}_slot{slot}"
 
 
-def _coerce_target_ref(value: Any) -> str:
+def _coerce_target_ref(value: Any, *, agent_player_id: Optional[int]) -> str:
     if value is None:
         return "none"
     if isinstance(value, str):
         text = " ".join(value.strip().split())
         return text or "none"
     if isinstance(value, dict):
+        ref = _coerce_optional_str(value.get("ref"))
+        if ref:
+            return " ".join(ref.split())
         player = _coerce_optional_int(value.get("player"))
         slot = _coerce_optional_int(value.get("slot"))
         if player is not None and slot is not None:
-            return f"player{player}_slot{slot}"
-        entity_type = str(value.get("entity_type") or "").strip().lower()
+            return _slot_target_ref(player, slot, agent_player_id)
+        entity_type = str(value.get("entity_type") or value.get("type") or "").strip().lower()
         if entity_type == "token":
             token_type = _coerce_optional_str(value.get("token_type")) or "token"
             return f"{token_type.lower()}_token"
@@ -628,14 +766,6 @@ def _normalize_priority(value: Any, *, default: str) -> str:
     if text in _PRIORITY_ORDER:
         return text
     return default
-
-
-def _infer_player_id(observation: str) -> Optional[int]:
-    match = _PLAYER_ID_RE.search(observation or "")
-    if not match:
-        return None
-    value = match.group(1) or match.group(2)
-    return _coerce_optional_int(value)
 
 
 def _coerce_optional_str(value: Any) -> Optional[str]:

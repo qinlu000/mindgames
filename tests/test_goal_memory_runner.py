@@ -57,6 +57,8 @@ class TestGoalMemoryRunner(unittest.TestCase):
         self.assertIn("goal_memory", steps[0])
         self.assertIn("goal_turn_output", steps[0])
         self.assertEqual(steps[0]["goal_turn_output"]["selected_goal_id"], "safe_self_slot0")
+        self.assertEqual(steps[0]["goal_turn_output"]["task_adapter"], "hanabi")
+        self.assertEqual(steps[0]["goal_memory"]["task_adapter"], "hanabi")
 
 
 if __name__ == "__main__":
