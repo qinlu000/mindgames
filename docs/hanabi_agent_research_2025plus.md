@@ -471,9 +471,11 @@ reflection 的用途有两类：
   ],
   "goal_ops": [
     {
-      "op": "upsert_goal",
+      "op": "set",
       "goal_id": "play_slot_2",
-      "priority": 0.91,
+      "goal": "play the likely good card soon",
+      "target": "self_slot2",
+      "priority": "high",
       "ttl": 1
     }
   ],

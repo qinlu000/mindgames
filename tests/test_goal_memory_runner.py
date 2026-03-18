@@ -17,21 +17,12 @@ class TestGoalMemoryRunner(unittest.TestCase):
                 "selected_goal_id": "safe_self_slot0",
                 "goal_ops": [
                     {
-                        "op": "upsert_goal",
+                        "op": "set",
                         "goal_id": "safe_self_slot0",
-                        "reason": "fallback discard",
-                        "goal": {
-                            "goal_type": "safe_discard_fallback",
-                            "target": {"entity_type": "card_slot", "player": 0, "slot": 0},
-                            "priority": 0.25,
-                            "confidence": 0.80,
-                            "ttl": 1,
-                            "reason": "fallback discard",
-                            "belief_refs": [],
-                            "preconditions": [],
-                            "success_conditions": [],
-                            "abort_conditions": [],
-                        },
+                        "goal": "discard fallback card if needed",
+                        "target": "self_slot0",
+                        "priority": "low",
+                        "ttl": 1,
                     }
                 ],
                 "action": "[Discard] 0",

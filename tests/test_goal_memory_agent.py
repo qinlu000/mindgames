@@ -22,26 +22,17 @@ class StubAgent(mg.Agent):
 
 
 class TestGoalMemoryAgentWrapper(unittest.TestCase):
-    def test_structured_reveal_goal_is_completed_after_matching_action(self):
+    def test_selected_reveal_goal_is_completed_after_matching_action(self):
         payload = {
             "selected_goal_id": "save_p1_slot4",
             "goal_ops": [
                 {
-                    "op": "upsert_goal",
+                    "op": "set",
                     "goal_id": "save_p1_slot4",
-                    "reason": "protect likely critical card",
-                    "goal": {
-                        "goal_type": "save_partner_card",
-                        "target": {"entity_type": "card_slot", "player": 1, "slot": 4},
-                        "priority": 0.93,
-                        "confidence": 0.71,
-                        "ttl": 1,
-                        "reason": "protect likely critical card",
-                        "belief_refs": ["belief_partner1_slot4"],
-                        "preconditions": ["info_tokens > 0"],
-                        "success_conditions": ["target_card_clued"],
-                        "abort_conditions": ["target_slot_shifted_out"],
-                    },
+                    "goal": "save partner critical card",
+                    "target": "player1_slot4",
+                    "priority": "high",
+                    "ttl": 1,
                 }
             ],
             "action": "[Reveal] player 1 card 4 rank 5",
@@ -57,6 +48,9 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
         snapshot = wrapper.get_goal_memory_snapshot()
         goal = next(item for item in snapshot["goals"] if item["goal_id"] == "save_p1_slot4")
         self.assertEqual(goal["status"], "completed")
+        self.assertEqual(goal["goal"], "save partner critical card")
+        self.assertEqual(goal["target"], "player1_slot4")
+        self.assertEqual(goal["priority"], "high")
 
         turn_output = wrapper.get_last_goal_turn_output()
         self.assertEqual(turn_output["selected_goal_id"], "save_p1_slot4")
@@ -67,38 +61,20 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
             "selected_goal_id": "safe_self_slot0",
             "goal_ops": [
                 {
-                    "op": "upsert_goal",
+                    "op": "set",
                     "goal_id": "safe_self_slot0",
-                    "reason": "fallback discard",
-                    "goal": {
-                        "goal_type": "safe_discard_fallback",
-                        "target": {"entity_type": "card_slot", "player": 0, "slot": 0},
-                        "priority": 0.30,
-                        "confidence": 0.55,
-                        "ttl": 1,
-                        "reason": "fallback discard",
-                        "belief_refs": [],
-                        "preconditions": [],
-                        "success_conditions": [],
-                        "abort_conditions": [],
-                    },
+                    "goal": "discard fallback card if nothing better appears",
+                    "target": "self_slot0",
+                    "priority": "low",
+                    "ttl": 1,
                 },
                 {
-                    "op": "upsert_goal",
+                    "op": "set",
                     "goal_id": "play_self_slot2",
-                    "reason": "hold immediate play target",
-                    "goal": {
-                        "goal_type": "play_self_slot",
-                        "target": {"entity_type": "card_slot", "player": 0, "slot": 2},
-                        "priority": 0.88,
-                        "confidence": 0.73,
-                        "ttl": 2,
-                        "reason": "hold immediate play target",
-                        "belief_refs": ["belief_self_slot2"],
-                        "preconditions": [],
-                        "success_conditions": ["slot_played_successfully"],
-                        "abort_conditions": ["slot_shifted_out"],
-                    },
+                    "goal": "play the likely good card soon",
+                    "target": "self_slot2",
+                    "priority": "high",
+                    "ttl": 2,
                 },
             ],
             "action": "[Discard] 0",
@@ -115,7 +91,7 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
         goals = {item["goal_id"]: item for item in snapshot["goals"]}
         self.assertEqual(goals["safe_self_slot0"]["status"], "completed")
         self.assertEqual(goals["play_self_slot2"]["status"], "active")
-        self.assertEqual(goals["play_self_slot2"]["target"]["slot"], 1)
+        self.assertEqual(goals["play_self_slot2"]["target"], "self_slot1")
 
     def test_goal_memory_prompt_rewrites_action_only_contract(self):
         payload = {"selected_goal_id": None, "goal_ops": [], "action": "[Discard] 0"}
@@ -133,6 +109,10 @@ class TestGoalMemoryAgentWrapper(unittest.TestCase):
         prompt = wrapper.get_last_goal_prompt()
         self.assertIsNotNone(prompt)
         self.assertIn("Return EXACTLY ONE JSON object", prompt)
+        self.assertIn("goals you explicitly set in previous turns", prompt)
+        self.assertIn("Your active goals from previous turns", prompt)
+        self.assertIn('"op": "set|remove"', prompt)
+        self.assertIn('"priority": "high|medium|low"', prompt)
         self.assertNotIn("Output EXACTLY ONE action, nothing else.", prompt)
         self.assertIn("The `action` field must contain exactly one legal Hanabi action.", prompt)
         self.assertIn("JSON object and nothing else", wrapper.agent.last_system_prompt)

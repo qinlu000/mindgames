@@ -552,8 +552,8 @@ def main() -> int:
         "--goal-memory-enabled",
         action="store_true",
         help=(
-            "Wrap non-human Hanabi agents with a typed goal-memory controller that asks the model to return "
-            "a JSON object containing goal_ops plus the final action."
+            "Wrap non-human Hanabi agents with a minimal goal-memory controller that asks the model to return "
+            "a JSON object containing small goal_ops plus the final action."
         ),
     )
     ap.add_argument("--goal-memory-max-active", type=int, default=3, help="Max active goals kept in working memory.")
