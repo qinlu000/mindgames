@@ -35,6 +35,16 @@ register_with_versions(
     fuse_tokens=4,
 )
 
+# Mini Hanabi (short-context cooperative inference)
+register_with_versions(
+    id="MiniHanabi-v0",
+    entry_point="mindgames.envs.MiniHanabi.env:MiniHanabiEnv",
+    wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS},
+    info_tokens=2,
+    fuse_tokens=2,
+    max_turns=12,
+)
+
 # Truth & Deception (2-player)
 register_with_versions(
     id="TruthAndDeception-v0",
