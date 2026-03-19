@@ -87,6 +87,7 @@ class OpenAIAgent(Agent):
         self.kwargs = kwargs
         self.last_message = None
         self.last_usage = None
+        self.last_finish_reason = None
 
         try:
             from openai import OpenAI
@@ -152,6 +153,7 @@ class OpenAIAgent(Agent):
             messages.insert(0, {"role": "system", "content": self.system_prompt})
 
         if self.stream:
+            self.last_finish_reason = None
             stream_resp = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
@@ -175,6 +177,9 @@ class OpenAIAgent(Agent):
                     choices = getattr(chunk, "choices", None)
                     if not choices:
                         continue
+                    finish_reason = getattr(choices[0], "finish_reason", None)
+                    if isinstance(finish_reason, str) and finish_reason:
+                        self.last_finish_reason = finish_reason
                     delta = getattr(choices[0], "delta", None)
                     if delta is None:
                         continue
@@ -232,6 +237,7 @@ class OpenAIAgent(Agent):
             raise RuntimeError(f"Empty completion choices: {payload}")
 
         msg = choices[0].message
+        self.last_finish_reason = getattr(choices[0], "finish_reason", None)
         try:
             self.last_message = msg.model_dump()
         except Exception:
@@ -275,3 +281,11 @@ class OpenAIAgent(Agent):
         if not isinstance(observation, str):
             raise ValueError(f"Observation must be a string. Received type: {type(observation)}")
         return self._retry_request(observation)
+
+    def get_last_response_meta(self) -> dict:
+        meta = {}
+        if isinstance(self.last_finish_reason, str) and self.last_finish_reason:
+            meta["finish_reason"] = self.last_finish_reason
+        if isinstance(self.last_usage, dict) and self.last_usage:
+            meta["usage"] = dict(self.last_usage)
+        return meta

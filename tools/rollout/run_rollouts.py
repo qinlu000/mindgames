@@ -377,6 +377,8 @@ def _game_loop(
         infer_ms = int((time.time() - t0) * 1000)
         normalized_action = _normalize_action(env, action)
         _, raw_reasoning = agents[player_id].get_last_content_reasoning()
+        response_meta_fn = getattr(agents[player_id], "get_last_response_meta", None)
+        response_meta = response_meta_fn() if callable(response_meta_fn) else None
 
         done, step_info = env.step(action=action)
         record_step_result = getattr(agents[player_id], "record_step_result", None)
@@ -401,6 +403,8 @@ def _game_loop(
             "done": done,
             "step_info": step_info,
         }
+        if isinstance(response_meta, dict) and response_meta:
+            step_rec["response_meta"] = response_meta
 
         goal_memory_fn = getattr(agents[player_id], "get_goal_memory_snapshot", None)
         if callable(goal_memory_fn):

@@ -73,7 +73,9 @@ class QwenAgent(OpenAIAgent):
         except Exception:
             self.last_response = None
 
-        msg = completion.choices[0].message
+        choice = completion.choices[0]
+        self.last_finish_reason = getattr(choice, "finish_reason", None)
+        msg = choice.message
         try:
             self.last_message = msg.model_dump()
         except Exception:
