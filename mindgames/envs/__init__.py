@@ -7,11 +7,15 @@ from mindgames.wrappers import (
     GameMessagesAndCurrentBoardObservationWrapper,
     GameMessagesObservationWrapper,
     ClipCharactersActionWrapper,
+    NegotiationObservationWrapper,
+    NegotiationActionClipWrapper,
 )
 
 DEFAULT_WRAPPERS = [LLMObservationWrapper, ActionFormattingWrapper]
 BOARDGAME_WRAPPERS = [GameMessagesAndCurrentBoardObservationWrapper, ActionFormattingWrapper]
 CONVERSATIONAL_WRAPPERS = [LLMObservationWrapper, ClipCharactersActionWrapper]
+NEGOTIATION_WRAPPERS = [NegotiationObservationWrapper]
+NEGOTIATION_TRAIN_WRAPPERS = [NegotiationObservationWrapper, NegotiationActionClipWrapper]
 
 # Hanabi (co-op)
 register_with_versions(
@@ -61,6 +65,26 @@ register_with_versions(
     max_turns=6,
     data_path="mindgames/envs/TruthAndDeception/facts_tom.json",
     reveal_context_to_guesser=False,
+)
+
+# Negotiation (2-player private-value bargaining)
+register_with_versions(
+    id="Negotiation-v0",
+    entry_point="mindgames.envs.Negotiation.env:NegotiationEnv",
+    wrappers={"default": NEGOTIATION_WRAPPERS, "-train": NEGOTIATION_TRAIN_WRAPPERS},
+    max_turns=20,
+)
+register_with_versions(
+    id="Negotiation-v0-short",
+    entry_point="mindgames.envs.Negotiation.env:NegotiationEnv",
+    wrappers={"default": NEGOTIATION_WRAPPERS, "-train": NEGOTIATION_TRAIN_WRAPPERS},
+    max_turns=10,
+)
+register_with_versions(
+    id="Negotiation-v0-long",
+    entry_point="mindgames.envs.Negotiation.env:NegotiationEnv",
+    wrappers={"default": NEGOTIATION_WRAPPERS, "-train": NEGOTIATION_TRAIN_WRAPPERS},
+    max_turns=50,
 )
 
 # Liar's Dice (imperfect information + bluffing)
