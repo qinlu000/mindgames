@@ -103,7 +103,7 @@ class MiniHanabiEnv(Env):
             observation_type=ObservationType.PLAYER_ACTION,
         )
 
-        action_kind, action_value = self._parse_action(action)
+        action_kind, action_value, invalid_message = self._parse_action(action)
         if action_kind == "play":
             self._handle_play(slot_index=action_value)
         elif action_kind == "discard":
@@ -115,10 +115,7 @@ class MiniHanabiEnv(Env):
         else:
             self._invalidate(
                 reason="Invalid action format.",
-                message=(
-                    "Use exactly one action: [Play A], [Play B], [Discard A], [Discard B], "
-                    "[Hint Color Red/Blue/Green], or [Hint Rank 1/2/3]."
-                ),
+                message=invalid_message,
             )
 
         self._set_step_info(acting_player_id=acting_player_id, score_before=score_before)
@@ -204,7 +201,7 @@ class MiniHanabiEnv(Env):
             f"You are Player {player_id} in MiniHanabi-v0, a 2-player cooperative hidden-information game.\n"
             "Goal: build Red, Blue, and Green fireworks from rank 1 to rank 3.\n"
             "You can see your partner's cards but not your own.\n"
-            "Your hand has two fixed slots, A and B; slots never shift. After a play or discard, any replacement card goes into the same slot.\n"
+            "Your hand has two fixed slots, A and B; slots never shift. After a play or discard, any replacement card goes into the same slot. If the deck is empty, that slot becomes empty.\n"
             "Hints are public, truthful, and standard-style: a color hint touches all partner cards of that color; a rank hint touches all partner cards of that rank.\n"
             "Touched slots gain positive information, while untouched occupied slots learn that they are not the hinted color or rank.\n"
             "You start with 2 info tokens and 2 fuse tokens. Giving a hint costs 1 info token. Discarding regains 1 info token if below cap. Successfully playing a rank-3 card regains 1 info token if below cap.\n"
@@ -225,31 +222,62 @@ class MiniHanabiEnv(Env):
         if not self.state.made_invalid_move:
             self._emit_board()
 
-    def _parse_action(self, action: str) -> tuple[str, Optional[object]]:
+    def _parse_action(self, action: str) -> tuple[str, Optional[object], str]:
         tokens = self._tokenize_action(action)
         if not tokens:
-            return "invalid", None
+            return "invalid", None, self._invalid_action_message(
+                "No action detected.",
+                "Use exactly one action: [Play A], [Play B], [Discard A], [Discard B], "
+                "[Hint Color Red/Blue/Green], or [Hint Rank 1/2/3].",
+            )
 
         verb = tokens[0].lower()
-        if verb in {"play", "discard"} and len(tokens) == 2:
+        if verb in {"play", "discard"}:
+            if len(tokens) != 2:
+                return "invalid", None, self._invalid_action_message(
+                    f"{verb.capitalize()} must name exactly one slot.",
+                    "Use [Play A], [Play B], [Discard A], or [Discard B]. Slot aliases 0/1 are also accepted.",
+                )
             slot_index = self._parse_slot(tokens[1])
             if slot_index is not None:
-                return verb, slot_index
-            return "invalid", None
+                return verb, slot_index, ""
+            return "invalid", None, self._invalid_action_message(
+                f"Unknown slot {tokens[1]!r}.",
+                "Use slot A or B. Slot aliases 0/1 are also accepted.",
+            )
 
-        if verb == "hint" and len(tokens) == 3:
+        if verb == "hint":
+            if len(tokens) != 3:
+                return "invalid", None, self._invalid_action_message(
+                    "Hint actions need both a type and a value.",
+                    "Use [Hint Color Red/Blue/Green] or [Hint Rank 1/2/3].",
+                )
             hint_kind = tokens[1].lower()
             if hint_kind == "color":
                 color = self._canonical_color(tokens[2])
                 if color is not None:
-                    return "hint_color", color
-            elif hint_kind == "rank":
+                    return "hint_color", color, ""
+                return "invalid", None, self._invalid_action_message(
+                    f"Unknown color {tokens[2]!r}.",
+                    "Valid colors are Red, Blue, and Green.",
+                )
+            if hint_kind == "rank":
                 rank = self._canonical_rank(tokens[2])
                 if rank is not None:
-                    return "hint_rank", rank
-            return "invalid", None
+                    return "hint_rank", rank, ""
+                return "invalid", None, self._invalid_action_message(
+                    f"Unknown rank {tokens[2]!r}.",
+                    "Valid ranks are 1, 2, and 3.",
+                )
+            return "invalid", None, self._invalid_action_message(
+                f"Unknown hint type {tokens[1]!r}.",
+                "Use [Hint Color Red/Blue/Green] or [Hint Rank 1/2/3].",
+            )
 
-        return "invalid", None
+        return "invalid", None, self._invalid_action_message(
+            f"Unknown action verb {tokens[0]!r}.",
+            "Use [Play ...], [Discard ...], or [Hint ...].",
+        )
 
     def _tokenize_action(self, action: str) -> list[str]:
         text = " ".join(str(action).strip().split())
@@ -270,6 +298,9 @@ class MiniHanabiEnv(Env):
             if token:
                 tokens.append(token)
         return tokens
+
+    def _invalid_action_message(self, summary: str, guidance: str) -> str:
+        return f"{summary} {guidance}"
 
     def _parse_slot(self, token: str) -> Optional[int]:
         return SLOT_TOKEN_TO_INDEX.get(token.lower())

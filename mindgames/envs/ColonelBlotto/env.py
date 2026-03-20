@@ -73,13 +73,17 @@ class ColonelBlottoEnv(Env):
     def _prompt(self, player_id: int, game_state: Dict[str, Any]) -> str:
         del game_state
         role = "Commander Alpha" if player_id == 0 else "Commander Beta"
+        example_allocation = self._example_allocation()
         return (
             f"You are {role} in a game of Colonel Blotto. "
             f"Each round, allocate exactly {self.num_total_units} units across fields "
             f"{', '.join(self.field_names)}.\n"
-            "Submit one allocation in the format '[A4 B2 C14]'.\n"
+            f"Submit one allocation in the format '{example_allocation}'.\n"
             "You may omit a field to allocate 0 units to it.\n"
-            "Win the majority of fields in a round to win that round."
+            "Allocations are hidden until both players have submitted for the round.\n"
+            "Higher allocation wins a field; equal allocations tie that field.\n"
+            "Win more fields than your opponent to win the round; if field wins are tied, the round is a tie.\n"
+            f"The match ends after {self.num_rounds} rounds or as soon as a commander has already secured a majority of rounds."
         )
 
     def _emit_board(self) -> None:
@@ -103,6 +107,12 @@ class ColonelBlottoEnv(Env):
         allocation_dict = self._parse_allocation_input(action)
         validation_result = self._validate_allocation(allocation_dict)
         if validation_result != "Allocation is good.":
+            self.state.add_observation(
+                from_id=GAME_ID,
+                to_id=self.state.current_player_id,
+                message=f"Invalid allocation: {validation_result}",
+                observation_type=ObservationType.GAME_MESSAGE,
+            )
             self.state.set_invalid_move(reason=validation_result)
             return
 
@@ -150,6 +160,18 @@ class ColonelBlottoEnv(Env):
         for field_name in self.field_names:
             allocations.setdefault(field_name, 0)
         return allocations
+
+    def _example_allocation(self) -> str:
+        remaining_units = self.num_total_units
+        parts: list[str] = []
+        for idx, field_name in enumerate(self.field_names):
+            if idx == len(self.field_names) - 1:
+                units = remaining_units
+            else:
+                units = 1
+                remaining_units -= units
+            parts.append(f"{field_name}{units}")
+        return "[" + " ".join(parts) + "]"
 
     def _validate_allocation(self, allocation_dict: Optional[Dict[str, int]]) -> str:
         if allocation_dict is None:

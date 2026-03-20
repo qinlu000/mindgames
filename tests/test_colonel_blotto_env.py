@@ -56,6 +56,30 @@ class TestColonelBlottoEnv(unittest.TestCase):
         self.assertEqual(env.state.rewards, {0: -1, 1: 1})
         self.assertTrue(env.state.game_info[0]["invalid_move"])
 
+    def test_train_wrapper_shows_invalid_allocation_reason(self):
+        import mindgames as mg
+
+        env = mg.make("ColonelBlotto-v0-train")
+        env.reset(num_players=2, seed=0)
+        _, _ = env.get_observation()
+
+        done, _ = env.step("[A1 B1 C1]")
+        self.assertFalse(done)
+
+        _, obs = env.get_observation()
+        self.assertIn("Invalid allocation: You must allocate exactly 20 units. Current sum: 3", obs)
+
+    def test_prompt_and_board_clarify_hidden_simultaneous_rounds(self):
+        import mindgames as mg
+
+        env = mg.make("ColonelBlotto-v0-train")
+        env.reset(num_players=2, seed=0)
+        _, obs = env.get_observation()
+
+        self.assertIn("Allocations are hidden until both players have submitted for the round.", obs)
+        self.assertIn("Higher allocation wins a field; equal allocations tie that field.", obs)
+        self.assertIn("Format: '[A1 B1 C18]'.", obs)
+
     def test_shared_state_is_not_reused_between_players(self):
         from mindgames.envs.ColonelBlotto.env import ColonelBlottoEnv
 

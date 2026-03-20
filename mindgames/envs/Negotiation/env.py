@@ -19,6 +19,7 @@ class NegotiationEnv(Env):
     OFFER_RE = re.compile(r"\[offer\s*:\s*(.*?)\s*->\s*(.*?)\]", re.IGNORECASE | re.DOTALL)
     ACCEPT_RE = re.compile(r"\[accept\]", re.IGNORECASE)
     DENY_RE = re.compile(r"\[deny\]", re.IGNORECASE)
+    CONTROL_TAG_RE = re.compile(r"\[(?:offer|accept|deny)\b", re.IGNORECASE)
 
     def __init__(
         self,
@@ -27,6 +28,11 @@ class NegotiationEnv(Env):
         max_resource_qty: int = 12,
         starting_resources: Optional[Dict[int, Dict[str, int]]] = None,
         resource_values: Optional[Dict[int, Dict[str, int]]] = None,
+        observation_max_public_events: int = 12,
+        observation_max_public_event_chars: int = 240,
+        observation_max_public_history_chars: int = 1_800,
+        observation_max_admin_messages: int = 2,
+        observation_max_admin_message_chars: int = 240,
     ):
         if max_turns <= 0:
             raise ValueError(f"max_turns must be > 0, got {max_turns!r}")
@@ -38,10 +44,38 @@ class NegotiationEnv(Env):
             raise ValueError(
                 f"max_resource_qty must be >= min_resource_qty, got {max_resource_qty!r} < {min_resource_qty!r}"
             )
+        if observation_max_public_events <= 0:
+            raise ValueError(
+                f"observation_max_public_events must be > 0, got {observation_max_public_events!r}"
+            )
+        if observation_max_public_event_chars <= 0:
+            raise ValueError(
+                "observation_max_public_event_chars must be > 0, "
+                f"got {observation_max_public_event_chars!r}"
+            )
+        if observation_max_public_history_chars <= 0:
+            raise ValueError(
+                "observation_max_public_history_chars must be > 0, "
+                f"got {observation_max_public_history_chars!r}"
+            )
+        if observation_max_admin_messages <= 0:
+            raise ValueError(
+                f"observation_max_admin_messages must be > 0, got {observation_max_admin_messages!r}"
+            )
+        if observation_max_admin_message_chars <= 0:
+            raise ValueError(
+                "observation_max_admin_message_chars must be > 0, "
+                f"got {observation_max_admin_message_chars!r}"
+            )
 
         self.max_turns = int(max_turns)
         self.min_resource_qty = int(min_resource_qty)
         self.max_resource_qty = int(max_resource_qty)
+        self.observation_max_public_events = int(observation_max_public_events)
+        self.observation_max_public_event_chars = int(observation_max_public_event_chars)
+        self.observation_max_public_history_chars = int(observation_max_public_history_chars)
+        self.observation_max_admin_messages = int(observation_max_admin_messages)
+        self.observation_max_admin_message_chars = int(observation_max_admin_message_chars)
         self.resource_names = tuple(self.DEFAULT_BASE_VALUES.keys())
         self._resource_lookup = self._build_resource_lookup()
         self.starting_resources_override = self._normalize_player_table(
@@ -95,6 +129,7 @@ class NegotiationEnv(Env):
             f"You are Player {player_id} in a 2-player private-value negotiation game.\n"
             f"The game lasts at most {self.max_turns} total turns across both players.\n"
             "Goal: maximize your own final portfolio value gain relative to your starting value.\n"
+            "At the turn limit, the player with the larger value gain wins; equal gains produce a draw.\n"
             "Information structure:\n"
             "- Both players can see both players' current inventories.\n"
             "- Your per-unit values are private to you.\n"
@@ -107,7 +142,8 @@ class NegotiationEnv(Env):
             "- In '[Offer: A -> B]', the resources before '->' are what YOU give, and the resources after '->' are "
             "what YOU request.\n"
             "- Only one live offer can exist at a time.\n"
-            "- When possible, place '[Offer: ...]', '[Accept]', or '[Deny]' at the start of your message.\n"
+            "- If you use '[Offer: ...]', '[Accept]', or '[Deny]', place that control tag at the very start of your message.\n"
+            "- Do not mention bracketed control tags later in chat, even as examples or hypotheticals.\n"
             f"Public starting inventories:\n{public_inventories}\n"
             f"Your private per-unit values: {self._format_values(resource_values)}.\n"
             f"Your starting portfolio value: {starting_total}."
@@ -124,11 +160,11 @@ class NegotiationEnv(Env):
 
         pending_offer = self.state.game_state["pending_offer"]
         has_pending_offer = isinstance(pending_offer, dict) and pending_offer.get("to_player") == player_id
-        has_accept = bool(self.ACCEPT_RE.search(action))
-        has_deny = bool(self.DENY_RE.search(action))
-        parsed_offer, offer_error = self._extract_offer(action)
+        control_tags, parsed_offer, offer_error = self._extract_prefixed_controls(action)
         if offer_error is not None:
             return self._handle_invalid_move(offer_error)
+        has_accept = "accept" in control_tags
+        has_deny = "deny" in control_tags
 
         if has_pending_offer:
             if has_accept and has_deny:
@@ -277,7 +313,7 @@ class NegotiationEnv(Env):
             lines.append("Required reply: start with [Accept] or [Deny]. You may append one counteroffer using [Offer: ...].")
         else:
             lines.append("No pending offer to you.")
-            lines.append("You may send a public message and/or make one offer using [Offer: ...].")
+            lines.append("You may send a public message and/or make one offer using [Offer: ...] at the start of your message.")
         lines.append("All chat and all trade-control tags are public to both players.")
         return "\n".join(lines)
 
@@ -319,29 +355,65 @@ class NegotiationEnv(Env):
         self.state.set_invalid_move(reason=reason)
         return self._advance_turn()
 
-    def _extract_offer(self, action: str) -> Tuple[Optional[Dict[str, Dict[str, int]]], Optional[str]]:
-        if "[offer" not in action.lower():
-            return None, None
+    def _extract_prefixed_controls(
+        self,
+        action: str,
+    ) -> Tuple[list[str], Optional[Dict[str, Dict[str, int]]], Optional[str]]:
+        stripped_action = action.lstrip()
+        controls: list[str] = []
+        parsed_offer: Optional[Dict[str, Dict[str, int]]] = None
+        cursor = len(action) - len(stripped_action)
 
-        matches = list(self.OFFER_RE.finditer(action))
-        if not matches:
-            return None, "Offers must use the format [Offer: 2 Wheat, 1 Ore -> 3 Sheep]."
-        if len(matches) > 1:
-            return None, "Submit at most one [Offer: ...] per turn."
+        while cursor < len(action):
+            while cursor < len(action) and action[cursor].isspace():
+                cursor += 1
+            if cursor >= len(action):
+                break
 
-        give_text = matches[0].group(1)
-        request_text = matches[0].group(2)
-        give_bundle, give_error = self._parse_bundle(give_text)
-        if give_error is not None:
-            return None, give_error
-        request_bundle, request_error = self._parse_bundle(request_text)
-        if request_error is not None:
-            return None, request_error
+            tail = action[cursor:]
+            accept_match = self.ACCEPT_RE.match(tail)
+            if accept_match is not None:
+                controls.append("accept")
+                cursor += accept_match.end()
+                continue
 
-        return {
-            "give_bundle": give_bundle,
-            "request_bundle": request_bundle,
-        }, None
+            deny_match = self.DENY_RE.match(tail)
+            if deny_match is not None:
+                controls.append("deny")
+                cursor += deny_match.end()
+                continue
+
+            offer_match = self.OFFER_RE.match(tail)
+            if offer_match is not None:
+                if parsed_offer is not None:
+                    return [], None, "Submit at most one [Offer: ...] per turn."
+                give_bundle, give_error = self._parse_bundle(offer_match.group(1))
+                if give_error is not None:
+                    return [], None, give_error
+                request_bundle, request_error = self._parse_bundle(offer_match.group(2))
+                if request_error is not None:
+                    return [], None, request_error
+                parsed_offer = {
+                    "give_bundle": give_bundle,
+                    "request_bundle": request_bundle,
+                }
+                controls.append("offer")
+                cursor += offer_match.end()
+                continue
+
+            break
+
+        if not controls and stripped_action.lower().startswith("[offer"):
+            return [], None, "Offers must use the format [Offer: 2 Wheat, 1 Ore -> 3 Sheep]."
+
+        remaining_text = action[cursor:].strip()
+        if self.CONTROL_TAG_RE.search(remaining_text):
+            return [], None, (
+                "Bracketed control tags must appear at the very start of your message. "
+                "Do not mention [Offer], [Accept], or [Deny] later in chat."
+            )
+
+        return controls, parsed_offer, None
 
     def _parse_bundle(self, text: str) -> Tuple[Optional[Dict[str, int]], Optional[str]]:
         items = [item.strip() for item in text.split(",") if item.strip()]

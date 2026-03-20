@@ -12,40 +12,49 @@ class NegotiationActionClipWrapper(ActionWrapper):
         super().__init__(env)
         self.max_num_characters = max_num_characters
 
+    def _extract_prefixed_control_segment(self, action: str) -> tuple[str, str]:
+        cursor = 0
+        while cursor < len(action) and action[cursor].isspace():
+            cursor += 1
+
+        first_control_start = cursor
+        prefix_end = None
+
+        while cursor < len(action):
+            while cursor < len(action) and action[cursor].isspace():
+                cursor += 1
+            if cursor >= len(action):
+                break
+
+            tail = action[cursor:]
+            match = None
+            for pattern in (self.ACCEPT_RE, self.DENY_RE, self.OFFER_RE):
+                match = pattern.match(tail)
+                if match is not None:
+                    break
+
+            if match is None:
+                break
+
+            cursor += match.end()
+            prefix_end = cursor
+
+        if prefix_end is None:
+            return "", action
+
+        prefix = action[first_control_start:prefix_end].strip()
+        plain_text = action[prefix_end:].strip()
+        return prefix, plain_text
+
     def action(self, action: str) -> str:
         action = str(action)
         if len(action) <= self.max_num_characters:
             return action
 
-        control_parts = []
-        protected_spans = []
-
-        for pattern, token in ((self.ACCEPT_RE, "[Accept]"), (self.DENY_RE, "[Deny]")):
-            for match in pattern.finditer(action):
-                control_parts.append(token)
-                protected_spans.append(match.span())
-
-        offer_match = self.OFFER_RE.search(action)
-        if offer_match is not None:
-            control_parts.append(
-                f"[Offer: {offer_match.group(1).strip()} -> {offer_match.group(2).strip()}]"
-            )
-            protected_spans.append(offer_match.span())
-
-        if not control_parts:
+        prefix, plain_text = self._extract_prefixed_control_segment(action)
+        if not prefix:
             return action[: self.max_num_characters]
 
-        plain_segments = []
-        last_idx = 0
-        for start, end in sorted(protected_spans):
-            if start > last_idx:
-                plain_segments.append(action[last_idx:start])
-            last_idx = max(last_idx, end)
-        if last_idx < len(action):
-            plain_segments.append(action[last_idx:])
-        plain_text = " ".join("".join(plain_segments).split())
-
-        prefix = " ".join(control_parts)
         if len(prefix) >= self.max_num_characters:
             return prefix[: self.max_num_characters]
         if not plain_text:

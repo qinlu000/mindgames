@@ -105,7 +105,7 @@ class TestNegotiationEnv(unittest.TestCase):
         done, _ = env.step("[Offer: 2 Wheat -> 1 Wood]")
         self.assertFalse(done)
 
-        done, _ = env.step("No deal. [Deny] [Offer: 1 Wood -> 1 Ore]")
+        done, _ = env.step("[Deny] [Offer: 1 Wood -> 1 Ore] No deal.")
         self.assertFalse(done)
         self.assertEqual(env.state.current_player_id, 0)
 
@@ -115,6 +115,39 @@ class TestNegotiationEnv(unittest.TestCase):
         self.assertEqual(pending_offer["to_player"], 0)
         self.assertEqual(pending_offer["give_bundle"], {"Wood": 1})
         self.assertEqual(pending_offer["request_bundle"], {"Ore": 1})
+
+    def test_offer_tag_must_appear_at_message_start(self):
+        import mindgames as mg
+
+        env = mg.make(
+            "Negotiation-v0-train",
+            starting_resources=TEST_RESOURCES,
+            resource_values=TEST_VALUES,
+        )
+        env.reset(num_players=2, seed=0)
+        _, _ = env.get_observation()
+
+        done, _ = env.step("Example only: [Offer: 2 Wheat -> 1 Wood]")
+        self.assertFalse(done)
+        self.assertIsNone(env.state.game_state["pending_offer"])
+        self.assertEqual(env.state.current_player_id, 0)
+
+        _, obs = env.get_observation()
+        self.assertIn("Bracketed control tags must appear at the very start of your message.", obs)
+
+    def test_prompt_clarifies_control_tag_position_and_win_condition(self):
+        import mindgames as mg
+
+        env = mg.make(
+            "Negotiation-v0",
+            starting_resources=TEST_RESOURCES,
+            resource_values=TEST_VALUES,
+        )
+        env.reset(num_players=2, seed=0)
+        _, obs = env.get_observation()
+
+        self.assertIn("At the turn limit, the player with the larger value gain wins; equal gains produce a draw.", obs)
+        self.assertIn("place that control tag at the very start of your message", obs)
 
     def test_train_wrapper_preserves_long_deny_tag(self):
         import mindgames as mg

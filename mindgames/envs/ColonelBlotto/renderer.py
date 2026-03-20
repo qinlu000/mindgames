@@ -6,6 +6,16 @@ def create_board_str(game_state: Dict[str, Any], *, num_rounds: int, num_total_u
     scores = game_state.get("scores", {})
     fields: List[Dict[str, Any]] = list(game_state.get("fields", []) or [])
     field_names = [str(field.get("name", "?")) for field in fields]
+    example_parts: List[str] = []
+    remaining_units = num_total_units
+    for idx, field_name in enumerate(field_names):
+        if idx == len(field_names) - 1:
+            units = remaining_units
+        else:
+            units = 1
+            remaining_units -= units
+        example_parts.append(f"{field_name}{units}")
+    example_allocation = "[" + " ".join(example_parts) + "]"
 
     lines = [
         f"=== COLONEL BLOTTO - Round {current_round}/{num_rounds} ===",
@@ -16,6 +26,6 @@ def create_board_str(game_state: Dict[str, Any], *, num_rounds: int, num_total_u
         ),
         f"Available fields: {', '.join(field_names)}",
         f"Units to allocate: {num_total_units}",
-        "Format: '[A4 B2 C2]'.",
+        f"Format: '{example_allocation}'.",
     ]
     return "\n".join(lines)

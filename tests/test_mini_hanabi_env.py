@@ -79,6 +79,20 @@ class TestMiniHanabiEnv(unittest.TestCase):
         self.assertEqual(env.state.game_state["knowledge"][1], before)
         self.assertEqual(env.state.game_state["knowledge"][1], [SlotKnowledge(), SlotKnowledge()])
 
+    def test_invalid_color_hint_reports_specific_error(self):
+        import mindgames as mg
+
+        env = mg.make("MiniHanabi-v0-train")
+        env.reset(num_players=2, seed=0)
+        _, _ = env.get_observation()
+
+        done, _ = env.step("[Hint Color Yellow]")
+        self.assertFalse(done)
+
+        _, obs = env.get_observation()
+        self.assertIn("Unknown color 'Yellow'.", obs)
+        self.assertIn("Valid colors are Red, Blue, and Green.", obs)
+
     def test_successful_rank3_play_restores_info_token(self):
         from mindgames.envs.MiniHanabi.env import MiniHanabiEnv, Card
 
