@@ -29,12 +29,21 @@ from mindgames.state import (
     TeamMultiPlayerState,
     MinimalMultiPlayerState,
 )
-from mindgames.envs.registration import ENV_REGISTRY, make, register, register_with_versions, check_env_exists
+from mindgames.envs.registration import (
+    ENV_REGISTRY,
+    make,
+    register,
+    register_with_versions,
+    check_env_exists,
+    get_env_spec,
+    get_prompt_profile,
+    get_action_parser,
+)
 
 # Register selected environments
 import mindgames.envs  # noqa: F401
 
-from mindgames import agents, wrappers  # noqa: F401
+from mindgames import agents, prompting, wrappers  # noqa: F401
 
 __all__ = [
     "__version__",
@@ -62,6 +71,10 @@ __all__ = [
     "register",
     "register_with_versions",
     "check_env_exists",
+    "get_env_spec",
+    "get_prompt_profile",
+    "get_action_parser",
     "agents",
+    "prompting",
     "wrappers",
 ]

@@ -4,6 +4,7 @@ import random
 from typing import Optional, Tuple
 
 from mindgames.core import Agent
+from mindgames.prompting import DEFAULT_COMPETITIVE_SYSTEM_PROMPT
 
 from mindgames.agents.openai_agent import OpenAIAgent
 
@@ -21,24 +22,8 @@ __all__ = [
     "LlamaCppAgent",
 ]
 STANDARD_GAME_PROMPT = (
-    "You are an expert Hanabi teammate.\n"
-    "Output EXACTLY ONE valid action and nothing else (no reasoning).\n\n"
-    "Valid formats:\n"
-    "- [Play] X\n"
-    "- [Discard] X\n"
-    "- [Reveal] player N card X color C\n"
-    "- [Reveal] player N card X rank R\n\n"
-    "Rules (non-standard Hanabi here):\n"
-    "- Reveal must target exactly ONE specific card index in another player's hand.\n"
-    "- Reveal must be truthful for that specific card.\n"
-    "- Do not reveal about yourself.\n"
-    "- Use exactly one hint type: color OR rank.\n"
-    "- Fireworks are independent; you may play the next required rank of any color.\n\n"
-    "Strategy priority:\n"
-    "1) If you know a card is playable, [Play] it.\n"
-    "2) Else if a teammate has a clearly playable card and info_tokens>0, reveal that exact card.\n"
-    "3) Else discard the least useful / most uncertain card.\n"
-    "4) Avoid repeating the same Reveal on the same card unless it adds new info."
+    DEFAULT_COMPETITIVE_SYSTEM_PROMPT
+    + "\nReturn exactly one valid action and nothing else."
 )
     
 

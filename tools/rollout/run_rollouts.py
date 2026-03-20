@@ -52,6 +52,8 @@ def _ensure_pkg_importable() -> None:
 _ensure_pkg_importable()
 
 import mindgames as mg  # noqa: E402
+from mindgames.envs.registration import get_prompt_profile  # noqa: E402
+from mindgames.prompting import normalize_action_for_env  # noqa: E402
 
 
 @dataclass
@@ -256,16 +258,6 @@ def _coerce_episode_id(val: Any) -> Optional[int]:
     return None
 
 
-def _normalize_action(env: mg.Env, action: str) -> str:
-    normalized = action
-    current = env
-    while isinstance(current, mg.Wrapper):
-        if isinstance(current, mg.ActionWrapper):
-            normalized = current.action(normalized)
-        current = current.env
-    return normalized
-
-
 def _load_rollout_progress(path: Path) -> Tuple[set[int], set[int]]:
     completed: set[int] = set()
     seen_steps: set[int] = set()
@@ -367,10 +359,10 @@ def _game_loop(
         t0 = time.time()
         action = agents[player_id](observation)
         infer_ms = int((time.time() - t0) * 1000)
-        normalized_action = _normalize_action(env, action)
+        normalized_action = normalize_action_for_env(env, observation, action)
         _, raw_reasoning = agents[player_id].get_last_content_reasoning()
 
-        done, step_info = env.step(action=action)
+        done, step_info = env.step(action=normalized_action)
 
         step_rec = {
             "type": "step",
@@ -497,26 +489,7 @@ def main() -> int:
     )
     ap.add_argument(
         "--system-prompt",
-        default=(
-            "You are an expert Hanabi teammate.\n"
-            "Output EXACTLY ONE valid action and nothing else (no reasoning).\n\n"
-            "Valid formats:\n"
-            "- [Play] X\n"
-            "- [Discard] X\n"
-            "- [Reveal] player N card X color C\n"
-            "- [Reveal] player N card X rank R\n\n"
-            "Rules (non-standard Hanabi here):\n"
-            "- Reveal must target exactly ONE specific card index in another player's hand.\n"
-            "- Reveal must be truthful for that specific card.\n"
-            "- Do not reveal about yourself.\n"
-            "- Use exactly one hint type: color OR rank.\n\n"
-            "- Fireworks are independent; you may play the next required rank of any color.\n\n"
-            "Strategy priority:\n"
-            "1) If you know a card is playable, [Play] it.\n"
-            "2) Else if a teammate has a clearly playable card and info_tokens>0, reveal that exact card.\n"
-            "3) Else discard the least useful / most uncertain card.\n"
-            "4) Avoid repeating the same Reveal on the same card unless it adds new info."
-        ),
+        default=None,
     )
     ap.add_argument("--openai-base-url", default=None, help="Override OPENAI_BASE_URL (for OpenAI/vLLM-compatible servers)")
     ap.add_argument("--openai-api-key", default=None, help="Override OPENAI_API_KEY (for OpenAI/vLLM-compatible servers)")
@@ -722,12 +695,17 @@ def main() -> int:
         "retry_max_delay_s": float(args.retry_max_delay),
     }
 
+    env_prompt_profile = get_prompt_profile(args.env_id) if args.env_id in mg.ENV_REGISTRY else None
+    resolved_system_prompt = args.system_prompt
+    if resolved_system_prompt is None and env_prompt_profile is not None:
+        resolved_system_prompt = env_prompt_profile.system_prompt
+
     agents: Dict[int, mg.Agent] = {}
     for i in range(args.num_players):
         merged_gen = _merge_gen_kwargs(gen_kwargs, agent_gen_raw[i])
         agents[i] = _build_agent(
             specs[i],
-            args.system_prompt,
+            resolved_system_prompt,
             merged_gen,
             openai_api_key=(agent_api_keys[i] if agent_api_keys[i] is not None else args.openai_api_key),
             openai_base_url=(agent_base_urls[i] if agent_base_urls[i] is not None else args.openai_base_url),
