@@ -4,9 +4,8 @@ import random
 from typing import Optional, Tuple
 
 from mindgames.core import Agent
-from mindgames.prompting import DEFAULT_COMPETITIVE_SYSTEM_PROMPT
 
-from mindgames.agents.openai_agent import OpenAIAgent
+from mindgames.agents.openai_agent import OpenAIAgent, STANDARD_GAME_PROMPT
 
 __all__ = [
     "HumanAgent",
@@ -21,11 +20,6 @@ __all__ = [
     "OllamaAgent",
     "LlamaCppAgent",
 ]
-STANDARD_GAME_PROMPT = (
-    DEFAULT_COMPETITIVE_SYSTEM_PROMPT
-    + "\nReturn exactly one valid action and nothing else."
-)
-    
 
 class HumanAgent(Agent):
     """ Human agent class that allows the user to input actions manually """

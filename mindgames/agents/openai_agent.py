@@ -5,7 +5,7 @@ from json import JSONDecodeError
 from typing import Optional
 
 from mindgames.core import Agent
-from mindgames.prompting import DEFAULT_COMPETITIVE_SYSTEM_PROMPT
+from mindgames.prompting.templates import DEFAULT_COMPETITIVE_SYSTEM_PROMPT
 
 STANDARD_GAME_PROMPT = (
     DEFAULT_COMPETITIVE_SYSTEM_PROMPT

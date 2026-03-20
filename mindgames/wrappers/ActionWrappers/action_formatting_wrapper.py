@@ -7,28 +7,14 @@ __all__ = ["ActionFormattingWrapper"]
 
 class ActionFormattingWrapper(ActionWrapper):
     """
-    A wrapper that formats actions by adding brackets if they're missing.
-    
-    This wrapper ensures that all actions follow a consistent format by wrapping
-    them in square brackets if they don't already contain brackets. This is useful
-    for environments that require actions to be enclosed in brackets but where
-    agents might not always follow this convention.
-    
-    Example:
-        - Input: "move north"
-        - Output: "[move north]"
-        
-        - Input: "[trade wheat]"
-        - Output: "[trade wheat]" (unchanged)
+    Normalize model output into a single action string.
+
+    This wrapper now does more than just add brackets: it strips common
+    reasoning/template artifacts and applies prompt-profile-aware action
+    normalization before the action reaches the underlying environment.
     """
 
     def __init__(self, env: Env):
-        """
-        Initialize the ActionFormattingWrapper.
-        
-        Args:
-            env (Env): The environment to wrap.
-        """
         super().__init__(env)
 
     def action(self, action: str) -> str:

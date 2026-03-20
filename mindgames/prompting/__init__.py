@@ -40,16 +40,9 @@ __all__ = [
     "colonel_blotto_parse_available_actions",
     "mini_hanabi_parse_available_actions",
     "negotiation_parse_available_actions",
-    "apply_action_wrappers",
     "get_legal_actions_for_env",
     "normalize_action_for_env",
 ]
-
-
-def apply_action_wrappers(env, action):
-    from mindgames.prompting.normalization import apply_action_wrappers as _impl
-
-    return _impl(env, action)
 
 
 def get_legal_actions_for_env(env, observation):
