@@ -15,38 +15,37 @@ _ensure_pkg_importable()
 
 class TestActionFormattingWrapper(unittest.TestCase):
     def test_prefers_last_bracketed_line(self):
-        from mindgames.envs.Hanabi.env import HanabiEnv
+        import mindgames as mg
         from mindgames.wrappers import ActionFormattingWrapper
 
-        env = ActionFormattingWrapper(HanabiEnv())
+        env = ActionFormattingWrapper(mg.make("MiniHanabi-v0-raw"))
         out = env.action("some reasoning...\n[Discard] 0\nmore text\n")
         self.assertEqual(out, "[Discard] 0")
 
     def test_extracts_bracketed_action_after_prefix(self):
-        from mindgames.envs.Hanabi.env import HanabiEnv
+        import mindgames as mg
         from mindgames.wrappers import ActionFormattingWrapper
 
-        env = ActionFormattingWrapper(HanabiEnv())
-        out = env.action("Final Answer: [Play] 3")
-        self.assertEqual(out, "[Play] 3")
+        env = ActionFormattingWrapper(mg.make("MiniHanabi-v0-raw"))
+        out = env.action("Final Answer: [Play A]")
+        self.assertEqual(out, "[Play A]")
 
     def test_normalizes_unbracketed_action(self):
-        from mindgames.envs.Hanabi.env import HanabiEnv
+        import mindgames as mg
         from mindgames.wrappers import ActionFormattingWrapper
 
-        env = ActionFormattingWrapper(HanabiEnv())
-        out = env.action("Discard 0")
-        self.assertEqual(out, "[Discard] 0")
+        env = ActionFormattingWrapper(mg.make("MiniHanabi-v0-raw"))
+        out = env.action("Discard A")
+        self.assertEqual(out, "[Discard A]")
 
     def test_empty_action(self):
-        from mindgames.envs.Hanabi.env import HanabiEnv
+        import mindgames as mg
         from mindgames.wrappers import ActionFormattingWrapper
 
-        env = ActionFormattingWrapper(HanabiEnv())
+        env = ActionFormattingWrapper(mg.make("MiniHanabi-v0-raw"))
         out = env.action("\n\n  \n")
         self.assertEqual(out, "")
 
 
 if __name__ == "__main__":
     unittest.main()
-

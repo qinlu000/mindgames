@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-Run mindgames envs locally (offline) and write rollouts to JSONL.
+Run the supported mindgames envs locally (offline) and write rollouts to JSONL.
 
-Designed as a minimal, generic runner for *any* TextArena env id.
-Works even if TextArena isn't installed, as long as this repo contains ./textarena.
+This branch keeps only three game families:
+- MiniHanabi
+- ColonelBlotto
+- Negotiation
 
-Example:
-  python tools/rollout/run_rollouts.py \\
-    --env-id TruthAndDeception-v0-train --num-players 2 --episodes 20 \\
-    --agent openrouter:moonshotai/kimi-k2:free --agent openrouter:moonshotai/kimi-k2:free \\
-    --out data/tad.jsonl
+Examples:
+  python tools/rollout/run_rollouts.py \
+    --env-id Negotiation-v0-train --num-players 2 --episodes 20 \
+    --agent openai:gpt-4.1-mini --agent openai:gpt-4.1-mini \
+    --out data/negotiation.jsonl
 
-Human + LLM mixed seats (convenience mode):
-  python tools/rollout/run_rollouts.py \\
-    --env-id Hanabi-v0-train --num-players 2 --episodes 1 \\
-    --human-players 0 --llm-agent openai:gpt-4.1-mini \\
-    --out data/hanabi_human_llm.jsonl
+  python tools/rollout/run_rollouts.py \
+    --env-id ColonelBlotto-v0-train --num-players 2 --episodes 20 \
+    --agent openai:gpt-4.1-mini --agent openai:gpt-4.1-mini \
+    --out data/colonel_blotto.jsonl
 """
 
 from __future__ import annotations
@@ -34,7 +35,7 @@ from rollout_utils import _compact_step_rec
 
 def _find_project_root() -> Path:
     for parent in Path(__file__).resolve().parents:
-        if parent.name == "mindgames":
+        if parent.name in {"mindgames", "mindgames-agent-lightning-games"}:
             return parent
     raise RuntimeError("Could not locate mindgames project root.")
 
@@ -148,13 +149,10 @@ def _build_agent(
         if not spec.model:
             raise ValueError("scripted agent requires a spec like 'scripted:<name>'")
         name = spec.model.strip().lower()
-        if name in {"hanabi_discard0", "hanabi_discard", "discard0", "discard"}:
-            return _ScriptedAgent("[Discard] 0")
         if name.startswith("const="):
             return _ScriptedAgent(spec.model[len("const=") :])
         raise ValueError(
-            f"Unknown scripted agent: {spec.model!r}. Supported: "
-            "hanabi_discard0 | const=<action>"
+            f"Unknown scripted agent: {spec.model!r}. Supported: const=<action>"
         )
 
     if spec.kind == "hf":
@@ -422,7 +420,7 @@ def _game_loop(
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--env-id", required=True, help="e.g. Hanabi-v0-train or TruthAndDeception-v0-train")
+    ap.add_argument("--env-id", required=True, help="e.g. MiniHanabi-v0-train, ColonelBlotto-v0-train, or Negotiation-v0-train")
     ap.add_argument(
         "--env-kwargs",
         default=None,
@@ -463,7 +461,7 @@ def main() -> int:
         "--agent",
         action="append",
         default=[],
-        help="Repeatable. Spec: human | scripted:<name> | hf:<hf_model> | openai:<model> | qwen:<model> | gemini:<model> | openrouter:<model> | ollama:<model>",
+        help="Repeatable. Spec: human | scripted:const=<action> | hf:<hf_model> | openai:<model> | qwen:<model> | gemini:<model> | openrouter:<model> | ollama:<model>",
     )
     ap.add_argument(
         "--human-players",

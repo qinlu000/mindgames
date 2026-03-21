@@ -12,34 +12,48 @@ license = { text = "MIT" }
 authors = [{ name = "cql" }]
 dependencies = [
     "msgspec>=0.20.0",
-    "vllm>=0.15.1,<0.16",
 ]
 
 [project.optional-dependencies]
 agents = [
-  "openai",
-  "requests",
-  "websockets",
-  "transformers",
+    "openai",
+    "requests",
+    "websockets",
+    "transformers",
 ]
 serve = [
-    "vllm>=0.15.1,<0.16",
+    "vllm==0.10.2",
 ]
 train = [
+    "agentlightning[verl]==0.2.2",
     "deepspeed>=0.18.7",
-    "ms-swift>=4.0.0,<4.1",
+    "ninja",
+    "psutil",
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+    "verl==0.5.0",
+    "vllm==0.10.2",
 ]
 
 [dependency-groups]
 dev = [
-  "pyyaml>=6.0.0",
-  "jsonschema>=4.22.0",
-  "wandb>=0.23.1",
+    "pyyaml>=6.0.0",
+    "jsonschema>=4.22.0",
+    "wandb>=0.23.1",
 ]
 
 [tool.uv]
 default-groups = ["dev"]
 environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
 
 [tool.hatch.version]
 path = "mindgames/__about__.py"

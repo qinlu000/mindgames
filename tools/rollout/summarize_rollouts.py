@@ -9,8 +9,8 @@ Focuses on practical eval metrics:
 - avg turn_count
 
 Examples:
-  python tools/rollout/summarize_rollouts.py data/tad.rollouts.jsonl
-  python tools/rollout/summarize_rollouts.py data/hanabi.rollouts.jsonl --json
+  python tools/rollout/summarize_rollouts.py data/negotiation.rollouts.jsonl
+  python tools/rollout/summarize_rollouts.py data/minihanabi.rollouts.jsonl --json
 """
 
 from __future__ import annotations
