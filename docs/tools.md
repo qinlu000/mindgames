@@ -1,15 +1,15 @@
 # Tools Overview
 
-This branch documents only the code that still belongs to the three-game Agent Lightning mainline.
+This branch documents only the code that still belongs to the three-game pure VERL mainline.
 
 ## Environment
-- `tools/envs/create_agent_lightning_verl_env.sh`: sync the current worktree `.venv` with `uv sync --extra agents --extra train`.
-- `tools/envs/README.agent-lightning-verl-env.md`: uv environment notes and override examples.
+- `tools/envs/create_verl_env.sh`: sync the current worktree `.venv` with `uv sync --extra train`.
+- `tools/envs/README.verl-env.md`: uv environment notes and override examples.
 
 ## Training
-- `tools/train/agent_lightning_games.py`: shared rollout logic for MiniHanabi, Colonel Blotto, and Negotiation.
-- `tools/train/train_agent_lightning_games_verl.py`: shared `dev` / `train` CLI for Agent Lightning + VERL.
-- `tools/train/train_agent_lightning_games_verl.sh`: launcher that runs the shared training CLI through `uv run`.
+- `mindgames/verl_training.py`: pure VERL interaction + reward helpers for the supported games.
+- `tools/train/train_mindgames_verl.py`: shared CLI that materializes JSONL tasks and launches `verl.trainer.main_ppo`.
+- `tools/train/train_mindgames_verl.sh`: shell launcher for the pure VERL CLI.
 
 ## Rollouts
 - `tools/run_rollouts.py`: top-level wrapper for the generic rollout runner.

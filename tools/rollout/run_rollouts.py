@@ -35,7 +35,7 @@ from rollout_utils import _compact_step_rec
 
 def _find_project_root() -> Path:
     for parent in Path(__file__).resolve().parents:
-        if parent.name in {"mindgames", "mindgames-agent-lightning-games"}:
+        if (parent / "pyproject.toml").is_file() and (parent / "mindgames").is_dir():
             return parent
     raise RuntimeError("Could not locate mindgames project root.")
 

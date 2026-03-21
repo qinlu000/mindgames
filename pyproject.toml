@@ -25,13 +25,13 @@ serve = [
     "vllm==0.10.2",
 ]
 train = [
-    "agentlightning[verl]==0.2.2",
     "deepspeed>=0.18.7",
+    "flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl ; python_version == '3.12' and sys_platform == 'linux' and platform_machine == 'x86_64'",
     "ninja",
     "psutil",
     "torch==2.8.0",
     "torchvision==0.23.0",
-    "verl==0.5.0",
+    "verl==0.7.1",
     "vllm==0.10.2",
 ]
 
@@ -57,3 +57,6 @@ torchvision = { index = "pytorch-cu128" }
 
 [tool.hatch.version]
 path = "mindgames/__about__.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
