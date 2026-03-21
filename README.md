@@ -33,9 +33,15 @@ The shared entrypoint is:
 bash tools/train/train_mindgames_verl.sh
 ```
 
-The pure VERL path uses the `MindGamesInteraction` multi-turn interface:
+The training core now lives under `mindgames/training/`:
+- `contracts.py`: explicit step/result interfaces
+- `episode.py`: shared episode runner for the three game families
+- `verl_adapter.py`: thin VERL-specific adapter on top of the shared runner
+- `verl_launch.py`: run-plan construction and VERL launch helpers used by the CLI
+
+The pure VERL path still uses a `MindGamesInteraction` multi-turn shell, but the policy interface is step-based:
 - each episode stays inside one VERL interaction
-- each user turn is still a self-contained game-state snapshot from the environment
+- each policy step receives a self-contained game-state snapshot
 - `MiniHanabi` uses normalized team score (`score / 9`) as the reward
 - `ColonelBlotto` and `Negotiation` read terminal reward from player `0` by default
 

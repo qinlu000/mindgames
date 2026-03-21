@@ -31,6 +31,14 @@ class TestVerlMainline(unittest.TestCase):
         self.assertEqual(payload["adv_estimator"], "grpo")
         self.assertFalse(payload["critic_enabled"])
         self.assertEqual(payload["reward_player"], 0)
+        self.assertEqual(
+            payload["interaction_class"],
+            "mindgames.training.verl_adapter.MindGamesInteraction",
+        )
+        self.assertEqual(
+            payload["reward_function_path"],
+            "pkg://mindgames.training.verl_adapter",
+        )
 
     def test_train_cli_supports_gae_for_ppo(self):
         repo_root = Path(__file__).resolve().parents[1]

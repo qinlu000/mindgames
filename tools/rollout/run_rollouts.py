@@ -55,6 +55,14 @@ _ensure_pkg_importable()
 import mindgames as mg  # noqa: E402
 from mindgames.envs.registration import get_prompt_profile  # noqa: E402
 from mindgames.prompting import normalize_action_for_env  # noqa: E402
+from mindgames.training import (  # noqa: E402
+    MindGamesEpisode,
+    build_end_record,
+    build_step_record,
+    jsonl_write,
+    run_mindgames_episode,
+    write_episode_json,
+)
 
 
 @dataclass
@@ -228,12 +236,6 @@ def _build_agent(
     raise ValueError(f"Unknown agent kind: {spec.kind} (supported: human, hf, openai, qwen, gemini, openrouter, ollama)")
 
 
-def _jsonl_write(fp, obj: Dict[str, Any]) -> None:
-    fp.write(json.dumps(obj, ensure_ascii=False) + "\n")
-    # Make progress observable when tailing the file during long-running runs.
-    fp.flush()
-
-
 def _merge_gen_kwargs(base: Dict[str, Any], override: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     if not override:
         return dict(base)
@@ -348,73 +350,74 @@ def _game_loop(
     env = _make_env(env_id=env_id, env_kwargs=env_kwargs)
     env.reset(num_players=num_players, seed=seed)
 
-    done = False
     step_idx = 0
     episode_steps: list[Dict[str, Any]] = []
 
-    while not done:
-        player_id, observation = env.get_observation()
-        t0 = time.time()
-        action = agents[player_id](observation)
-        infer_ms = int((time.time() - t0) * 1000)
-        normalized_action = normalize_action_for_env(env, observation, action)
-        _, raw_reasoning = agents[player_id].get_last_content_reasoning()
+    if env_id in mg.ENV_REGISTRY:
+        episode = MindGamesEpisode.attach(env=env, env_id=env_id, episode_id=str(episode_id))
+        trace = run_mindgames_episode(
+            episode=episode,
+            agents=agents,
+            seed=seed,
+            numeric_episode_id=episode_id,
+        )
+        for step_rec in trace.step_records:
+            jsonl_write(out_fp, step_rec)
+            if episode_json_dir is not None:
+                episode_steps.append(_compact_step_rec(step_rec, max_obs_chars=episode_json_max_obs_chars))
+            step_idx += 1
+        end_rec = trace.end_record
+    else:
+        done = False
+        while not done:
+            player_id, observation = env.get_observation()
+            t0 = time.time()
+            action = agents[player_id](observation)
+            infer_ms = int((time.time() - t0) * 1000)
+            normalized_action = normalize_action_for_env(env, observation, action)
+            _, raw_reasoning = agents[player_id].get_last_content_reasoning()
 
-        done, step_info = env.step(action=normalized_action)
+            done, step_info = env.step(action=normalized_action)
 
-        step_rec = {
-            "type": "step",
-            "env_id": env_id,
-            "episode_id": episode_id,
-            "seed": seed,
-            "step": step_idx,
-            "player_id": player_id,
-            "role": getattr(env.state, "role_mapping", {}).get(player_id, f"Player {player_id}"),
-            "observation": observation,
-            "action": action,
-            "raw_action": action,
-            "reasoning": raw_reasoning,
-            "raw_reasoning": raw_reasoning,
-            "normalized_action": normalized_action,
-            "infer_ms": infer_ms,
-            "done": done,
-            "step_info": step_info,
-        }
-        _jsonl_write(out_fp, step_rec)
-        if episode_json_dir is not None:
-            episode_steps.append(_compact_step_rec(step_rec, max_obs_chars=episode_json_max_obs_chars))
+            step_rec = build_step_record(
+                env=env,
+                env_id=env_id,
+                episode_id=episode_id,
+                seed=seed,
+                step_index=step_idx,
+                player_id=player_id,
+                observation=observation,
+                action=action,
+                raw_reasoning=raw_reasoning,
+                normalized_action=normalized_action,
+                infer_ms=infer_ms,
+                done=done,
+                step_info=dict(step_info or {}),
+            )
+            jsonl_write(out_fp, step_rec)
+            if episode_json_dir is not None:
+                episode_steps.append(_compact_step_rec(step_rec, max_obs_chars=episode_json_max_obs_chars))
 
-        step_idx += 1
+            step_idx += 1
 
-    rewards, game_info = env.close()
-    end_rec = {
-        "type": "episode_end",
-        "env_id": env_id,
-        "episode_id": episode_id,
-        "seed": seed,
-        "rewards": rewards,
-        "game_info": game_info,
-    }
-    _jsonl_write(out_fp, end_rec)
+        rewards, game_info = env.close()
+        end_rec = build_end_record(
+            env_id=env_id,
+            episode_id=episode_id,
+            seed=seed,
+            rewards=rewards,
+            game_info=game_info,
+        )
+    jsonl_write(out_fp, end_rec)
 
     if episode_json_dir is not None:
-        episode_json_dir.mkdir(parents=True, exist_ok=True)
-        out_path = episode_json_dir / f"episode_{episode_id:06d}.json"
-        out_path.write_text(
-            json.dumps(
-                {
-                    "env_id": env_id,
-                    "episode_id": episode_id,
-                    "seed": seed,
-                    "steps": episode_steps,
-                    "episode_end": end_rec,
-                },
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
+        write_episode_json(
+            out_dir=episode_json_dir,
+            env_id=env_id,
+            episode_id=episode_id,
+            seed=seed,
+            step_records=episode_steps,
+            end_record=end_rec,
         )
 
 

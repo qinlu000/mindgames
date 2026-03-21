@@ -16,7 +16,7 @@ _ensure_pkg_importable()
 
 class TestVerlMindGames(unittest.TestCase):
     def test_build_dataset_row_contains_prompt_and_interaction_kwargs(self):
-        from mindgames.verl_training import build_dataset_row
+        from mindgames.training import build_dataset_row
 
         row = build_dataset_row(
             game="mini_hanabi",
@@ -40,7 +40,7 @@ class TestVerlMindGames(unittest.TestCase):
         self.assertIn("MiniHanabi-v0", row["prompt"][1]["content"])
 
     def test_compute_score_uses_last_turn_score(self):
-        from mindgames.verl_training import compute_score
+        from mindgames.training import compute_score
 
         result = compute_score(
             data_source="mindgames/mini_hanabi",
@@ -53,7 +53,7 @@ class TestVerlMindGames(unittest.TestCase):
         self.assertEqual(result["terminal_reward"], 0.5)
 
     def test_interaction_can_step_once(self):
-        from mindgames.verl_training import MindGamesInteraction
+        from mindgames.training import MindGamesInteraction
 
         async def run_step():
             interaction = MindGamesInteraction(config={})
