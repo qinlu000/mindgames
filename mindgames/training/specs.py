@@ -13,12 +13,27 @@ def _unwrap_env(env: object) -> object:
     return current
 
 
-def _identity_reward(value: float) -> float:
+def _identity_reward(value: float, game_state: Optional[dict[str, Any]] = None) -> float:
+    del game_state
     return float(value)
 
 
-def _normalize_hanabi_reward(value: float) -> float:
-    return float(value) / 9.0
+def _extract_hanabi_perfect_score(game_state: Optional[dict[str, Any]]) -> float:
+    if isinstance(game_state, dict):
+        perfect_score = game_state.get("perfect_score")
+        if perfect_score is not None:
+            try:
+                return float(perfect_score)
+            except Exception:
+                pass
+    return 15.0
+
+
+def _normalize_hanabi_reward(value: float, game_state: Optional[dict[str, Any]] = None) -> float:
+    perfect_score = _extract_hanabi_perfect_score(game_state)
+    if perfect_score <= 0:
+        return 0.0
+    return float(value) / perfect_score
 
 
 def _extract_hanabi_score(game_state: Optional[dict[str, Any]]) -> Optional[float]:
@@ -39,7 +54,8 @@ def _hanabi_terminal_message(game_state: Optional[dict[str, Any]], reward: float
     score = _extract_hanabi_score(game_state)
     if score is None:
         return _default_terminal_message(game_state, reward)
-    return f"Episode finished.\nFinal score: {int(score)}/9\nNormalized reward: {reward:.4f}"
+    perfect_score = int(_extract_hanabi_perfect_score(game_state))
+    return f"Episode finished.\nFinal score: {int(score)}/{perfect_score}\nNormalized reward: {reward:.4f}"
 
 
 @dataclass(frozen=True)
@@ -51,7 +67,7 @@ class GameSpec:
     default_reward_player: int
     turn_instruction: str
     snapshot_instruction: str
-    reward_normalizer: Callable[[float], float] = _identity_reward
+    reward_normalizer: Callable[[float, Optional[dict[str, Any]]], float] = _identity_reward
     fallback_terminal_score: Optional[Callable[[Optional[dict[str, Any]]], Optional[float]]] = None
     terminal_message_builder: Callable[[Optional[dict[str, Any]], float], str] = _default_terminal_message
 
@@ -66,12 +82,18 @@ class GameSpec:
                 raw_reward = float(rewards.get(0, 0.0))
             else:
                 raw_reward = float(rewards.get(reward_player, 0.0))
-            return self.reward_normalizer(raw_reward)
+            return self.reward_normalizer(
+                raw_reward,
+                game_state if isinstance(game_state, dict) else None,
+            )
 
         if self.fallback_terminal_score is not None:
             raw_score = self.fallback_terminal_score(game_state if isinstance(game_state, dict) else None)
             if raw_score is not None:
-                return self.reward_normalizer(raw_score)
+                return self.reward_normalizer(
+                    raw_score,
+                    game_state if isinstance(game_state, dict) else None,
+                )
 
         raise ValueError(f"{self.name} env did not expose terminal rewards.")
 
@@ -98,7 +120,7 @@ GAME_SPECS: dict[GameName, GameSpec] = {
         name="mini_hanabi",
         env_id_prefixes=("MiniHanabi-v0",),
         default_env_id="MiniHanabi-v0-train",
-        default_max_steps=12,
+        default_max_steps=28,
         default_reward_player=-1,
         turn_instruction=COMMON_TURN_INSTRUCTION,
         snapshot_instruction=COMMON_SNAPSHOT_INSTRUCTION,

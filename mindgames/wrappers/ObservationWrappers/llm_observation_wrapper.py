@@ -152,7 +152,7 @@ class GameMessagesObservationWrapper(ObservationWrapper):
 
 class GameMessagesAndCurrentBoardObservationWrapper(ObservationWrapper):
     """Show the initial prompt, game messages (excluding player actions), and current game board."""
-    MAX_GAME_MESSAGES = 40
+    MAX_GAME_MESSAGES = 10
 
     def __init__(self, env: Env):
         super().__init__(env)

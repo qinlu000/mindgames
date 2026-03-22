@@ -10,8 +10,15 @@ from mindgames.state import TeamMultiPlayerState
 
 SLOT_LABELS = ("A", "B")
 COLORS = ("Red", "Blue", "Green")
-RANKS = (1, 2, 3)
+RANKS = (1, 2, 3, 4, 5)
+PER_COLOR_DECK_RANKS = (1, 1, 2, 3, 4, 5)
 SLOT_TOKEN_TO_INDEX = {"a": 0, "b": 1, "0": 0, "1": 1}
+ACTION_FORMATS_HEADER = "Action formats:"
+MAX_RANK = max(RANKS)
+PERFECT_SCORE = len(COLORS) * MAX_RANK
+COLOR_HINT_GUIDANCE = "/".join(COLORS)
+RANK_HINT_GUIDANCE = "/".join(str(rank) for rank in RANKS)
+RANK_ENUM_TEXT = ", ".join(str(rank) for rank in RANKS[:-1]) + f", and {RANKS[-1]}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -42,9 +49,13 @@ class SlotKnowledge:
 
 
 class MiniHanabiEnv(Env):
-    def __init__(self, info_tokens: int = 2, fuse_tokens: int = 2, max_turns: int = 12):
+    def __init__(self, info_tokens: int = 3, fuse_tokens: int = 2, max_turns: int = 28):
         self.num_players = 2
         self.hand_size = 2
+        self.colors = COLORS
+        self.ranks = RANKS
+        self.max_rank = MAX_RANK
+        self.perfect_score = PERFECT_SCORE
         self.max_info_tokens = int(info_tokens)
         self.max_fuse_tokens = int(fuse_tokens)
         self.max_turns = int(max_turns)
@@ -83,6 +94,8 @@ class MiniHanabiEnv(Env):
             "fireworks": {color: 0 for color in COLORS},
             "deck": deck,
             "deck_size": len(deck),
+            "perfect_score": self.perfect_score,
+            "max_rank": self.max_rank,
             "player_hands": player_hands,
             "knowledge": knowledge,
             "discard_pile": [],
@@ -159,7 +172,7 @@ class MiniHanabiEnv(Env):
             "MiniHanabi-v0",
             f"Turn: {self.state.turn}/{self.max_turns}",
             f"Current player: Player {self.state.current_player_id}",
-            f"Score: {self._calculate_score()}/9",
+            f"Score: {self._calculate_score()}/{self.perfect_score}",
             (
                 "Resources: "
                 f"info {self.state.game_state['info_tokens']}/{self.max_info_tokens} | "
@@ -188,25 +201,34 @@ class MiniHanabiEnv(Env):
         lines.extend(
             [
                 "",
-                "Valid actions:",
+                ACTION_FORMATS_HEADER,
                 "- [Play A], [Play B], [Discard A], [Discard B]",
                 "- [Hint Color Red], [Hint Color Blue], [Hint Color Green]",
-                "- [Hint Rank 1], [Hint Rank 2], [Hint Rank 3]",
+                "- [Hint Rank 1], [Hint Rank 2], [Hint Rank 3], [Hint Rank 4], [Hint Rank 5]",
             ]
         )
         return "\n".join(lines)
 
     def _prompt(self, player_id: int, game_state: dict) -> str:
+        del game_state
         return (
             f"You are Player {player_id} in MiniHanabi-v0, a 2-player cooperative hidden-information game.\n"
-            "Goal: build Red, Blue, and Green fireworks from rank 1 to rank 3.\n"
+            "Goal: build the Red, Blue, and Green fireworks from rank 1 to rank 5 for a maximum score of 15.\n"
+            "Deck composition: each color has cards [1, 1, 2, 3, 4, 5].\n"
             "You can see your partner's cards but not your own.\n"
-            "Your hand has two fixed slots, A and B; slots never shift. After a play or discard, any replacement card goes into the same slot. If the deck is empty, that slot becomes empty.\n"
-            "Hints are public, truthful, and standard-style: a color hint touches all partner cards of that color; a rank hint touches all partner cards of that rank.\n"
-            "Touched slots gain positive information, while untouched occupied slots learn that they are not the hinted color or rank.\n"
-            "You start with 2 info tokens and 2 fuse tokens. Giving a hint costs 1 info token. Discarding regains 1 info token if below cap. Successfully playing a rank-3 card regains 1 info token if below cap.\n"
-            "A wrong play loses 1 fuse token and discards the card. The game ends when score reaches 9, fuse reaches 0, or 12 turns are consumed.\n"
-            "Output exactly one action and nothing else. Valid formats are [Play A], [Discard B], [Hint Color Red], [Hint Rank 2]. Slot aliases 0/1 are also accepted."
+            "Your hand has two fixed slots, A and B. Slots never shift. After a play or discard, any replacement card goes into the same slot; if the deck is empty, that slot becomes empty.\n"
+            "Hints target your partner and must be truthful. A color hint touches all partner cards of that color; a rank hint touches all partner cards of that rank.\n"
+            "Touched slots gain positive information; untouched occupied slots gain negative information for that hinted attribute. Hinting costs 1 info token and is invalid at 0 info.\n"
+            "A play succeeds only if the card is the next rank needed for its color; otherwise the card is discarded and the team loses 1 fuse token.\n"
+            "Discarding regains 1 info token if below cap. Playing a rank-5 card regains 1 info token if below cap.\n"
+            f"The game ends when the score reaches {self.perfect_score}, fuse reaches 0, or {self.max_turns} turns are consumed.\n"
+            "Return exactly one action and nothing else.\n"
+            "Action formats:\n"
+            "- [Play A], [Play B]\n"
+            "- [Discard A], [Discard B]\n"
+            "- [Hint Color Red], [Hint Color Blue], [Hint Color Green]\n"
+            "- [Hint Rank 1], [Hint Rank 2], [Hint Rank 3], [Hint Rank 4], [Hint Rank 5]\n"
+            "Slot aliases 0/1 are also accepted."
         )
 
     def _emit_board(self) -> None:
@@ -228,7 +250,7 @@ class MiniHanabiEnv(Env):
             return "invalid", None, self._invalid_action_message(
                 "No action detected.",
                 "Use exactly one action: [Play A], [Play B], [Discard A], [Discard B], "
-                "[Hint Color Red/Blue/Green], or [Hint Rank 1/2/3].",
+                f"[Hint Color {COLOR_HINT_GUIDANCE}], or [Hint Rank {RANK_HINT_GUIDANCE}].",
             )
 
         verb = tokens[0].lower()
@@ -250,7 +272,7 @@ class MiniHanabiEnv(Env):
             if len(tokens) != 3:
                 return "invalid", None, self._invalid_action_message(
                     "Hint actions need both a type and a value.",
-                    "Use [Hint Color Red/Blue/Green] or [Hint Rank 1/2/3].",
+                    f"Use [Hint Color {COLOR_HINT_GUIDANCE}] or [Hint Rank {RANK_HINT_GUIDANCE}].",
                 )
             hint_kind = tokens[1].lower()
             if hint_kind == "color":
@@ -267,11 +289,11 @@ class MiniHanabiEnv(Env):
                     return "hint_rank", rank, ""
                 return "invalid", None, self._invalid_action_message(
                     f"Unknown rank {tokens[2]!r}.",
-                    "Valid ranks are 1, 2, and 3.",
+                    f"Valid ranks are {RANK_ENUM_TEXT}.",
                 )
             return "invalid", None, self._invalid_action_message(
                 f"Unknown hint type {tokens[1]!r}.",
-                "Use [Hint Color Red/Blue/Green] or [Hint Rank 1/2/3].",
+                f"Use [Hint Color {COLOR_HINT_GUIDANCE}] or [Hint Rank {RANK_HINT_GUIDANCE}].",
             )
 
         return "invalid", None, self._invalid_action_message(
@@ -334,7 +356,7 @@ class MiniHanabiEnv(Env):
         if card.rank == expected_rank:
             self.state.game_state["fireworks"][card.color] += 1
             message = f"Player {acting_player_id} plays slot {slot_label}. It was {card} and the play succeeds."
-            if card.rank == max(RANKS) and self.state.game_state["info_tokens"] < self.max_info_tokens:
+            if card.rank == self.max_rank and self.state.game_state["info_tokens"] < self.max_info_tokens:
                 self.state.game_state["info_tokens"] += 1
                 message += " Completing a color restores 1 info token."
             self.state.add_observation(
@@ -464,7 +486,7 @@ class MiniHanabiEnv(Env):
             self._finish_game(reason="The team ran out of fuse tokens.", cooperative_win=False)
             return
 
-        if self._calculate_score() == 9:
+        if self._calculate_score() == self.perfect_score:
             self._finish_game(reason="The team completed all fireworks.", cooperative_win=True)
 
     def _maybe_end_on_turn_cap(self) -> None:
@@ -533,5 +555,5 @@ class MiniHanabiEnv(Env):
     def _generate_deck(self) -> list[Card]:
         deck: list[Card] = []
         for color in COLORS:
-            deck.extend([Card(color=color, rank=1), Card(color=color, rank=1), Card(color=color, rank=2), Card(color=color, rank=3)])
+            deck.extend(Card(color=color, rank=rank) for rank in PER_COLOR_DECK_RANKS)
         return deck

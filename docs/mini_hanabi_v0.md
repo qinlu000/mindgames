@@ -13,17 +13,17 @@
 
 - Players: exactly `2`
 - Colors: `Red`, `Blue`, `Green`
-- Ranks: `1`, `2`, `3`
-- Per-color deck: `[1, 1, 2, 3]`
-- Total deck size: `12`
+- Ranks: `1`, `2`, `3`, `4`, `5`
+- Per-color deck: `[1, 1, 2, 3, 4, 5]`
+- Total deck size: `18`
 - Hand size: `2`
 - Hand slots: fixed `A`, `B`
-- Max info tokens: `2`
-- Start info tokens: `2`
+- Max info tokens: `3`
+- Start info tokens: `3`
 - Max fuse tokens: `2`
 - Start fuse tokens: `2`
-- Turn cap: `12` consumed turns
-- Perfect score: `9`
+- Turn cap: `28` consumed turns
+- Perfect score: `15`
 
 ## Fixed-slot hand model
 
@@ -45,7 +45,7 @@ Valid action families:
 - `[Play A]`, `[Play B]`
 - `[Discard A]`, `[Discard B]`
 - `[Hint Color Red]`, `[Hint Color Blue]`, `[Hint Color Green]`
-- `[Hint Rank 1]`, `[Hint Rank 2]`, `[Hint Rank 3]`
+- `[Hint Rank 1]`, `[Hint Rank 2]`, `[Hint Rank 3]`, `[Hint Rank 4]`, `[Hint Rank 5]`
 
 Robust parsing should also accept equivalent slot aliases `0/1` for `A/B`, and wrapper-normalized formats such as:
 
@@ -78,14 +78,14 @@ Knowledge updates:
 
 ## Play and discard rules
 
-For each color, fireworks must be built in ascending order `1 -> 2 -> 3`.
+For each color, fireworks must be built in ascending order `1 -> 2 -> 3 -> 4 -> 5`.
 
 ### Play
 
 - A play succeeds if the card is the next required rank for that color.
 - On success, that firework advances by `1`.
 - On failure, the card is discarded and the team loses `1` fuse token.
-- If a successful play completes a color by playing rank `3`, regain `1` info token if below the cap.
+- If a successful play completes a color by playing rank `5`, regain `1` info token if below the cap.
 
 ### Discard
 
@@ -102,9 +102,9 @@ After any play or discard:
 
 The game ends immediately when any of the following occurs:
 
-- All three fireworks reach rank `3` (`score = 9`)
+- All three fireworks reach rank `5` (`score = 15`)
 - Fuse tokens reach `0`
-- The `12`-turn cap is reached
+- The `28`-turn cap is reached
 
 Unlike full Hanabi, there is no extra final round after deck exhaustion.
 
@@ -114,7 +114,7 @@ This is a cooperative game. Both players receive the same terminal reward:
 
 - `reward[player] = final_score`
 
-where `final_score` is the sum of all firework heights, in `[0, 9]`.
+where `final_score` is the sum of all firework heights, in `[0, 15]`.
 
 ## Observation design
 

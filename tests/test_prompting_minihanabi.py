@@ -37,8 +37,9 @@ class TestMiniHanabiPrompting(unittest.TestCase):
         self.assertIn("[Play A]", legal_actions)
         self.assertIn("[Discard B]", legal_actions)
         self.assertIn("[Hint Color Red]", legal_actions)
-        self.assertIn("[Hint Color Blue]", legal_actions)
+        self.assertNotIn("[Hint Color Blue]", legal_actions)
         self.assertNotIn("[Hint Color Green]", legal_actions)
+        self.assertIn("[Hint Rank 4]", legal_actions)
         self.assertIn("[Hint Rank 1]", legal_actions)
         self.assertNotIn("[Hint Rank 2]", legal_actions)
 

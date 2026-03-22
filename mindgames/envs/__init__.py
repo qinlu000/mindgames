@@ -37,9 +37,9 @@ register_with_versions(
     action_parser=mini_hanabi_parse_available_actions,
     reward_mode="team_score",
     obs_mode="board_state",
-    info_tokens=2,
+    info_tokens=3,
     fuse_tokens=2,
-    max_turns=12,
+    max_turns=28,
 )
 
 register_with_versions(

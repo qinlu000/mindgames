@@ -34,7 +34,7 @@ class TestMindGamesEpisode(unittest.TestCase):
             self.assertEqual(step.reward_mode, "team_score")
             self.assertEqual(step.action_mode, "structured")
             self.assertIn("MiniHanabi-v0", step.observation)
-            self.assertIn("Valid actions:", step.observation)
+            self.assertIn("Action formats:", step.observation)
             self.assertIsNotNone(step.legal_actions)
             self.assertIn("[Play A]", step.legal_actions)
         finally:

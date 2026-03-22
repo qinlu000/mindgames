@@ -21,12 +21,43 @@ def _extract_observation_section(
     return section
 
 
+def _unwrap_env(env: Any | None) -> Any | None:
+    current = env
+    while current is not None and getattr(current, "env", None) is not None:
+        current = current.env
+    return current
+
+
+def _extract_observation_section_any_end(
+    observation: str,
+    start_marker: str,
+    end_markers: tuple[str, ...],
+) -> str:
+    start_index = observation.find(start_marker)
+    if start_index == -1:
+        return ""
+
+    section = observation[start_index + len(start_marker) :]
+    end_positions = [section.find(marker) for marker in end_markers]
+    end_positions = [pos for pos in end_positions if pos != -1]
+    if end_positions:
+        section = section[: min(end_positions)]
+    return section
+
+
 def mini_hanabi_parse_available_actions(observation: str, env: Any | None = None) -> list[str]:
-    del env
     valid_actions: list[str] = []
     slot_labels = ("A", "B")
     color_order = ("Red", "Blue", "Green")
-    rank_order = (1, 2, 3)
+    rank_order = (1, 2, 3, 4, 5)
+    core_env = _unwrap_env(env)
+    if core_env is not None:
+        maybe_colors = getattr(core_env, "colors", None)
+        maybe_ranks = getattr(core_env, "ranks", None)
+        if isinstance(maybe_colors, (tuple, list)) and maybe_colors:
+            color_order = tuple(str(color) for color in maybe_colors)
+        if isinstance(maybe_ranks, (tuple, list)) and maybe_ranks:
+            rank_order = tuple(int(rank) for rank in maybe_ranks)
 
     info_match = re.search(r"Resources:\s*info\s+(\d+)\s*/", observation)
     info_tokens = int(info_match.group(1)) if info_match else 0
@@ -34,8 +65,14 @@ def mini_hanabi_parse_available_actions(observation: str, env: Any | None = None
     own_section = _extract_observation_section(
         observation,
         "Your hand knowledge:",
-        "Valid actions:",
+        "Action formats:",
     )
+    if not own_section.strip():
+        own_section = _extract_observation_section_any_end(
+            observation,
+            "Your hand knowledge:",
+            ("Valid actions:", "Action formats:"),
+        )
     occupied_slots: list[str] = []
     for slot_label in slot_labels:
         match = re.search(rf"- Slot {slot_label}:\s*(.+)", own_section)
@@ -57,7 +94,7 @@ def mini_hanabi_parse_available_actions(observation: str, env: Any | None = None
             "Visible partner hand",
             "Your hand knowledge:",
         )
-        visible_cards = re.findall(r"- Slot [AB]:\s*([A-Za-z]+)\s+([123])", partner_section)
+        visible_cards = re.findall(r"- Slot [AB]:\s*([A-Za-z]+)\s+(\d+)", partner_section)
         seen_colors = {color.title() for color, _ in visible_cards}
         seen_ranks = {int(rank) for _, rank in visible_cards}
 

@@ -35,6 +35,7 @@ class TestVerlMindGames(unittest.TestCase):
         self.assertEqual(row["prompt"][1]["role"], "user")
         self.assertIn("current player may change between turns", row["prompt"][0]["content"])
         self.assertIn("self-contained snapshot", row["prompt"][0]["content"])
+        self.assertIn("Deck composition: each color has cards [1, 1, 2, 3, 4, 5].", row["prompt"][0]["content"])
         self.assertNotIn("You are Player 0", row["prompt"][0]["content"])
         self.assertTrue(row["prompt"][1]["content"].startswith("Current game state:\n"))
         self.assertIn("MiniHanabi-v0", row["prompt"][1]["content"])

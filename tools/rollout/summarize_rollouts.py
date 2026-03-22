@@ -47,6 +47,12 @@ def _mean(xs: List[float]) -> Optional[float]:
     return (sum(xs) / len(xs)) if xs else None
 
 
+def _perfect_score_for_env(env_id: str) -> Optional[float]:
+    if env_id.startswith("MiniHanabi-v0"):
+        return 15.0
+    return None
+
+
 def summarize(paths: List[Path]) -> Dict[str, Any]:
     per_env: Dict[str, Any] = {}
 
@@ -152,11 +158,16 @@ def summarize(paths: List[Path]) -> Dict[str, Any]:
 
         score = env["score"]
         reasons = dict(sorted(env["reasons"].items(), key=lambda kv: kv[1], reverse=True))
+        perfect_score = _perfect_score_for_env(env_id)
 
         out["envs"][env_id] = {
             "episodes": episodes,
             "avg_score_if_coop": _mean(score),
-            "perfect_score_rate_if_coop": (sum(1 for s in score if s == 25.0) / len(score)) if score else None,
+            "perfect_score_rate_if_coop": (
+                (sum(1 for s in score if s == perfect_score) / len(score))
+                if score and perfect_score is not None
+                else None
+            ),
             "by_player": by_player_out,
             "end_reasons": reasons,
         }
