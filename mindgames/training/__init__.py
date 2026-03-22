@@ -5,6 +5,12 @@ from mindgames.training.dataset import (
     build_interaction_kwargs,
 )
 from mindgames.training.episode import MindGamesEpisode, build_system_message, format_state_message
+from mindgames.training.presets import (
+    QWEN_LORA_TARGET_MODULES,
+    TrainingPreset,
+    get_training_preset,
+    list_training_presets,
+)
 from mindgames.training.rollouts import (
     EpisodeTrace,
     build_end_record,
@@ -27,6 +33,8 @@ from mindgames.training.specs import (
 from mindgames.training.verl_launch import (
     INTERACTION_CLASS,
     REWARD_FUNCTION_PATH,
+    SNAPSHOT_AGENT_LOOP_CLASS,
+    TRAINER_MAIN_MODULE,
     VerlLaunchConfig,
     VerlRunFiles,
     VerlRunPlan,
@@ -40,8 +48,8 @@ from mindgames.training.verl_launch import (
     print_run_plan,
     resolve_launch_config,
     safe_name,
+    write_agent_loop_config,
     write_dataset_jsonl,
-    write_interaction_config,
 )
 from mindgames.training.verl_adapter import MindGamesInteraction, compute_score
 
@@ -56,9 +64,13 @@ __all__ = [
     "GameStep",
     "InteractionKwargs",
     "INTERACTION_CLASS",
+    "SNAPSHOT_AGENT_LOOP_CLASS",
+    "TRAINER_MAIN_MODULE",
     "MindGamesEpisode",
     "MindGamesInteraction",
+    "QWEN_LORA_TARGET_MODULES",
     "REWARD_FUNCTION_PATH",
+    "TrainingPreset",
     "VerlLaunchConfig",
     "VerlRunFiles",
     "VerlRunPlan",
@@ -76,6 +88,7 @@ __all__ = [
     "default_reward_player",
     "effective_val_rows",
     "format_state_message",
+    "get_training_preset",
     "jsonl_write",
     "get_game_spec",
     "infer_game_name",
@@ -87,7 +100,8 @@ __all__ = [
     "resolve_launch_config",
     "run_mindgames_episode",
     "safe_name",
+    "list_training_presets",
+    "write_agent_loop_config",
     "write_dataset_jsonl",
-    "write_interaction_config",
     "write_episode_json",
 ]
