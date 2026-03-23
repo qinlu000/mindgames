@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "mindgames"
 dynamic = ["version"]
-description = "Minimal, self-contained subset of TextArena for mindgame RL research (selected envs + agents)."
+description = "Minimal, self-contained mindgame environments."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 license = { text = "MIT" }
@@ -14,49 +14,5 @@ dependencies = [
     "msgspec>=0.20.0",
 ]
 
-[project.optional-dependencies]
-agents = [
-    "openai",
-    "requests",
-    "websockets",
-    "transformers",
-]
-serve = [
-    "vllm==0.10.2",
-]
-train = [
-    "deepspeed>=0.18.7",
-    "flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl ; python_version == '3.12' and sys_platform == 'linux' and platform_machine == 'x86_64'",
-    "ninja",
-    "psutil",
-    "torch==2.8.0",
-    "torchvision==0.23.0",
-    "verl==0.7.1",
-    "vllm==0.10.2",
-]
-
-[dependency-groups]
-dev = [
-    "pyyaml>=6.0.0",
-    "jsonschema>=4.22.0",
-    "wandb>=0.23.1",
-]
-
-[tool.uv]
-default-groups = ["dev"]
-environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
-
-[[tool.uv.index]]
-name = "pytorch-cu128"
-url = "https://download.pytorch.org/whl/cu128"
-explicit = true
-
-[tool.uv.sources]
-torch = { index = "pytorch-cu128" }
-torchvision = { index = "pytorch-cu128" }
-
 [tool.hatch.version]
 path = "mindgames/__about__.py"
-
-[tool.hatch.metadata]
-allow-direct-references = true
