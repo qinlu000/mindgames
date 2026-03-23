@@ -11,6 +11,12 @@ This repository contains only the three game environments:
 uv sync
 ```
 
+If you also want the model-backed agent helpers, install the optional extra:
+
+```bash
+uv sync --extra agents
+```
+
 ## Quick Start
 
 ```python

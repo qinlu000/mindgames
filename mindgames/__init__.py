@@ -43,7 +43,7 @@ from mindgames.envs.registration import (
 # Register selected environments
 import mindgames.envs  # noqa: F401
 
-from mindgames import prompting, wrappers  # noqa: F401
+from mindgames import agents, prompting, wrappers  # noqa: F401
 
 __all__ = [
     "__version__",
@@ -74,6 +74,7 @@ __all__ = [
     "get_env_spec",
     "get_prompt_profile",
     "get_action_parser",
+    "agents",
     "prompting",
     "wrappers",
 ]

@@ -14,5 +14,13 @@ dependencies = [
     "msgspec>=0.20.0",
 ]
 
+[project.optional-dependencies]
+agents = [
+    "openai",
+    "requests",
+    "websockets",
+    "transformers",
+]
+
 [tool.hatch.version]
 path = "mindgames/__about__.py"
